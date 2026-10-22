@@ -50,6 +50,7 @@ export default function CallsPanel({
   toggleSelectCall,
   onRequestDeleteCall,
   onStartCall,
+  isInCall = false,
 }) {
   const visibleCalls = useMemo(() => {
     if (!Array.isArray(calls)) return [];
@@ -106,7 +107,11 @@ export default function CallsPanel({
           return (
             <div key={call.id} className="relative flex w-full flex-col px-2">
               <div
-                className={`group flex min-h-[72px] w-full items-center rounded-xl border border-transparent text-slate-700 transition hover:bg-emerald-50 hover:text-emerald-700 dark:text-slate-100 dark:hover:bg-emerald-500/10 dark:hover:text-emerald-200 ${callsEditMode ? "animate-chat-wiggle-ios" : ""}`}
+                className={`group flex min-h-[72px] w-full items-center rounded-xl border border-transparent text-slate-700 transition ${
+                  isInCall
+                    ? ""
+                    : "hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-emerald-500/10 dark:hover:text-emerald-200"
+                } dark:text-slate-100 ${callsEditMode ? "animate-chat-wiggle-ios" : ""}`}
                 style={wiggleStyle}
               >
                 {callsEditMode ? (
@@ -124,12 +129,20 @@ export default function CallsPanel({
                 ) : null}
                 <button
                   type="button"
+                  disabled={callsEditMode || isInCall}
                   onClick={(event) => {
                     event.stopPropagation();
-                    if (callsEditMode) return;
+                    if (callsEditMode || isInCall) return;
                     onStartCall(call);
                   }}
-                  className={`flex min-h-[72px] min-w-0 flex-1 items-center gap-3 py-2.5 text-left ${callsEditMode ? "pointer-events-none pl-2 pr-3" : "cursor-pointer px-3 focus-visible:outline-hidden"}`}
+                  title={isInCall ? "Already in a call" : undefined}
+                  className={`flex min-h-[72px] min-w-0 flex-1 items-center gap-3 py-2.5 text-left ${
+                    callsEditMode
+                      ? "pointer-events-none pl-2 pr-3"
+                      : isInCall
+                        ? "cursor-not-allowed opacity-50 px-3 focus-visible:outline-hidden"
+                        : "cursor-pointer px-3 focus-visible:outline-hidden"
+                  }`}
                 >
                   {" "}
                   <div className="shrink-0">

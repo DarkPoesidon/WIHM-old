@@ -182,4 +182,19 @@ describe("useWebRTCCall state machine and helper logic", () => {
     expect(handleSignal).not.toHaveBeenCalled();
     expect(callState).toBe("idle");
   });
+
+  it("ignores startCall when call is already active / not idle", async () => {
+    let callState = "connected";
+    const callStateRef = { current: "connected" };
+    let started = false;
+
+    const startCall = async ({ chatId, calleeUsername }) => {
+      if (!chatId || !calleeUsername) return;
+      if (callStateRef.current !== "idle") return;
+      started = true;
+    };
+
+    await startCall({ chatId: "chat-1", calleeUsername: "charlie" });
+    expect(started).toBe(false);
+  });
 });

@@ -43,4 +43,23 @@ describe("SidebarHeader in calls mode", () => {
     expect(header.classList.contains("flex")).toBe(true);
     expect(header.classList.contains("items-center")).toBe(true);
   });
+
+  test("disables New call button when isInCall is true", async () => {
+    const onNewCall = vi.fn();
+    render(<SidebarHeader {...BASE_PROPS} isInCall={true} onNewCall={onNewCall} />);
+
+    const newCallBtn = page.getByRole("button", { name: "New call" });
+    await expect.element(newCallBtn).toBeVisible();
+    await expect.element(newCallBtn).toBeDisabled();
+    expect(newCallBtn.element().getAttribute("title")).toBe("Already in a call");
+  });
+
+  test("enables New call button when isInCall is false", async () => {
+    const onNewCall = vi.fn();
+    render(<SidebarHeader {...BASE_PROPS} isInCall={false} onNewCall={onNewCall} />);
+
+    const newCallBtn = page.getByRole("button", { name: "New call" });
+    await expect.element(newCallBtn).toBeVisible();
+    await expect.element(newCallBtn).not.toBeDisabled();
+  });
 });

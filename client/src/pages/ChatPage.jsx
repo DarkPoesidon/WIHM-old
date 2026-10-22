@@ -1933,6 +1933,7 @@ export default function ChatPage({ user, setUser, isDark, setIsDark, toggleTheme
   ) : null;
 
   const handleStartVoiceCall = useCallback(() => {
+    if (callState !== "idle") return;
     if (!activeChatId || !activeHeaderPeer?.username || activeHeaderPeer?.isDeleted) return;
     if (!isCallSupported()) return;
     startCall({
@@ -1945,9 +1946,10 @@ export default function ChatPage({ user, setUser, isDark, setIsDark, toggleTheme
       calleeRole: activeHeaderPeer.user_role || activeHeaderPeer.role,
       type: "voice",
     });
-  }, [activeChatId, activeHeaderPeer, startCall]);
+  }, [activeChatId, activeHeaderPeer, callState, startCall]);
 
   const handleStartVideoCall = useCallback(() => {
+    if (callState !== "idle") return;
     if (!activeChatId || !activeHeaderPeer?.username || activeHeaderPeer?.isDeleted) return;
     if (!isCallSupported()) return;
     startCall({
@@ -1960,7 +1962,7 @@ export default function ChatPage({ user, setUser, isDark, setIsDark, toggleTheme
       calleeRole: activeHeaderPeer.user_role || activeHeaderPeer.role,
       type: "video",
     });
-  }, [activeChatId, activeHeaderPeer, startCall]);
+  }, [activeChatId, activeHeaderPeer, callState, startCall]);
 
   useEffect(() => {
     if (canSendInActiveChat) return;
@@ -2935,6 +2937,7 @@ export default function ChatPage({ user, setUser, isDark, setIsDark, toggleTheme
   );
 
   const handleProfileStartVoiceCall = useCallback((peer) => {
+    if (callState !== "idle") return;
     const target = peer || profileTargetUser || activeHeaderPeer;
     if (!target?.username || target?.isDeleted) return;
     if (!isCallSupported()) return;
@@ -2961,9 +2964,10 @@ export default function ChatPage({ user, setUser, isDark, setIsDark, toggleTheme
       calleeRole: target.user_role || target.role,
       type: "voice",
     });
-  }, [activeChat, activeChatId, activeHeaderPeer, chats, profileTargetUser, startCall]);
+  }, [activeChat, activeChatId, activeHeaderPeer, callState, chats, profileTargetUser, startCall]);
 
   const handleProfileStartVideoCall = useCallback((peer) => {
+    if (callState !== "idle") return;
     const target = peer || profileTargetUser || activeHeaderPeer;
     if (!target?.username || target?.isDeleted) return;
     if (!isCallSupported()) return;
@@ -2990,7 +2994,7 @@ export default function ChatPage({ user, setUser, isDark, setIsDark, toggleTheme
       calleeRole: target.user_role || target.role,
       type: "video",
     });
-  }, [activeChat, activeChatId, activeHeaderPeer, chats, profileTargetUser, startCall]);
+  }, [activeChat, activeChatId, activeHeaderPeer, callState, chats, profileTargetUser, startCall]);
 
   const loadCalls = useCallback(async () => {
     if (!user?.username) return;
@@ -3018,6 +3022,7 @@ export default function ChatPage({ user, setUser, isDark, setIsDark, toggleTheme
   }, [mobileTab, callState, loadCalls]);
 
   const handleStartCallFromRow = useCallback((call) => {
+    if (callState !== "idle") return;
     const peer = call?.peer;
     if (!call?.chatId || !peer?.username) return;
     if (!isCallSupported()) return;
@@ -3031,9 +3036,10 @@ export default function ChatPage({ user, setUser, isDark, setIsDark, toggleTheme
       calleeRole: peer.role,
       type: "voice",
     });
-  }, [startCall]);
+  }, [callState, startCall]);
 
   const handleNewCallSubmit = useCallback((chatId, peer) => {
+    if (callState !== "idle") return;
     if (!chatId || !peer?.username || !isCallSupported()) return;
     setNewCallOpen(false);
     startCall({
@@ -3046,9 +3052,12 @@ export default function ChatPage({ user, setUser, isDark, setIsDark, toggleTheme
       calleeRole: peer.user_role || peer.role,
       type: "voice",
     });
-  }, [startCall]);
+  }, [callState, startCall]);
 
-  const handleOpenNewCall = useCallback(() => setNewCallOpen(true), []);
+  const handleOpenNewCall = useCallback(() => {
+    if (callState !== "idle") return;
+    setNewCallOpen(true);
+  }, [callState]);
 
   const toggleSelectCall = (callId) => {
     setSelectedCalls((prev) =>
@@ -6867,6 +6876,7 @@ export default function ChatPage({ user, setUser, isDark, setIsDark, toggleTheme
         onDeleteSelectedCalls={handleDeleteCalls}
         onOpenNewCall={handleOpenNewCall}
         onStartCall={handleStartCallFromRow}
+        isInCall={callState !== "idle"}
         formatChatTimestamp={formatChatCardTimestamp}
         requestDeleteChats={requestDeleteChats}
         toggleSelectChat={toggleSelectChat}
@@ -7059,6 +7069,7 @@ export default function ChatPage({ user, setUser, isDark, setIsDark, toggleTheme
         registerMessageRef={registerMessageRef}
         onStartVoiceCall={handleStartVoiceCall}
         onStartVideoCall={handleStartVideoCall}
+        isInCall={callState !== "idle"}
         isDmChat={!isActiveGroupChat && !isActiveChannelChat && !isActiveSavedChat}
         permissionsPrompt={{
           show: showPermissionsPrompt,
@@ -7354,6 +7365,7 @@ export default function ChatPage({ user, setUser, isDark, setIsDark, toggleTheme
             onOpenChat={handleOpenProfileChat}
             onStartVoiceCall={handleProfileStartVoiceCall}
             onStartVideoCall={handleProfileStartVideoCall}
+            isInCall={callState !== "idle"}
             onToggleMute={() =>
               toggleMuteChat(mentionProfileChat?.id || activeChat?.id)
             }
