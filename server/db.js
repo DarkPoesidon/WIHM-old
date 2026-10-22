@@ -2432,6 +2432,66 @@ export function listChatsForUser(userId) {
   return (rawRows || []).map(decryptMessageRow);
 }
 
+export function listCallHistoryForUser(userId, limit = 200) {
+  if (!userId) {
+    return isPostgresMode() ? Promise.resolve([]) : [];
+  }
+
+  const query = dbKnex("chat_messages as cm")
+    .select(
+      "cm.id",
+      "cm.chat_id",
+      "cm.user_id",
+      "cm.client_request_id",
+      "cm.body",
+      "cm.created_at",
+      "peer_user.id as peer_id",
+      "peer_user.username as peer_username",
+      "peer_user.nickname as peer_nickname",
+      "peer_user.avatar_url as peer_avatar_url",
+      "peer_user.color as peer_color",
+      "peer_user.verified as peer_verified",
+      "peer_user.role as peer_role",
+      "peer_user.status as peer_status",
+    )
+    .join("chats as c", "c.id", "cm.chat_id")
+    .join("chat_members as me", function () {
+      this.on("me.chat_id", "=", "cm.chat_id").andOn(
+        "me.user_id",
+        "=",
+        dbKnex.raw("?", [userId]),
+      );
+    })
+    .join("chat_members as peer", function () {
+      this.on("peer.chat_id", "=", "cm.chat_id").andOn(
+        "peer.user_id",
+        "!=",
+        dbKnex.raw("?", [userId]),
+      );
+    })
+    .leftJoin("users as peer_user", "peer_user.id", "peer.user_id")
+    .where("c.type", "dm")
+    .where("cm.body", "like", "[[call:%]]")
+    .whereNull("cm.hidden_everyone_at")
+    .whereNotExists(
+      dbKnex("hidden_chat_messages as hcm")
+        .select(1)
+        .where("hcm.user_id", userId)
+        .whereRaw("hcm.message_id = cm.id"),
+    )
+    .orderBy("cm.created_at", "desc")
+    .orderBy("cm.id", "desc")
+    .limit(Math.max(1, Number(limit) || 200));
+
+  const rawRows = getAll(query);
+
+  if (rawRows && typeof rawRows.then === "function") {
+    return rawRows.then((rows) => (rows || []).map(decryptMessageRow));
+  }
+
+  return (rawRows || []).map(decryptMessageRow);
+}
+
 export function createMessage(
   chatId,
   userId,

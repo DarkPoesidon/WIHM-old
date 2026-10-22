@@ -5,6 +5,12 @@ import { makeApp, makeUserStore } from "../helpers/makeApp.js";
 const ALICE_ID = "11111111-1111-4111-8111-111111111111";
 const BOB_ID = "22222222-2222-4222-8222-222222222222";
 const CHAT_ID = "33333333-3333-4333-8333-333333333333";
+const ALICE = {
+  id: ALICE_ID,
+  username: "alice",
+  nickname: "Alice",
+  avatar_url: "",
+};
 
 describe("/api/calls endpoints", () => {
   let app;
@@ -266,6 +272,221 @@ describe("/api/calls endpoints", () => {
         chatId: CHAT_ID,
         cameraOff: true,
       });
+    });
+  });
+
+  describe("GET /api/calls/history", () => {
+    const CALL_LOG_ID_1 = "44444444-4444-4444-8444-444444444444";
+    const CALL_LOG_ID_2 = "55555555-5555-5555-8555-555555555555";
+
+    it("returns 401 when not authenticated", async () => {
+      const res = await request(app).get("/api/calls/history");
+      expect(res.status).toBe(401);
+    });
+
+    it("returns call rows from the db with peer info", async () => {
+      const instance = makeApp({
+        userStore: makeUserStore([ALICE]),
+        deps: {
+          listCallHistoryForUser: vi.fn(() => [
+            {
+              id: CALL_LOG_ID_1,
+              chat_id: CHAT_ID,
+              user_id: BOB_ID,
+              body: "[[call:voice:connected:120]]",
+              created_at: "2026-01-01T00:00:00.000Z",
+              peer_id: BOB_ID,
+              peer_username: "bob",
+              peer_nickname: "Bob",
+              peer_avatar_url: "",
+              peer_color: null,
+              peer_verified: 0,
+              peer_role: "user",
+            },
+            {
+              id: CALL_LOG_ID_2,
+              chat_id: CHAT_ID,
+              user_id: ALICE_ID,
+              body: "[[call:video:outgoing]]",
+              created_at: "2026-01-02T00:00:00.000Z",
+              peer_id: ALICE_ID,
+              peer_username: "alice",
+              peer_nickname: "Alice",
+              peer_avatar_url: "",
+              peer_color: null,
+              peer_verified: 0,
+              peer_role: "user",
+            },
+          ]),
+        },
+      });
+      const testApp = instance.app;
+      instance.sessionStore.createSession(ALICE_ID, "alice-token2");
+
+      const res = await request(testApp)
+        .get("/api/calls/history")
+        .set("Cookie", "sid=alice-token2");
+      expect(res.status).toBe(200);
+      expect(res.body.calls).toHaveLength(2);
+      expect(res.body.calls[0].id).toBe(CALL_LOG_ID_1);
+      expect(res.body.calls[0].peer_username).toBe("bob");
+      expect(res.body.calls[1].body).toBe("[[call:video:outgoing]]");
+    });
+
+    it("surfaces db errors as 500", async () => {
+      const instance = makeApp({
+        userStore: makeUserStore([ALICE]),
+        deps: {
+          listCallHistoryForUser: vi.fn(() => {
+            throw new Error("boom");
+          }),
+        },
+      });
+      const testApp = instance.app;
+      instance.sessionStore.createSession(ALICE_ID, "alice-token3");
+
+      const res = await request(testApp)
+        .get("/api/calls/history")
+        .set("Cookie", "sid=alice-token3");
+      expect(res.status).toBe(500);
+    });
+  });
+
+  describe("POST /api/calls/history/delete", () => {
+    const MSG_ID = "66666666-6666-6666-8666-666666666666";
+    const callLog = {
+      id: MSG_ID,
+      chat_id: CHAT_ID,
+      user_id: BOB_ID,
+      body: "[[call:voice:failed]]",
+    };
+
+    it("returns 401 when not authenticated", async () => {
+      const res = await request(app)
+        .post("/api/calls/history/delete")
+        .send({ messageId: MSG_ID });
+      expect(res.status).toBe(401);
+    });
+
+    it("returns 400 for invalid messageId", async () => {
+      const res = await request(app)
+        .post("/api/calls/history/delete")
+        .set("Cookie", "sid=alice-token")
+        .send({ messageId: "not-a-uuid" });
+      expect(res.status).toBe(400);
+    });
+
+    it("returns 404 when message missing", async () => {
+      const res = await request(app)
+        .post("/api/calls/history/delete")
+        .set("Cookie", "sid=alice-token")
+        .send({ messageId: MSG_ID });
+      expect(res.status).toBe(404);
+      expect(res.body.error).toBe("Call not found");
+    });
+
+    it("hides the call entry for the caller", async () => {
+      const hideMessageForUser = vi.fn();
+      const instance = makeApp({
+        userStore: makeUserStore([ALICE]),
+        deps: {
+          findChatById: vi.fn(() => ({ id: CHAT_ID, type: "dm" })),
+          findMessageById: vi.fn((id) => (id === MSG_ID ? callLog : null)),
+          isMember: vi.fn(
+            (cId) => cId === CHAT_ID,
+          ),
+          hideMessageForUser,
+        },
+      });
+      const testApp = instance.app;
+      instance.sessionStore.createSession(ALICE_ID, "alice-token4");
+
+      const res = await request(testApp)
+        .post("/api/calls/history/delete")
+        .set("Cookie", "sid=alice-token4")
+        .send({ messageId: MSG_ID });
+      expect(res.status).toBe(200);
+      expect(res.body.ok).toBe(true);
+      expect(hideMessageForUser).toHaveBeenCalledWith(MSG_ID, ALICE_ID);
+    });
+
+    it("returns 403 when user is not a chat member", async () => {
+      const instance = makeApp({
+        userStore: makeUserStore([ALICE]),
+        deps: {
+          findChatById: vi.fn(() => ({ id: CHAT_ID, type: "dm" })),
+          findMessageById: vi.fn((id) => (id === MSG_ID ? callLog : null)),
+          isMember: vi.fn(() => false),
+        },
+      });
+      const testApp = instance.app;
+      instance.sessionStore.createSession(ALICE_ID, "alice-token5");
+
+      const res = await request(testApp)
+        .post("/api/calls/history/delete")
+        .set("Cookie", "sid=alice-token5")
+        .send({ messageId: MSG_ID });
+      expect(res.status).toBe(403);
+    });
+
+    it("returns 400 when message is not a call entry", async () => {
+      const instance = makeApp({
+        userStore: makeUserStore([ALICE]),
+        deps: {
+          findChatById: vi.fn(() => ({ id: CHAT_ID, type: "dm" })),
+          findMessageById: vi.fn((id) =>
+            id === MSG_ID ? { ...callLog, body: "hello" } : null,
+          ),
+          isMember: vi.fn(() => true),
+        },
+      });
+      const testApp = instance.app;
+      instance.sessionStore.createSession(ALICE_ID, "alice-token6");
+
+      const res = await request(testApp)
+        .post("/api/calls/history/delete")
+        .set("Cookie", "sid=alice-token6")
+        .send({ messageId: MSG_ID });
+      expect(res.status).toBe(400);
+      expect(res.body.error).toBe("Not a call entry");
+    });
+
+    it("returns 404 when chat is missing", async () => {
+      const instance = makeApp({
+        userStore: makeUserStore([ALICE]),
+        deps: {
+          findMessageById: vi.fn((id) => (id === MSG_ID ? callLog : null)),
+          findChatById: vi.fn(() => null),
+          isMember: vi.fn(() => true),
+        },
+      });
+      const testApp = instance.app;
+      instance.sessionStore.createSession(ALICE_ID, "alice-token7");
+
+      const res = await request(testApp)
+        .post("/api/calls/history/delete")
+        .set("Cookie", "sid=alice-token7")
+        .send({ messageId: MSG_ID });
+      expect(res.status).toBe(404);
+    });
+
+    it("returns 404 when message is in a non-dm chat", async () => {
+      const instance = makeApp({
+        userStore: makeUserStore([ALICE]),
+        deps: {
+          findMessageById: vi.fn((id) => (id === MSG_ID ? callLog : null)),
+          findChatById: vi.fn(() => ({ id: CHAT_ID, type: "group" })),
+          isMember: vi.fn(() => true),
+        },
+      });
+      const testApp = instance.app;
+      instance.sessionStore.createSession(ALICE_ID, "alice-token8");
+
+      const res = await request(testApp)
+        .post("/api/calls/history/delete")
+        .set("Cookie", "sid=alice-token8")
+        .send({ messageId: MSG_ID });
+      expect(res.status).toBe(404);
     });
   });
 });

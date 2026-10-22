@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import ChatsListPanel from "../list/ChatsListPanel.jsx";
+import CallsPanel from "../../call/CallsPanel.jsx";
 import {
   MobileSettingsPanel,
   SettingsMenuPopover,
@@ -19,6 +20,17 @@ export default function ChatSidebar({
   loadingChats,
   activeChatId,
   user,
+  calls,
+  loadingCalls,
+  callsEditMode,
+  selectedCalls,
+  toggleSelectCall,
+  onEnterCallsEditMode,
+  onExitCallsEditMode,
+  onDeleteCall,
+  onDeleteSelectedCalls,
+  onOpenNewCall,
+  onStartCall,
   formatChatTimestamp,
   requestDeleteChats,
   toggleSelectChat,
@@ -171,12 +183,31 @@ export default function ChatSidebar({
       <div className={mobileTab === "settings" ? "hidden md:block" : ""}>
         <SidebarHeader
           mobileTab={mobileTab}
-          editMode={editMode}
+          editMode={mobileTab === "calls" ? callsEditMode : editMode}
+          onExitEdit={
+            mobileTab === "calls" ? onExitCallsEditMode : onExitEdit
+          }
           isConnected={isConnected}
           isUpdating={isUpdating}
-          hasChats={Boolean(visibleChats.length)}
-          selectedChatsCount={selectedChats.length}
-          onExitEdit={onExitEdit}
+          hasChats={
+            mobileTab === "calls"
+              ? Boolean(calls.length)
+              : Boolean(visibleChats.length)
+          }
+          selectedChatsCount={
+            mobileTab === "calls" ? selectedCalls.length : selectedChats.length
+          }
+          title={mobileTab === "calls" ? "Calls" : "Chats"}
+          editAriaLabel={
+            mobileTab === "calls" ? "Edit call list" : "Edit chat list"
+          }
+          deleteAriaLabel={
+            mobileTab === "calls" ? "Delete calls" : "Delete chats"
+          }
+          onEnterCallsEditMode={onEnterCallsEditMode}
+          onExitCallsEditMode={onExitCallsEditMode}
+          onDeleteCalls={onDeleteSelectedCalls}
+          onNewCall={onOpenNewCall}
           onEnterEdit={onEnterEdit}
           onDeleteChats={onDeleteChats}
           onNewChat={onOpenNewChat}
@@ -304,7 +335,19 @@ export default function ChatSidebar({
             onScroll={handleChatsScroll}
           >
             <div ref={chatsContentRef} className="min-h-0">
-              <ChatsListPanel
+              {mobileTab === "calls" ? (
+                <CallsPanel
+                  loadingCalls={loadingCalls}
+                  calls={calls}
+                  user={user}
+                  callsEditMode={callsEditMode}
+                  selectedCalls={selectedCalls}
+                  toggleSelectCall={toggleSelectCall}
+                  onRequestDeleteCall={onDeleteCall}
+                  onStartCall={onStartCall}
+                />
+              ) : (
+                <ChatsListPanel
                 loadingChats={loadingChats}
                 visibleChats={visibleChats}
                 user={user}
@@ -335,7 +378,8 @@ export default function ChatSidebar({
                 onOpenSavedMessages={onOpenSavedMessages}
                 onOpenUserContextMenu={onOpenUserContextMenu}
                 onOpenChatContextMenu={onOpenChatContextMenu}
-              />
+                />
+              )}
             </div>
           </div>
         </div>
