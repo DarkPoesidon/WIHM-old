@@ -1,6 +1,7 @@
 import { Suspense, lazy, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import MobileTabMenu from "../components/navigation/MobileTabMenu.jsx";
 import ChatWindowPanel from "../components/chat/ChatWindowPanel.jsx";
+import { CallScreen } from "../components/call/CallScreen.jsx";
 import { ChatSidebar } from "../components/sidebar/index.js";
 import AppContextMenu from "../components/context-menu/AppContextMenu.jsx";
 import { useAppContextMenu } from "../components/context-menu/useAppContextMenu.js";
@@ -33,6 +34,8 @@ import { useNewGroupModal } from "../hooks/chat/useNewGroupModal.js";
 import { usePerfTelemetry } from "../hooks/chat/usePerfTelemetry.js";
 import { useResumeRefresh } from "../hooks/chat/useResumeRefresh.js";
 import { useMessageVisibility } from "../hooks/chat/useMessageVisibility.js";
+import { useWebRTCCall } from "../hooks/chat/useWebRTCCall.js";
+import { isCallSupported } from "../utils/callCapabilities.js";
 import { useAppReleaseInfo } from "../hooks/useAppReleaseInfo.js";
 import { Bookmark } from "../icons/lucide.js";
 import { CLIPBOARD_COPY_EVENT } from "../utils/clipboard.js";
@@ -1031,6 +1034,63 @@ export default function ChatPage({ user, setUser, isDark, setIsDark, toggleTheme
     downloadMessageFiles(files);
   }, []);
 
+  // ─── Call Hooks ───────────────────────────────────────────────────────────
+  const realtimeSenderRef = useRef(null);
+  const {
+    callState,
+    callEndReason,
+    isCallClosing,
+    callType,
+    callPeer,
+    callDuration,
+    callQuality,
+    isMuted,
+    isCameraOff,
+    isCameraUnavailable,
+    isRemoteCameraOff,
+    isSpeakerOn,
+    localVideoRef,
+    remoteVideoRef,
+    remoteAudioRef,
+    startCall,
+    acceptCall,
+    rejectCall,
+    endCall,
+    toggleMute,
+    toggleCamera,
+    toggleSpeaker,
+    handleSignal: handleCallSignal,
+  } = useWebRTCCall({ realtimeSenderRef });
+
+  const resolvedCallPeer = useMemo(() => {
+    if (!callPeer) return null;
+    const lowerUsername = String(callPeer.username || "").toLowerCase();
+    let memberMatch = null;
+    for (const chat of chats || []) {
+      const found = (chat.members || []).find(
+        (m) => String(m?.username || "").toLowerCase() === lowerUsername,
+      );
+      if (found) {
+        memberMatch = found;
+        break;
+      }
+    }
+    return {
+      ...callPeer,
+      color: callPeer.color || memberMatch?.color || null,
+      verified:
+        callPeer.verified !== undefined
+          ? callPeer.verified
+          : memberMatch
+            ? Boolean(memberMatch.user_verified ?? memberMatch.verified)
+            : false,
+      role:
+        callPeer.role !== undefined
+          ? callPeer.role
+          : memberMatch?.user_role || memberMatch?.role || null,
+    };
+  }, [callPeer, chats]);
+
   const handleOpenForwardOrigin = async (target) => {
     if (!target) return;
     if (target.kind === "self") {
@@ -1857,6 +1917,36 @@ export default function ChatPage({ user, setUser, isDark, setIsDark, toggleTheme
   const activeHeaderAvatarIcon = isActiveSavedChat ? (
     <Bookmark size={18} className="text-white" />
   ) : null;
+
+  const handleStartVoiceCall = useCallback(() => {
+    if (!activeChatId || !activeHeaderPeer?.username || activeHeaderPeer?.isDeleted) return;
+    if (!isCallSupported()) return;
+    startCall({
+      chatId: activeChatId,
+      calleeUsername: activeHeaderPeer.username,
+      calleeNickname: activeHeaderPeer.nickname,
+      calleeAvatar: activeHeaderPeer.avatar_url,
+      calleeColor: activeHeaderPeer.color,
+      calleeVerified: Boolean(activeHeaderPeer.user_verified ?? activeHeaderPeer.verified),
+      calleeRole: activeHeaderPeer.user_role || activeHeaderPeer.role,
+      type: "voice",
+    });
+  }, [activeChatId, activeHeaderPeer, startCall]);
+
+  const handleStartVideoCall = useCallback(() => {
+    if (!activeChatId || !activeHeaderPeer?.username || activeHeaderPeer?.isDeleted) return;
+    if (!isCallSupported()) return;
+    startCall({
+      chatId: activeChatId,
+      calleeUsername: activeHeaderPeer.username,
+      calleeNickname: activeHeaderPeer.nickname,
+      calleeAvatar: activeHeaderPeer.avatar_url,
+      calleeColor: activeHeaderPeer.color,
+      calleeVerified: Boolean(activeHeaderPeer.user_verified ?? activeHeaderPeer.verified),
+      calleeRole: activeHeaderPeer.user_role || activeHeaderPeer.role,
+      type: "video",
+    });
+  }, [activeChatId, activeHeaderPeer, startCall]);
 
   useEffect(() => {
     if (canSendInActiveChat) return;
@@ -2830,6 +2920,64 @@ export default function ChatPage({ user, setUser, isDark, setIsDark, toggleTheme
       (canCurrentUserEditGroup || Boolean(Number(activeChat?.allow_member_invites || 0))),
   );
 
+  const handleProfileStartVoiceCall = useCallback((peer) => {
+    const target = peer || profileTargetUser || activeHeaderPeer;
+    if (!target?.username || target?.isDeleted) return;
+    if (!isCallSupported()) return;
+    const dmChat =
+      (activeChat?.type === "dm" ? activeChat : null) ||
+      chats.find(
+        (c) =>
+          c.type === "dm" &&
+          (c.members || []).some(
+            (m) =>
+              String(m.username).toLowerCase() ===
+              String(target.username).toLowerCase(),
+          ),
+      );
+    const targetChatId = dmChat?.id || activeChatId;
+    if (!targetChatId) return;
+    startCall({
+      chatId: targetChatId,
+      calleeUsername: target.username,
+      calleeNickname: target.nickname,
+      calleeAvatar: target.avatar_url,
+      calleeColor: target.color,
+      calleeVerified: Boolean(target.user_verified ?? target.verified),
+      calleeRole: target.user_role || target.role,
+      type: "voice",
+    });
+  }, [activeChat, activeChatId, activeHeaderPeer, chats, profileTargetUser, startCall]);
+
+  const handleProfileStartVideoCall = useCallback((peer) => {
+    const target = peer || profileTargetUser || activeHeaderPeer;
+    if (!target?.username || target?.isDeleted) return;
+    if (!isCallSupported()) return;
+    const dmChat =
+      (activeChat?.type === "dm" ? activeChat : null) ||
+      chats.find(
+        (c) =>
+          c.type === "dm" &&
+          (c.members || []).some(
+            (m) =>
+              String(m.username).toLowerCase() ===
+              String(target.username).toLowerCase(),
+          ),
+      );
+    const targetChatId = dmChat?.id || activeChatId;
+    if (!targetChatId) return;
+    startCall({
+      chatId: targetChatId,
+      calleeUsername: target.username,
+      calleeNickname: target.nickname,
+      calleeAvatar: target.avatar_url,
+      calleeColor: target.color,
+      calleeVerified: Boolean(target.user_verified ?? target.verified),
+      calleeRole: target.user_role || target.role,
+      type: "video",
+    });
+  }, [activeChat, activeChatId, activeHeaderPeer, chats, profileTargetUser, startCall]);
+
   const handleMarkChatSeen = useCallback(
     async (chat) => {
       const chatId = String(chat?.id || "");
@@ -3521,7 +3669,7 @@ export default function ChatPage({ user, setUser, isDark, setIsDark, toggleTheme
       if (typeof window === "undefined" || !("Notification" in window)) return;
       if (!notificationsActive) return;
       const rawBody = normalizeMessageBody(meta?.body ?? payload?.body).trim();
-      if (/^\[\[system:/i.test(rawBody)) return;
+      if (/^\[\[(?:system|call):/i.test(rawBody)) return;
       const senderName = String(payload?.username || "").trim();
       const isOwnEvent =
         senderName.toLowerCase() === String(user?.username || "").toLowerCase() &&
@@ -3656,6 +3804,8 @@ export default function ChatPage({ user, setUser, isDark, setIsDark, toggleTheme
     onSessionRevoked: () => {
       handleLogout();
     },
+    onCallSignal: handleCallSignal,
+    realtimeSenderRef,
   });
 
   useEffect(() => {
@@ -6768,8 +6918,53 @@ export default function ChatPage({ user, setUser, isDark, setIsDark, toggleTheme
         microphonePermissionStatus={microphonePermission}
         onRequestMicrophonePermission={requestMicrophonePermission}
         registerMessageRef={registerMessageRef}
+        onStartVoiceCall={handleStartVoiceCall}
+        onStartVideoCall={handleStartVideoCall}
+        isDmChat={!isActiveGroupChat && !isActiveChannelChat && !isActiveSavedChat}
+        permissionsPrompt={{
+          show: showPermissionsPrompt,
+          mode: activePermissionPrompt,
+          notification: {
+            show: shouldPromptNotifications,
+            status: notificationPermission,
+            onRequest: requestNotificationsPermission,
+          },
+          microphone: {
+            show: shouldPromptMicrophone,
+            status: microphonePermission,
+            onRequest: requestMicrophonePermission,
+          },
+          onDismiss: (mode) =>
+            dismissPermissionsPrompt(mode || activePermissionPrompt),
+        }}
         showFloatingLabel={showFloatingLabel}
       />
+
+      {callState !== "idle" ? (
+        <CallScreen
+          callState={callState}
+          callEndReason={callEndReason}
+          isCallClosing={isCallClosing}
+          callType={callType}
+          callPeer={resolvedCallPeer}
+          callDuration={callDuration}
+          callQuality={callQuality}
+          isMuted={isMuted}
+          isCameraOff={isCameraOff}
+          cameraUnavailable={isCameraUnavailable}
+          isRemoteCameraOff={isRemoteCameraOff}
+          isSpeakerOn={isSpeakerOn}
+          localVideoRef={localVideoRef}
+          remoteVideoRef={remoteVideoRef}
+          remoteAudioRef={remoteAudioRef}
+          onAccept={acceptCall}
+          onReject={rejectCall}
+          onEnd={endCall}
+          onToggleMute={toggleMute}
+          onToggleCamera={toggleCamera}
+          onToggleSpeaker={toggleSpeaker}
+        />
+      ) : null}
 
       <MobileTabMenu
         hidden={mobileTab === "chat" && activeChatId}
@@ -6987,6 +7182,8 @@ export default function ChatPage({ user, setUser, isDark, setIsDark, toggleTheme
             )}
             onClose={closeProfileModal}
             onOpenChat={handleOpenProfileChat}
+            onStartVoiceCall={handleProfileStartVoiceCall}
+            onStartVideoCall={handleProfileStartVideoCall}
             onToggleMute={() =>
               toggleMuteChat(mentionProfileChat?.id || activeChat?.id)
             }
