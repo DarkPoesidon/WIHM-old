@@ -41,6 +41,10 @@ There are two ways to provide TURN relaying; pick **one** of them:
 
 If neither is configured, calls use the default STUN server only.
 
+:::tip Health check
+When configured, you can verify your TURN server's health, latency, and reachability at any time from the **Services** tab in the Admin Panel.
+:::
+
 ### Disabling calls
 
 Calls can be turned off per server via environment variables (or the admin panel's Calls settings group):

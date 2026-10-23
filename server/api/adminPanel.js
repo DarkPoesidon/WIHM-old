@@ -11,6 +11,7 @@ import crypto from "node:crypto";
 import path from "node:path";
 import multer from "multer";
 import { execFile } from "node:child_process";
+import { checkTurnHealth } from "../lib/turnHealth.js";
 
 // Recursive uploads sizing is expensive; serve a short-lived cache so dashboard
 // gauges (and bursty admin traffic) do not walk the tree on every request.
@@ -620,11 +621,18 @@ function registerAdminPanelRoutes(app, deps) {
         };
       }
     }
+    let turn = { configured: false, managed: false, reachable: null, latencyMs: null };
+    try {
+      turn = await checkTurnHealth(deps.env || process.env, deps.fetch);
+    } catch {
+      turn = { configured: true, managed: false, reachable: false, latencyMs: null };
+    }
     const payload = {
       mediaWorker,
       remoteChannel,
       storage,
       database,
+      turn,
       fetchedAt: new Date().toISOString(),
     };
     servicesCache = { data: payload, fetchedAt: now };
