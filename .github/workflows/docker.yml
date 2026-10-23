@@ -67,7 +67,7 @@ jobs:
 
       - name: Set lowercase GHCR image name
         run: |
-          echo "GHCR_IMAGE=ghcr.io/$(echo \"$GITHUB_REPOSITORY\" | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_ENV"
+          echo "GHCR_IMAGE=ghcr.io/$(echo "$GITHUB_REPOSITORY" | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_ENV"
 
       - name: Build and push by digest (amd64)
         id: build
@@ -142,7 +142,7 @@ jobs:
 
       - name: Set lowercase GHCR image name
         run: |
-          echo "GHCR_IMAGE=ghcr.io/$(echo \"$GITHUB_REPOSITORY\" | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_ENV"
+          echo "GHCR_IMAGE=ghcr.io/$(echo "$GITHUB_REPOSITORY" | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_ENV"
 
       - name: Build and push by digest (arm64)
         id: build
