@@ -6876,6 +6876,7 @@ export default function ChatPage({ user, setUser, isDark, setIsDark, toggleTheme
         onDeleteSelectedCalls={handleDeleteCalls}
         onOpenNewCall={handleOpenNewCall}
         onStartCall={handleStartCallFromRow}
+        callsDisabled={!CHAT_PAGE_CONFIG.callsEnabled}
         isInCall={callState !== "idle"}
         formatChatTimestamp={formatChatCardTimestamp}
         requestDeleteChats={requestDeleteChats}
@@ -7069,6 +7070,8 @@ export default function ChatPage({ user, setUser, isDark, setIsDark, toggleTheme
         registerMessageRef={registerMessageRef}
         onStartVoiceCall={handleStartVoiceCall}
         onStartVideoCall={handleStartVideoCall}
+        callsDisabled={!CHAT_PAGE_CONFIG.callsEnabled}
+        videoCallsDisabled={!CHAT_PAGE_CONFIG.videoCallsEnabled}
         isInCall={callState !== "idle"}
         isDmChat={!isActiveGroupChat && !isActiveChannelChat && !isActiveSavedChat}
         permissionsPrompt={{
@@ -7101,7 +7104,11 @@ export default function ChatPage({ user, setUser, isDark, setIsDark, toggleTheme
           callQuality={callQuality}
           isMuted={isMuted}
           isCameraOff={isCameraOff}
-          cameraUnavailable={isCameraUnavailable}
+          cameraUnavailable={
+            isCameraUnavailable ||
+            !CHAT_PAGE_CONFIG.callsEnabled ||
+            !CHAT_PAGE_CONFIG.videoCallsEnabled
+          }
           isRemoteCameraOff={isRemoteCameraOff}
           isSpeakerOn={isSpeakerOn}
           localVideoRef={localVideoRef}
@@ -7365,6 +7372,8 @@ export default function ChatPage({ user, setUser, isDark, setIsDark, toggleTheme
             onOpenChat={handleOpenProfileChat}
             onStartVoiceCall={handleProfileStartVoiceCall}
             onStartVideoCall={handleProfileStartVideoCall}
+            callsDisabled={!CHAT_PAGE_CONFIG.callsEnabled}
+            videoCallsDisabled={!CHAT_PAGE_CONFIG.videoCallsEnabled}
             isInCall={callState !== "idle"}
             onToggleMute={() =>
               toggleMuteChat(mentionProfileChat?.id || activeChat?.id)

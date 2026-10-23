@@ -738,6 +738,8 @@ export default function App() {
           pendingFileTimeoutMs: data?.chatPendingFileTimeoutMs,
           pendingRetryIntervalMs: data?.chatPendingRetryIntervalMs,
           pendingStatusCheckIntervalMs: data?.chatPendingStatusCheckIntervalMs,
+          callsEnabled: data?.callsEnabled,
+          videoCallsEnabled: data?.videoCallsEnabled,
         })
       })
       .catch(() => {

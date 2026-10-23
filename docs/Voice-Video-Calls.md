@@ -41,6 +41,14 @@ There are two ways to provide TURN relaying; pick **one** of them:
 
 If neither is configured, calls use the default STUN server only.
 
+### Disabling calls
+
+Calls can be turned off per server via environment variables (or the admin panel's Calls settings group):
+
+- `CALL` (default `true`): when off, calls are disabled entirely — the API rejects call starts and call buttons are shown as disabled in the UI.
+- `CALL_VIDEO` (default `true`): when off, video calls are rejected while voice calls stay available.
+- `CALL_MAX_DURATION` (default `0` = unlimited): automatically ends connected calls after this many minutes (1–1440).
+
 ### When is a TURN server required?
 
 - **Local / Direct Network:** For most home networks and standard connections, the default STUN server (`stun:stun.l.google.com:19302`) is sufficient.

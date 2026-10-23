@@ -126,6 +126,8 @@ export default function ChatWindowPanel({
   registerMessageRef = null,
   onStartVoiceCall,
   onStartVideoCall,
+  callsDisabled = false,
+  videoCallsDisabled = false,
   isInCall = false,
   isDmChat = false,
   showFloatingLabel = false,
@@ -152,6 +154,8 @@ export default function ChatWindowPanel({
   const isDeletedPeer = Boolean(activeHeaderPeer?.isDeleted || !activeHeaderPeer?.username);
   const callSupported = isCallSupported();
   const isCallDisabled = isDeletedPeer || !callSupported || isInCall;
+  const isVoiceCallDisabled = isCallDisabled || callsDisabled;
+  const isVideoCallDisabled = isCallDisabled || callsDisabled || videoCallsDisabled;
   const showChannelMuteFooter = Boolean(
     activeChatId &&
       isChannelChat &&
@@ -1078,7 +1082,7 @@ export default function ChatWindowPanel({
       }
       onForwardMessage={onForwardMessage}
       onCallLogCall={(type) => {
-        if (isCallDisabled) return;
+        if (type === "video" ? isVideoCallDisabled : isVoiceCallDisabled) return;
         type === "video" ? onStartVideoCall?.() : onStartVoiceCall?.();
       }}
       mentionRefreshToken={mentionRefreshToken}
@@ -1168,56 +1172,60 @@ export default function ChatWindowPanel({
                   {onStartVoiceCall ? (
                     <Tooltip
                       label={
-                        isDeletedPeer
-                          ? "Calls unavailable for deleted account"
-                          : !callSupported
-                            ? "Calls require a secure connection"
-                            : isInCall
-                              ? "Already in a call"
-                              : "Voice call"
+                        callsDisabled
+                          ? "Calls are disabled by the server"
+                          : isDeletedPeer
+                            ? "Calls unavailable for deleted account"
+                            : !callSupported
+                              ? "Calls require a secure connection"
+                              : isInCall
+                                ? "Already in a call"
+                                : "Voice call"
                       }
                       placement="bottom"
                     >
                       <button
                         type="button"
-                        onClick={isCallDisabled ? undefined : onStartVoiceCall}
-                        disabled={isCallDisabled}
+                        onClick={isVoiceCallDisabled ? undefined : onStartVoiceCall}
+                        disabled={isVoiceCallDisabled}
                         className={`inline-flex h-10 w-10 items-center justify-center rounded-full border border-emerald-200 bg-white/80 text-emerald-700 transition dark:border-emerald-500/30 dark:bg-slate-950 dark:text-emerald-200 ${
-                          isCallDisabled
+                          isVoiceCallDisabled
                             ? "opacity-40 cursor-not-allowed hover:shadow-none hover:border-emerald-200 dark:hover:border-emerald-500/30"
                             : "hover:border-emerald-300 hover:shadow-[0_0_16px_rgba(16,185,129,0.22)] cursor-pointer"
                         }`}
                         aria-label="Voice call"
                       >
-                        <Phone size={20} className={isCallDisabled ? "" : "icon-anim-pop"} />
+                        <Phone size={20} className={isVoiceCallDisabled ? "" : "icon-anim-pop"} />
                       </button>
                     </Tooltip>
                   ) : null}
                   {onStartVideoCall ? (
                     <Tooltip
                       label={
-                        isDeletedPeer
-                          ? "Calls unavailable for deleted account"
-                          : !callSupported
-                            ? "Calls require a secure connection"
-                            : isInCall
-                              ? "Already in a call"
-                              : "Video call"
+                        videoCallsDisabled
+                          ? "Video calls are disabled by the server"
+                          : isDeletedPeer
+                            ? "Calls unavailable for deleted account"
+                            : !callSupported
+                              ? "Calls require a secure connection"
+                              : isInCall
+                                ? "Already in a call"
+                                : "Video call"
                       }
                       placement="bottom"
                     >
                       <button
                         type="button"
-                        onClick={isCallDisabled ? undefined : onStartVideoCall}
-                        disabled={isCallDisabled}
+                        onClick={isVideoCallDisabled ? undefined : onStartVideoCall}
+                        disabled={isVideoCallDisabled}
                         className={`inline-flex h-10 w-10 items-center justify-center rounded-full border border-emerald-200 bg-white/80 text-emerald-700 transition dark:border-emerald-500/30 dark:bg-slate-950 dark:text-emerald-200 ${
-                          isCallDisabled
+                          isVideoCallDisabled
                             ? "opacity-40 cursor-not-allowed hover:shadow-none hover:border-emerald-200 dark:hover:border-emerald-500/30"
                             : "hover:border-emerald-300 hover:shadow-[0_0_16px_rgba(16,185,129,0.22)] cursor-pointer"
                         }`}
                         aria-label="Video call"
                       >
-                        <Video size={20} className={isCallDisabled ? "" : "icon-anim-pop"} />
+                        <Video size={20} className={isVideoCallDisabled ? "" : "icon-anim-pop"} />
                       </button>
                     </Tooltip>
                   ) : null}

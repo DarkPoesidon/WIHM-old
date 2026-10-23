@@ -105,6 +105,8 @@ export function makeApp(overrides = {}) {
         CHAT_CACHE_TTL: 24,
         REMOTE_CHANNEL_UI: true,
         REMOTE_CHANNEL_MEDIA_STREAM: false,
+        CALL: true,
+        CALL_VIDEO: true,
       };
       return overrides.settings?.[key] ?? defaults[key] ?? null;
     },

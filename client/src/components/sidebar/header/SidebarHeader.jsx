@@ -28,6 +28,7 @@ export default function SidebarHeader({
   editAriaLabel = "Edit chat list",
   deleteAriaLabel = "Delete chats",
   newCallAriaLabel = "New call",
+  callsDisabled = false,
   isInCall = false,
   onEnterCallsEditMode,
   onDeleteCalls,
@@ -214,15 +215,21 @@ export default function SidebarHeader({
               ) : isCallsMode ? (
                 <button
                   type="button"
-                  onClick={isInCall ? undefined : onNewCall}
-                  disabled={isInCall}
-                  title={isInCall ? "Already in a call" : undefined}
+                  onClick={isInCall || callsDisabled ? undefined : onNewCall}
+                  disabled={isInCall || callsDisabled}
+                  title={
+                    callsDisabled
+                      ? "Calls are disabled by the server"
+                      : isInCall
+                        ? "Already in a call"
+                        : undefined
+                  }
                   className={`inline-flex items-center justify-center rounded-full border border-emerald-200 bg-white/80 p-2 text-emerald-700 transition hover:border-emerald-300 hover:shadow-[0_0_16px_rgba(16,185,129,0.22)] dark:border-emerald-500/30 dark:bg-slate-950 dark:text-emerald-200 ${
-                    isInCall ? "cursor-not-allowed opacity-50" : ""
+                    isInCall || callsDisabled ? "cursor-not-allowed opacity-50" : ""
                   }`}
                   aria-label={newCallAriaLabel}
                 >
-                  <PhoneCall size={18} className={isInCall ? "" : "icon-anim-pop"} />
+                  <PhoneCall size={18} className={isInCall || callsDisabled ? "" : "icon-anim-pop"} />
                 </button>
               ) : (
                 <div className="relative" ref={createMenuRef}>

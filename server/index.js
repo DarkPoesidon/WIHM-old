@@ -582,6 +582,7 @@ const callManager = createCallManager({
   updateCallMessageBody,
   sendPushNotificationToUsers: (...args) =>
     pushService.sendPushNotificationToUsers(...args),
+  maxCallDurationMs: (getSetting("CALL_MAX_DURATION") || 0) * 60000,
 });
 
 const pushService = createPushService({

@@ -38,6 +38,8 @@ function registerAppRoutes(app, deps) {
       chatPendingFileTimeoutMs: Number(getSetting("CHAT_PENDING_FILE_TIMEOUT")) || 1200000,
       chatPendingRetryIntervalMs: Number(getSetting("CHAT_PENDING_RETRY_INTERVAL")) || 4000,
       chatPendingStatusCheckIntervalMs: Number(getSetting("CHAT_PENDING_STATUS_CHECK_INTERVAL")) || 1000,
+      callsEnabled: Boolean(getSetting("CALL")),
+      videoCallsEnabled: Boolean(getSetting("CALL_VIDEO")),
       remoteChannels: {
         // enabled/telegramConfigured/proxyConfigured stay restart-scoped
         // (Telegram credentials + remoteChannelManager are wired once at

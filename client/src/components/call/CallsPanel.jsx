@@ -50,6 +50,7 @@ export default function CallsPanel({
   toggleSelectCall,
   onRequestDeleteCall,
   onStartCall,
+  callsDisabled = false,
   isInCall = false,
 }) {
   const visibleCalls = useMemo(() => {
@@ -108,7 +109,7 @@ export default function CallsPanel({
             <div key={call.id} className="relative flex w-full flex-col px-2">
               <div
                 className={`group flex min-h-[72px] w-full items-center rounded-xl border border-transparent text-slate-700 transition ${
-                  isInCall
+                  isInCall || callsDisabled
                     ? ""
                     : "hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-emerald-500/10 dark:hover:text-emerald-200"
                 } dark:text-slate-100 ${callsEditMode ? "animate-chat-wiggle-ios" : ""}`}
@@ -129,17 +130,23 @@ export default function CallsPanel({
                 ) : null}
                 <button
                   type="button"
-                  disabled={callsEditMode || isInCall}
+                  disabled={callsEditMode || isInCall || callsDisabled}
                   onClick={(event) => {
                     event.stopPropagation();
-                    if (callsEditMode || isInCall) return;
+                    if (callsEditMode || isInCall || callsDisabled) return;
                     onStartCall(call);
                   }}
-                  title={isInCall ? "Already in a call" : undefined}
+                  title={
+                    callsDisabled
+                      ? "Calls are disabled by the server"
+                      : isInCall
+                        ? "Already in a call"
+                        : undefined
+                  }
                   className={`flex min-h-[72px] min-w-0 flex-1 items-center gap-3 py-2.5 text-left ${
                     callsEditMode
                       ? "pointer-events-none pl-2 pr-3"
-                      : isInCall
+                      : isInCall || callsDisabled
                         ? "cursor-not-allowed opacity-50 px-3 focus-visible:outline-hidden"
                         : "cursor-pointer px-3 focus-visible:outline-hidden"
                   }`}

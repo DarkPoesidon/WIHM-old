@@ -706,4 +706,81 @@ describe("callManager", () => {
       );
     });
   });
+
+  describe("max call duration (CALL_MAX_DURATION)", () => {
+    let logDeps;
+    let timedManager;
+
+    beforeEach(() => {
+      logDeps = {
+        ...mockDeps,
+        maxCallDurationMs: 30,
+        emitChatEvent: vi.fn(),
+        createCallMessage: vi.fn(() => "msg-1"),
+        updateCallMessageBody: vi.fn(),
+      };
+      timedManager = createCallManager(logDeps);
+    });
+
+    it("starts a call with no timer when maxCallDurationMs is 0", async () => {
+      await callManager.startCall({
+        user: callerUser,
+        chatId: dummyChatId,
+        type: "voice",
+      });
+      await callManager.acceptCall({ user: calleeUser, chatId: dummyChatId });
+      const active = callManager.getActiveCall(dummyChatId);
+      expect(active?.status).toBe("connected");
+    });
+
+    it("auto-ends the connected call after max duration and notifies both peers", async () => {
+      await timedManager.startCall({
+        user: callerUser,
+        chatId: dummyChatId,
+        type: "voice",
+      });
+      await timedManager.acceptCall({ user: calleeUser, chatId: dummyChatId });
+      expect(timedManager.getActiveCall(dummyChatId)?.status).toBe("connected");
+
+      await new Promise((resolve) => setTimeout(resolve, 60));
+
+      expect(timedManager.getActiveCall(dummyChatId)).toBeUndefined();
+      const ended = logDeps.emitToUser.mock.calls.filter(
+        ([user, payload]) => payload.type === "call:ended",
+      );
+      expect(ended.map(([user]) => user).sort()).toEqual(["alice", "bob"]);
+      expect(logDeps.updateCallMessageBody).toHaveBeenCalledWith(
+        "msg-1",
+        expect.stringMatching(/^\[\[call:voice:connected:\d+\]\]$/),
+      );
+    });
+
+    it("does not auto-end a ringing call (timer only armed on accept)", async () => {
+      await timedManager.startCall({
+        user: callerUser,
+        chatId: dummyChatId,
+        type: "voice",
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, 60));
+
+      const ringing = timedManager.getActiveCall(dummyChatId);
+      expect(ringing?.status).toBe("ringing");
+    });
+
+    it("manual end clears the max duration timer (no stray log update after end)", async () => {
+      await timedManager.startCall({
+        user: callerUser,
+        chatId: dummyChatId,
+        type: "voice",
+      });
+      await timedManager.acceptCall({ user: calleeUser, chatId: dummyChatId });
+      await timedManager.endCall({ user: callerUser, chatId: dummyChatId });
+      logDeps.updateCallMessageBody.mockClear();
+
+      await new Promise((resolve) => setTimeout(resolve, 60));
+
+      expect(logDeps.updateCallMessageBody).not.toHaveBeenCalled();
+    });
+  });
 });

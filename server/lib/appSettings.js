@@ -469,6 +469,39 @@ export const SETTING_DEFS = [
     restart: true,
   },
 
+  // ── Voice & video calls ───────────────────────────────────────────────────────
+  {
+    key: "CALL",
+    type: TYPE_BOOL,
+    label: "Calls",
+    description: "Allow calls in chats.",
+    group: "calls",
+    envKey: "CALL",
+    defaultVal: true,
+  },
+  {
+    key: "CALL_VIDEO",
+    type: TYPE_BOOL,
+    label: "Video calls",
+    description: "Allow video calls. Voice calls remain available.",
+    group: "calls",
+    envKey: "CALL_VIDEO",
+    defaultVal: true,
+  },
+  {
+    key: "CALL_MAX_DURATION",
+    type: TYPE_INT,
+    label: "Max call duration",
+    description: "Automatically end connected calls after this many minutes. 0 = unlimited.",
+    group: "calls",
+    envKey: "CALL_MAX_DURATION",
+    defaultVal: 0,
+    min: 1,
+    max: 1440,
+    restart: true, // enforcement timer is armed at call connect
+    nullable: true, // 0 means unlimited
+  },
+
   // ── Client behavior extensions (offline-first queue, health, search) ───────
   {
     key: "CHAT_LIST_REFRESH_INTERVAL",

@@ -29,6 +29,7 @@ export default function ChatSidebar({
   onDeleteSelectedCalls,
   onOpenNewCall,
   onStartCall,
+  callsDisabled = false,
   isInCall = false,
   formatChatTimestamp,
   requestDeleteChats,
@@ -222,6 +223,7 @@ export default function ChatSidebar({
           onExitCallsEditMode={onExitCallsEditMode}
           onDeleteCalls={onDeleteSelectedCalls}
           onNewCall={onOpenNewCall}
+          callsDisabled={callsDisabled}
           isInCall={isInCall}
           onEnterEdit={onEnterEdit}
           onDeleteChats={onDeleteChats}
@@ -352,6 +354,7 @@ export default function ChatSidebar({
                   toggleSelectCall={toggleSelectCall}
                   onRequestDeleteCall={onDeleteCall}
                   onStartCall={onStartCall}
+                  callsDisabled={callsDisabled}
                   isInCall={isInCall}
                 />
               ) : (

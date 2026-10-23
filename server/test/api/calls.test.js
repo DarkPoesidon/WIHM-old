@@ -191,6 +191,74 @@ describe("/api/calls endpoints", () => {
     });
   });
 
+  describe("feature toggles (CALL / CALL_VIDEO)", () => {
+    it("returns 403 for any call start when calls are disabled", async () => {
+      const instance = makeApp({
+        userStore: makeUserStore([
+          { id: ALICE_ID, username: "alice", nickname: "Alice", avatar_url: "" },
+          { id: BOB_ID, username: "bob", nickname: "Bob", avatar_url: "" },
+        ]),
+        deps: {
+          findChatById: vi.fn((id) => (id === CHAT_ID ? { id, type: "dm" } : null)),
+          isMember: vi.fn((_, uId) => uId === ALICE_ID || uId === BOB_ID),
+          listChatMembers: vi.fn(() => [
+            { id: ALICE_ID, username: "alice" },
+            { id: BOB_ID, username: "bob" },
+          ]),
+          emitSseEvent,
+          getSetting: vi.fn((key) =>
+            key === "CALL" || key === "CALL_VIDEO" ? false : true,
+          ),
+        },
+      });
+      instance.sessionStore.createSession(ALICE_ID, "alice-token2");
+
+      const res = await request(instance.app)
+        .post("/api/calls/start")
+        .set("Cookie", "sid=alice-token2")
+        .send({ chatId: CHAT_ID, type: "voice" });
+      expect(res.status).toBe(403);
+      expect(res.body.error).toBe("Calls are disabled on this server");
+    });
+
+    it("allows voice calls but returns 403 for video when video is disabled", async () => {
+      const instance = makeApp({
+        userStore: makeUserStore([
+          { id: ALICE_ID, username: "alice", nickname: "Alice", avatar_url: "" },
+          { id: BOB_ID, username: "bob", nickname: "Bob", avatar_url: "" },
+        ]),
+        deps: {
+          findChatById: vi.fn((id) => (id === CHAT_ID ? { id, type: "dm" } : null)),
+          isMember: vi.fn((_, uId) => uId === ALICE_ID || uId === BOB_ID),
+          listChatMembers: vi.fn(() => [
+            { id: ALICE_ID, username: "alice" },
+            { id: BOB_ID, username: "bob" },
+          ]),
+          emitSseEvent,
+          getSetting: vi.fn((key) => (key === "CALL_VIDEO" ? false : true)),
+        },
+      });
+      instance.sessionStore.createSession(ALICE_ID, "alice-token3");
+
+      const voice = await request(instance.app)
+        .post("/api/calls/start")
+        .set("Cookie", "sid=alice-token3")
+        .send({ chatId: CHAT_ID, type: "voice" });
+      expect(voice.status).toBe(200);
+      await request(instance.app)
+        .post("/api/calls/end")
+        .set("Cookie", "sid=alice-token3")
+        .send({ chatId: CHAT_ID });
+
+      const video = await request(instance.app)
+        .post("/api/calls/start")
+        .set("Cookie", "sid=alice-token3")
+        .send({ chatId: CHAT_ID, type: "video" });
+      expect(video.status).toBe(403);
+      expect(video.body.error).toBe("Video calls are disabled on this server");
+    });
+  });
+
   describe("Call signaling lifecycle (accept, reject, end, relay)", () => {
     beforeEach(async () => {
       await request(app)

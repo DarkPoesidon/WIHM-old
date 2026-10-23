@@ -13,6 +13,7 @@ export function registerCallRoutes(app, deps) {
     findChatById,
     isMember,
     hideMessageForUser,
+    getSetting,
   } = deps;
 
   const callManager =
@@ -46,11 +47,24 @@ export function registerCallRoutes(app, deps) {
     res.json({ call: incoming || null });
   });
 
+  // Live-read so admin panel / env changes apply without touching the
+  // in-memory callManager.
+  const callsEnabled = () =>
+    typeof getSetting === "function" ? Boolean(getSetting("CALL")) : true;
+  const videoCallsEnabled = () =>
+    typeof getSetting === "function" ? Boolean(getSetting("CALL_VIDEO")) : true;
+
   // POST /api/calls/start
   app.post("/api/calls/start", async (req, res) => {
     const user = requireUser(req, res);
     if (!user) return;
     const { chatId, type } = req.body || {};
+    if (!callsEnabled()) {
+      return res.status(403).json({ error: "Calls are disabled on this server" });
+    }
+    if (type === "video" && !videoCallsEnabled()) {
+      return res.status(403).json({ error: "Video calls are disabled on this server" });
+    }
     const result = await callManager.startCall({ user, chatId, type });
     if (result.error) {
       return res.status(result.status || 400).json({ error: result.error });

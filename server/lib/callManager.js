@@ -15,7 +15,9 @@ export function createCallManager(deps) {
     updateCallMessageBody,
     emitChatEvent,
     env = process.env,
+    maxCallDurationMs = 0,
   } = deps;
+  const MAX_CALL_DURATION_MS = Math.max(0, Math.trunc(Number(maxCallDurationMs) || 0));
 
   // chatId (UUID) -> { chatId, callerId, callerUsername, calleeId, calleeUsername, type, startedAt, status }
   const activeCalls = new Map();
@@ -314,6 +316,25 @@ export function createCallManager(deps) {
 
     call.status = "connected";
 
+    if (MAX_CALL_DURATION_MS > 0) {
+      const key = String(chatId || "").toLowerCase();
+      call.maxDurationTimer = setTimeout(() => {
+        // Stale timer after a manual end/other removal: no-op.
+        if (activeCalls.get(key) !== call) return;
+        activeCalls.delete(key);
+        dismissCallPush(call);
+        for (const peer of [call.callerUsername, call.calleeUsername]) {
+          if (typeof emitToUser === "function" && peer) {
+            emitToUser(peer, {
+              type: "call:ended",
+              chatId: call.chatId,
+            });
+          }
+        }
+        void writeCallLog(call, "connected", secondsSinceStart(call));
+      }, MAX_CALL_DURATION_MS);
+    }
+
     if (typeof emitToUser === "function") {
       emitToUser(call.callerUsername, {
         type: "call:accepted",
@@ -382,6 +403,7 @@ export function createCallManager(deps) {
       String(user.username).toLowerCase() ===
       String(call.callerUsername).toLowerCase();
 
+    if (call.maxDurationTimer) clearTimeout(call.maxDurationTimer);
     activeCalls.delete(key);
 
     dismissCallPush(call);
@@ -443,6 +465,7 @@ export function createCallManager(deps) {
         String(call.callerUsername).toLowerCase() === lower ||
         String(call.calleeUsername).toLowerCase() === lower
       ) {
+        if (call.maxDurationTimer) clearTimeout(call.maxDurationTimer);
         activeCalls.delete(key);
 
         dismissCallPush(call);

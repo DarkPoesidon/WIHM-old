@@ -53,6 +53,8 @@ export default function ChatProfileModal({
   onOpenChat,
   onStartVoiceCall,
   onStartVideoCall,
+  callsDisabled = false,
+  videoCallsDisabled = false,
   onToggleMute,
   onLeaveGroup,
   onOpenMember,
@@ -310,6 +312,8 @@ export default function ChatProfileModal({
   const isDeletedTarget = Boolean(targetUser?.isDeleted || !targetUser?.username);
   const callSupported = isCallSupported();
   const isCallDisabled = isDeletedTarget || !callSupported || isInCall;
+  const isVoiceCallDisabled = isCallDisabled || callsDisabled;
+  const isVideoCallDisabled = isCallDisabled || callsDisabled || videoCallsDisabled;
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const members = Array.isArray(chat?.members) ? chat.members : [];
   const membersCountRaw = Number(chat?.membersCount);
@@ -498,18 +502,20 @@ export default function ChatProfileModal({
             {!isGroup && !isChannel && onStartVoiceCall ? (
               <button
                 type="button"
-                disabled={isCallDisabled}
+                disabled={isVoiceCallDisabled}
                 title={
-                  isDeletedTarget
-                    ? "Calls unavailable for deleted account"
-                    : !callSupported
-                      ? "Calls require a secure connection"
-                      : isInCall
-                        ? "Already in a call"
-                        : undefined
+                  callsDisabled
+                    ? "Calls are disabled by the server"
+                    : isDeletedTarget
+                      ? "Calls unavailable for deleted account"
+                      : !callSupported
+                        ? "Calls require a secure connection"
+                        : isInCall
+                          ? "Already in a call"
+                          : undefined
                 }
                 onClick={
-                  isCallDisabled
+                  isVoiceCallDisabled
                     ? undefined
                     : () => {
                         handleClose();
@@ -517,14 +523,14 @@ export default function ChatProfileModal({
                       }
                 }
                 className={`group rounded-2xl border border-emerald-200 bg-white px-2 py-3 text-emerald-700 transition dark:border-emerald-500/30 dark:bg-slate-900 dark:text-emerald-200 ${
-                  isCallDisabled
+                  isVoiceCallDisabled
                     ? "opacity-40 cursor-not-allowed"
                     : "hover:border-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 cursor-pointer"
                 }`}
                 aria-label="Voice call"
               >
                 <div className="mx-auto inline-flex h-11 w-11 items-center justify-center rounded-full">
-                  <Phone size={24} className={isCallDisabled ? "" : "icon-anim-pop"} />
+                  <Phone size={24} className={isVoiceCallDisabled ? "" : "icon-anim-pop"} />
                 </div>
                 <p className="mt-1 text-xs font-semibold">Call</p>
               </button>
@@ -532,18 +538,20 @@ export default function ChatProfileModal({
             {!isGroup && !isChannel && onStartVideoCall ? (
               <button
                 type="button"
-                disabled={isCallDisabled}
+                disabled={isVideoCallDisabled}
                 title={
-                  isDeletedTarget
-                    ? "Calls unavailable for deleted account"
-                    : !callSupported
-                      ? "Calls require a secure connection"
-                      : isInCall
-                        ? "Already in a call"
-                        : undefined
+                  videoCallsDisabled
+                    ? "Video calls are disabled by the server"
+                    : isDeletedTarget
+                      ? "Calls unavailable for deleted account"
+                      : !callSupported
+                        ? "Calls require a secure connection"
+                        : isInCall
+                          ? "Already in a call"
+                          : undefined
                 }
                 onClick={
-                  isCallDisabled
+                  isVideoCallDisabled
                     ? undefined
                     : () => {
                         handleClose();
@@ -551,14 +559,14 @@ export default function ChatProfileModal({
                       }
                 }
                 className={`group rounded-2xl border border-emerald-200 bg-white px-2 py-3 text-emerald-700 transition dark:border-emerald-500/30 dark:bg-slate-900 dark:text-emerald-200 ${
-                  isCallDisabled
+                  isVideoCallDisabled
                     ? "opacity-40 cursor-not-allowed"
                     : "hover:border-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 cursor-pointer"
                 }`}
                 aria-label="Video call"
               >
                 <div className="mx-auto inline-flex h-11 w-11 items-center justify-center rounded-full">
-                  <Video size={24} className={isCallDisabled ? "" : "icon-anim-pop"} />
+                  <Video size={24} className={isVideoCallDisabled ? "" : "icon-anim-pop"} />
                 </div>
                 <p className="mt-1 text-xs font-semibold">Video</p>
               </button>
