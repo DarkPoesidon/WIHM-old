@@ -75,6 +75,7 @@ jobs:
         with:
           context: .
           platforms: linux/amd64
+          provenance: false
           labels: ${{ steps.meta.outputs.labels }}
           outputs: |
             type=image,name=${{ secrets.DOCKERHUB_USERNAME }}/songbird,push-by-digest=true,name-canonical=true,push=true
@@ -150,6 +151,7 @@ jobs:
         with:
           context: .
           platforms: linux/arm64
+          provenance: false
           labels: ${{ steps.meta.outputs.labels }}
           outputs: |
             type=image,name=${{ secrets.DOCKERHUB_USERNAME }}/songbird,push-by-digest=true,name-canonical=true,push=true
