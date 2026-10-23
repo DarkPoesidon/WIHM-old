@@ -28,6 +28,7 @@ import {
   PackageOpen,
   Paperclip,
   Pencil,
+  Phone,
   Refresh,
   Rotate,
   SatelliteDish,
@@ -52,11 +53,12 @@ const GROUP_META = {
   uploads: { label: "File Uploads", order: 2 },
   retention: { label: "Message Retention", order: 3 },
   limits: { label: "Limits", order: 4 },
-  client: { label: "Client Behavior", order: 5 },
-  remote_channel: { label: "Remote Channel", order: 6 },
-  storage: { label: "Object Storage & Worker", order: 7 },
-  realtime: { label: "Realtime", order: 8 },
-  proxy: { label: "Proxies", order: 9 },
+  calls: { label: "Calls", order: 5 },
+  client: { label: "Client Behavior", order: 6 },
+  remote_channel: { label: "Remote Channel", order: 7 },
+  storage: { label: "Object Storage & Worker", order: 8 },
+  realtime: { label: "Realtime", order: 9 },
+  proxy: { label: "Proxies", order: 10 },
 };
 
 // Icon for each setting key
@@ -105,6 +107,9 @@ const SETTING_ICONS = {
   STORAGE_PROCESSING_TIMEOUT_MS: Clock12,
   WS_HEARTBEAT_INTERVAL_MS: Clock12,
   WS_HEARTBEAT_TIMEOUT_MS: Clock12,
+  CALL: Phone,
+  CALL_VIDEO: Video,
+  CALL_MAX_DURATION: Clock12,
 };
 
 // Per-icon hover animation
@@ -161,6 +166,7 @@ const GROUP_MASTER = {
   uploads:        "FILE_UPLOAD",
   remote_channel: "REMOTE_CHANNEL",
   storage:        "WORKER_URL",
+  calls:          "CALL",
 };
 
 // Keys that should be rendered as sub-rows inside their master's card,
@@ -186,6 +192,10 @@ const GROUP_CHILDREN = {
   ],
   storage: [
     "STORAGE_PROCESSING_TIMEOUT_MS",
+  ],
+  calls: [
+    "CALL_VIDEO",
+    "CALL_MAX_DURATION",
   ],
 };
 

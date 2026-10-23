@@ -16,6 +16,7 @@ import { ensureValidVapidKeys } from "./lib/vapid.js";
 import { createSseHub } from "./lib/sse.js";
 import { createWebSocketGateway } from "./lib/websocketGateway.js";
 import { createPresenceTracker } from "./lib/presenceTracker.js";
+import { createCallManager } from "./lib/callManager.js";
 import { createPushService } from "./lib/push.js";
 import { createUploadTools } from "./lib/uploads.js";
 import { resolveAppOrigins, ensureBucketCors } from "./lib/bucketCors.js";
@@ -56,6 +57,7 @@ import {
   createMessageFiles,
   createMessage,
   createOrReuseMessage,
+  updateCallMessageBody,
   editMessage,
   createSession,
   deleteSession,
@@ -95,6 +97,7 @@ import {
   listChatMembers,
   listChatMembersForChats,
   listChatsForUser,
+  listCallHistoryForUser,
   listUsers,
   searchUsers,
   searchPublicGroups,
@@ -562,6 +565,26 @@ const presenceTracker = createPresenceTracker({
   },
 });
 
+const callManager = createCallManager({
+  isMember,
+  findChatById,
+  listChatMembers,
+  findUserById,
+  emitToUser: (username, payload) => {
+    emitSseEvent(username, payload);
+    wsPresenceBroadcaster?.(username, payload);
+  },
+  emitChatEvent,
+  createCallMessage: (chatId, userId, body) =>
+    createMessage(chatId, userId, body, null, null, null, {
+      allowPlaintextSystemMessage: true,
+    }),
+  updateCallMessageBody,
+  sendPushNotificationToUsers: (...args) =>
+    pushService.sendPushNotificationToUsers(...args),
+  maxCallDurationMs: (getSetting("CALL_MAX_DURATION") || 0) * 60000,
+});
+
 const pushService = createPushService({
   webpush,
   listPushSubscriptionsByUserIds,
@@ -839,6 +862,7 @@ const apiDeps = {
   bcrypt,
   buildInspectSnapshot,
   buildTimestampSchedule,
+  callManager,
   claimNextRemoteChannelQueueItem,
   chunkArray,
   cleanupMissingMessageFiles,
@@ -917,6 +941,7 @@ const apiDeps = {
   addAllEligibleChatMembers,
   listChatMembersForChats,
   listChatsForUser,
+  listCallHistoryForUser,
   listEnabledRemoteChannelSources,
   listMessageFilesByMessageIds,
   listUsers,
@@ -1448,6 +1473,7 @@ const wsGateway = createWebSocketGateway({
   server,
   sseHub,
   redisClient,
+  callManager,
   getSessionFromToken: getSessionCombined,
   onUserConnected: (username, ws) => presenceTracker.markConnected(username, ws),
   onUserDisconnected: (username, ws) => presenceTracker.markDisconnected(username, ws),

@@ -1,3 +1,18 @@
+## 0.13.0
+
+### New Features
+
+- 📞 WebRTC voice and video calls with real-time signaling over WebSocket
+- 📜 Calls history page with detailed call logs and deletion support
+- ➕ New call modal to initiate voice and video calls with direct message contacts
+- ⚙️ Call configuration settings in admin panel and environment variables
+- 🌐 TURN server health check card in the Services tab
+
+### Improvements
+
+- 🎨 Desktop sidebar redesign with integrated user button and settings view
+- 🔔 Clickable permission prompt bars with dismiss icon button
+
 ## 0.12.4
 
 ### New Features

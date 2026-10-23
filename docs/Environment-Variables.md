@@ -105,6 +105,15 @@ nano .env
 | `VAPID_PRIVATE_KEY` | `string` | *(Auto-generated)* | Web Push private key (required for push notifications). A different env value after the first run is a fatal startup error. |
 | `VAPID_SUBJECT` | `string` | *(Auto-generated)* | Contact for VAPID (email or URL). Used by push providers. |
 | `PUSH_PROXY_URL` | `string` | `""` | Proxy URL for push notification delivery. Use when your server cannot directly reach push service endpoints. |
+| `CALL` | `boolean` | `true` | Enable or disable calls entirely. When off, the API rejects call starts and call buttons render disabled. |
+| `CALL_VIDEO` | `boolean` | `true` | Enable or disable video calls only. |
+| `CALL_MAX_DURATION` | `integer` | `0` | Automatically end connected calls after this many minutes (1–1440). `0` disables the limit. |
+| `TURN_STUN_URL` | `string` | `stun:stun.l.google.com:19302` | STUN server URL for WebRTC peer-to-peer connection discovery. |
+| `TURN_URL` | `string` | `""` | Optional TURN relay server URL for environments behind symmetric NATs or restrictive firewalls. |
+| `TURN_USERNAME` | `string` | `""` | TURN authentication username. |
+| `TURN_CREDENTIAL` | `string` | `""` | TURN authentication password/credential. |
+| `TURN_TOKEN_ID` | `string` | `""` | Cloudflare Calls TURN key ID. When set, ICE servers are minted per session from Cloudflare. |
+| `TURN_API_TOKEN` | `string` | `""` | Cloudflare Calls TURN API token used to mint short-lived credentials (24h TTL). |
 
 :::info
 

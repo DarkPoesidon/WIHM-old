@@ -7,7 +7,10 @@
   "server": {
     "port": 4096
   },
-  "plugin": [".opencode/plugins/graphify.js"],
+  "plugin": [
+    ".opencode/plugins/graphify.js",
+    "@dietrichgebert/ponytail"
+  ],
   "mcp": {
     "github": {
       "type": "remote",

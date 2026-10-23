@@ -66,6 +66,8 @@ export function useChatEvents({
   onTypingUpdate,
   onChatListChanged,
   onSessionRevoked,
+  onCallSignal,
+  realtimeSenderRef,
 }) {
   const onIncomingMessageRef = useRef(onIncomingMessage);
   const onMessageDeletedRef = useRef(onMessageDeleted);
@@ -75,6 +77,7 @@ export function useChatEvents({
   const onTypingUpdateRef = useRef(onTypingUpdate);
   const onChatListChangedRef = useRef(onChatListChanged);
   const onSessionRevokedRef = useRef(onSessionRevoked);
+  const onCallSignalRef = useRef(onCallSignal);
   const canMarkReadInCurrentViewRef = useRef(canMarkReadInCurrentView);
   const loadChatsTimerRef = useRef(null);
   const loadChatsFirstScheduledAtRef = useRef(0);
@@ -110,6 +113,10 @@ export function useChatEvents({
   useEffect(() => {
     onSessionRevokedRef.current = onSessionRevoked;
   }, [onSessionRevoked]);
+
+  useEffect(() => {
+    onCallSignalRef.current = onCallSignal;
+  }, [onCallSignal]);
 
   useEffect(() => {
     canMarkReadInCurrentViewRef.current = Boolean(canMarkReadInCurrentView);
@@ -174,6 +181,19 @@ export function useChatEvents({
       const handleOpen = () => {
         if (source instanceof WebSocket) {
           wsOpened = true;
+          if (realtimeSenderRef) {
+            realtimeSenderRef.current = (msg) => {
+              if (source instanceof WebSocket && source.readyState === WebSocket.OPEN) {
+                try {
+                  source.send(JSON.stringify(msg));
+                  return true;
+                } catch (_) {
+                  return false;
+                }
+              }
+              return false;
+            };
+          }
         }
         setSseConnected(true);
         reconnectAttempts = 0;
@@ -187,6 +207,10 @@ export function useChatEvents({
           return;
         }
         if (!payload?.type) return;
+        if (typeof payload.type === "string" && payload.type.startsWith("call:")) {
+          onCallSignalRef.current?.(payload);
+          return;
+        }
         if (
           payload.type !== "chat_message" &&
           payload.type !== "chat_read" &&
@@ -523,6 +547,9 @@ export function useChatEvents({
     return () => {
       isMounted = false;
       setSseConnected(false);
+      if (realtimeSenderRef) {
+        realtimeSenderRef.current = null;
+      }
       source?.close();
       if (sseReconnectRef.current) {
         clearTimeout(sseReconnectRef.current);
@@ -540,6 +567,7 @@ export function useChatEvents({
     loadChatsRef,
     pendingScrollToBottomRef,
     pendingScrollToUnreadRef,
+    realtimeSenderRef,
     scheduleMessageRefreshRef,
     setChats,
     setMessages,

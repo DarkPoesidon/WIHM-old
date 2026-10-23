@@ -7,6 +7,7 @@ import {
   KeyRound,
   LoaderCircle,
   PackageOpen,
+  PhoneCall,
 } from "../../icons/lucide.js";
 import { TelegramIcon } from "../../icons/BrandIcons.jsx";
 import Tooltip from "../common/Tooltip.jsx";
@@ -119,6 +120,7 @@ const ServicesTab = forwardRef(function ServicesTab(
   const remoteChannel = data?.remoteChannel || null;
   const storage = data?.storage || null;
   const database = data?.database || null;
+  const turn = data?.turn || null;
 
   const workerDescription = mediaWorker?.configured
     ? mediaWorker.reachable
@@ -193,6 +195,29 @@ const ServicesTab = forwardRef(function ServicesTab(
     }
   };
 
+  const isTurnConfigured = Boolean(turn?.configured);
+  const turnReachable = turn?.reachable;
+  const turnDescription = !isTurnConfigured
+    ? "STUN only — no TURN relay configured."
+    : turnReachable === false
+      ? "Configured but unreachable."
+      : (turn?.managed ? "Cloudflare TURN" : "TURN relay") +
+        (turnReachable && turn?.latencyMs != null ? ` · ${turn.latencyMs}ms` : "");
+
+  const handleTurnCheck = async () => {
+    flashStatus("turn", "busy", "Checking…");
+    try {
+      const payload = await api.get("/api/admin/services");
+      if (payload?.turn?.reachable === false) {
+        flashStatus("turn", "error", "Unreachable");
+      } else {
+        flashStatus("turn", "success", "Active");
+      }
+    } catch {
+      flashStatus("turn", "error", "Check failed");
+    }
+  };
+
   return (
     <div className="space-y-5">
       <div>
@@ -263,6 +288,24 @@ const ServicesTab = forwardRef(function ServicesTab(
                 : rowStatus.database ||
                   (database
                     ? databaseReachable === false
+                      ? { type: "error", label: "Unreachable" }
+                      : { type: "success", label: "Active" }
+                    : null)
+            }
+          />
+          <ServiceRow
+            icon={PhoneCall}
+            iconAnim="icon-anim-sway"
+            label="TURN server"
+            description={turnDescription}
+            onClick={handleTurnCheck}
+            disabled={!isTurnConfigured}
+            status={
+              !isTurnConfigured
+                ? { type: "error", label: "Disabled" }
+                : rowStatus.turn ||
+                  (turn
+                    ? turnReachable === false
                       ? { type: "error", label: "Unreachable" }
                       : { type: "success", label: "Active" }
                     : null)

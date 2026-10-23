@@ -21,6 +21,7 @@
 - 💬 **انواع چت**: پیام مستقیم، گروه و کانال
 - 📁 **پشتیبانی از رسانه**: آپلود فایل، پیام صوتی، تبدیل ویدئو
 - 🔔 **Push Notification**: اعلان وب با VAPID
+- 📞 **تماس صوتی و تصویری**: تماس‌های صوتی و تصویری نظیر‌به‌نظیر و امن
 - 📡 **کانال‌های ریموت**: آینه‌کردن کانال‌های Telegram یا Songbird (نسخه v0.10.3+)
 - 🛡️ **پنل مدیریت**: رابط مدیریتی کامل با نقش مالک (نسخه v0.11.0+)
 - 🔒 **امنیت**: رمزنگاری، هش bcrypt، محدودیت نرخ
@@ -63,6 +64,7 @@ songbird-deploy
 - [پنل مدیریت](https://docs.songbird.website/fa/Admin-Panel)
 - [راه‌اندازی Remote Channel](https://docs.songbird.website/fa/Remote-Channel-Setup)
 - [پراکسی Push Notification](https://docs.songbird.website/fa/Push-Notification-Proxy)
+- [تماس صوتی و تصویری](https://docs.songbird.website/fa/Voice-Video-Calls)
 - [به‌روزرسانی برنامه](https://docs.songbird.website/fa/Updating)
 - [دستورات دیتابیس](https://docs.songbird.website/fa/Database-Commands)
 - [عیب‌یابی](https://docs.songbird.website/fa/Troubleshooting)

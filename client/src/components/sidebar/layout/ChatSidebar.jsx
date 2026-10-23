@@ -1,10 +1,9 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import ChatsListPanel from "../list/ChatsListPanel.jsx";
+import CallsPanel from "../../call/CallsPanel.jsx";
 import {
   MobileSettingsPanel,
-  SettingsMenuPopover,
 } from "../../settings/index.js";
-import SidebarFooter from "../footer/SidebarFooter.jsx";
 import SidebarHeader from "../header/SidebarHeader.jsx";
 
 export default function ChatSidebar({
@@ -19,6 +18,19 @@ export default function ChatSidebar({
   loadingChats,
   activeChatId,
   user,
+  calls,
+  loadingCalls,
+  callsEditMode,
+  selectedCalls,
+  toggleSelectCall,
+  onEnterCallsEditMode,
+  onExitCallsEditMode,
+  onDeleteCall,
+  onDeleteSelectedCalls,
+  onOpenNewCall,
+  onStartCall,
+  callsDisabled = false,
+  isInCall = false,
   formatChatTimestamp,
   requestDeleteChats,
   toggleSelectChat,
@@ -50,8 +62,6 @@ export default function ChatSidebar({
   onOpenSavedMessages,
   onOpenUserContextMenu,
   onOpenChatContextMenu,
-  showSettings,
-  settingsMenuRef,
   setSettingsPanel,
   toggleTheme,
   setIsDark,
@@ -95,9 +105,7 @@ export default function ChatSidebar({
   onExitEdit,
   onEnterEdit,
   onDeleteChats,
-  onOpenSettings,
   onOpenOwnProfile,
-  settingsButtonRef,
   displayInitials,
   onOpenWhatsNew,
   adminPanelEnabled = true,
@@ -161,22 +169,58 @@ export default function ChatSidebar({
     chatsScrollRef.current?.scrollTo({ top: 0, behavior: "smooth" });
   }, [chatsScrollToTopEpoch]);
 
+  const handleNavigateChats = () => {
+    setMobileTab?.("chats");
+    setSettingsPanel?.(null);
+  };
+
+  const handleNavigateSettings = () => {
+    setMobileTab?.("settings");
+    setSettingsPanel?.(null);
+  };
+
+  const handleNavigateCalls = () => {
+    setMobileTab?.("calls");
+    setSettingsPanel?.(null);
+  };
+
   return (
     <aside
       className={
-        "relative flex h-full min-h-0 w-full flex-col overflow-hidden border-x border-slate-300/80 bg-white shadow-lg shadow-emerald-500/10 dark:border-white/5 dark:bg-slate-900 md:border md:w-[35%] md:pb-[88px] md:shadow-xl md:shadow-emerald-500/15 " +
+        "relative flex h-full min-h-0 w-full flex-col overflow-hidden border-x border-slate-300/80 bg-white shadow-lg shadow-emerald-500/10 dark:border-white/5 dark:bg-slate-900 md:border md:w-[35%] md:shadow-xl md:shadow-emerald-500/15 " +
         (mobileTab === "chat" ? "hidden md:block" : "block")
       }
     >
-      <div className={mobileTab === "settings" ? "hidden md:block" : ""}>
+      <div className={mobileTab === "settings" ? "hidden" : ""}>
         <SidebarHeader
           mobileTab={mobileTab}
-          editMode={editMode}
+          editMode={mobileTab === "calls" ? callsEditMode : editMode}
+          onExitEdit={
+            mobileTab === "calls" ? onExitCallsEditMode : onExitEdit
+          }
           isConnected={isConnected}
           isUpdating={isUpdating}
-          hasChats={Boolean(visibleChats.length)}
-          selectedChatsCount={selectedChats.length}
-          onExitEdit={onExitEdit}
+          hasChats={
+            mobileTab === "calls"
+              ? Boolean(calls.length)
+              : Boolean(visibleChats.length)
+          }
+          selectedChatsCount={
+            mobileTab === "calls" ? selectedCalls.length : selectedChats.length
+          }
+          title={mobileTab === "calls" ? "Calls" : "Chats"}
+          editAriaLabel={
+            mobileTab === "calls" ? "Edit call list" : "Edit chat list"
+          }
+          deleteAriaLabel={
+            mobileTab === "calls" ? "Delete calls" : "Delete chats"
+          }
+          onEnterCallsEditMode={onEnterCallsEditMode}
+          onExitCallsEditMode={onExitCallsEditMode}
+          onDeleteCalls={onDeleteSelectedCalls}
+          onNewCall={onOpenNewCall}
+          callsDisabled={callsDisabled}
+          isInCall={isInCall}
           onEnterEdit={onEnterEdit}
           onDeleteChats={onDeleteChats}
           onNewChat={onOpenNewChat}
@@ -194,34 +238,22 @@ export default function ChatSidebar({
           }}
           permissionsPrompt={permissionsPrompt}
           insecureConnection={insecureConnection}
+          user={user}
+          displayName={displayName}
+          displayInitials={displayInitials}
+          userColor={userColor}
+          statusValue={statusValue}
+          statusTextClass={statusTextClass}
+          onNavigateChats={handleNavigateChats}
+          onNavigateSettings={handleNavigateSettings}
+          onNavigateCalls={handleNavigateCalls}
+          handleLogout={handleLogout}
+          onOpenOwnProfile={onOpenOwnProfile}
         />
       </div>
 
-      <SettingsMenuPopover
-        showSettings={showSettings}
-        settingsMenuRef={settingsMenuRef}
-        setSettingsPanel={setSettingsPanel}
-        toggleTheme={toggleTheme}
-        setIsDark={setIsDark}
-        isDark={isDark}
-        handleLogout={handleLogout}
-        notificationsSupported={notificationsSupported}
-        notificationPermission={notificationPermission}
-        notificationsEnabled={notificationsEnabled}
-        notificationsDisabled={notificationsDisabled}
-        notificationStatusLabel={notificationStatusLabel}
-        onToggleNotifications={onToggleNotifications}
-        onOpenNotifications={onOpenNotifications}
-        onOpenSavedMessages={onOpenSavedMessages}
-        onOpenWhatsNew={onOpenWhatsNew}
-        userRole={user?.role}
-        adminPanelEnabled={adminPanelEnabled}
-      />
-
       <div
-        className={`flex min-h-0 flex-1 flex-col overflow-hidden ${
-          mobileTab === "settings" ? "py-0 md:py-4" : "py-0"
-        }`}
+        className="flex min-h-0 flex-1 flex-col overflow-hidden py-0"
         style={{ overscrollBehavior: "contain" }}
       >
         {mobileTab === "settings" ? (
@@ -246,20 +278,21 @@ export default function ChatSidebar({
               setIsDark={setIsDark}
               isDark={isDark}
               handleLogout={handleLogout}
-              handleProfileSave={handleProfileSave}
-              avatarPreview={avatarPreview}
-              profileForm={profileForm}
-              handleAvatarChange={handleAvatarChange}
-              handleAvatarRemove={handleAvatarRemove}
-              setProfileForm={setProfileForm}
               statusSelection={statusSelection}
               setStatusSelection={setStatusSelection}
-              handlePasswordSave={handlePasswordSave}
+              profileForm={profileForm}
+              setProfileForm={setProfileForm}
+              avatarPreview={avatarPreview}
+              handleAvatarChange={handleAvatarChange}
+              handleAvatarRemove={handleAvatarRemove}
+              handleProfileSave={handleProfileSave}
+              profileError={profileError}
               passwordForm={passwordForm}
               setPasswordForm={setPasswordForm}
-              userColor={userColor}
-              profileError={profileError}
+              handlePasswordSave={handlePasswordSave}
               passwordError={passwordError}
+              userColor={userColor}
+              displayInitials={displayInitials}
               fileUploadEnabled={fileUploadEnabled}
               notificationsSupported={notificationsSupported}
               notificationPermission={notificationPermission}
@@ -267,6 +300,7 @@ export default function ChatSidebar({
               notificationsDisabled={notificationsDisabled}
               notificationStatusLabel={notificationStatusLabel}
               onToggleNotifications={onToggleNotifications}
+              onOpenNotifications={onOpenNotifications}
               messagePreviewEnabled={messagePreviewEnabled}
               onToggleMessagePreview={onToggleMessagePreview}
               notificationsDebugLine={notificationsDebugLine}
@@ -280,6 +314,8 @@ export default function ChatSidebar({
               appInfoError={appInfoError}
               onOpenWhatsNew={onOpenWhatsNew}
               adminPanelEnabled={adminPanelEnabled}
+              onNavigateChats={handleNavigateChats}
+              onNavigateCalls={handleNavigateCalls}
             />
           </div>
         ) : null}
@@ -304,7 +340,21 @@ export default function ChatSidebar({
             onScroll={handleChatsScroll}
           >
             <div ref={chatsContentRef} className="min-h-0">
-              <ChatsListPanel
+              {mobileTab === "calls" ? (
+                <CallsPanel
+                  loadingCalls={loadingCalls}
+                  calls={calls}
+                  user={user}
+                  callsEditMode={callsEditMode}
+                  selectedCalls={selectedCalls}
+                  toggleSelectCall={toggleSelectCall}
+                  onRequestDeleteCall={onDeleteCall}
+                  onStartCall={onStartCall}
+                  callsDisabled={callsDisabled}
+                  isInCall={isInCall}
+                />
+              ) : (
+                <ChatsListPanel
                 loadingChats={loadingChats}
                 visibleChats={visibleChats}
                 user={user}
@@ -335,23 +385,12 @@ export default function ChatSidebar({
                 onOpenSavedMessages={onOpenSavedMessages}
                 onOpenUserContextMenu={onOpenUserContextMenu}
                 onOpenChatContextMenu={onOpenChatContextMenu}
-              />
+                />
+              )}
             </div>
           </div>
         </div>
       </div>
-
-      <SidebarFooter
-        user={user}
-        displayName={displayName}
-        displayInitials={displayInitials}
-        statusTextClass={statusTextClass}
-        statusValue={statusValue}
-        userColor={userColor}
-        onOpenSettings={onOpenSettings}
-        onOpenOwnProfile={onOpenOwnProfile}
-        settingsButtonRef={settingsButtonRef}
-      />
     </aside>
   );
 }

@@ -4,6 +4,7 @@ export function createWebSocketGateway({
   server,
   sseHub,
   redisClient,
+  callManager,
   getSessionFromToken,
   onUserConnected,
   onUserDisconnected,
@@ -170,7 +171,10 @@ export function createWebSocketGateway({
       });
     }
 
+    let currentSession = null;
+
     const handleConnection = (session) => {
+      currentSession = session;
       const username = session?.username
         ? String(session.username).toLowerCase()
         : null;
@@ -192,6 +196,9 @@ export function createWebSocketGateway({
             if (clients) {
               clients.delete(ws);
               if (!clients.size) clientsByUsername.delete(username);
+            }
+            if (callManager && typeof callManager.cleanupUserCalls === "function") {
+              callManager.cleanupUserCalls(username);
             }
           }
           if (onUserDisconnected) onUserDisconnected(username, ws);
@@ -215,6 +222,54 @@ export function createWebSocketGateway({
           }
           if (msg.type === "ping") {
             ws.send(JSON.stringify({ type: "pong", timestamp: Date.now() }));
+          }
+
+          if (msg.action === "call_signal" && callManager && currentSession?.username) {
+            const { signalType, chatId, data } = msg;
+            // Serialize per socket: a camera-level signal posted right after
+            // start must not relay before startCall has seeded the call.
+            ws._callSignalQueue = (ws._callSignalQueue || Promise.resolve()).then(
+              async () => {
+                try {
+                  if (signalType === "start") {
+                    const res = await callManager.startCall({
+                      user: currentSession,
+                      chatId,
+                      type: data?.type,
+                    });
+                    if (res?.error && typeof ws.send === "function") {
+                      ws.send(JSON.stringify({ type: "call:error", chatId, error: res.error }));
+                    }
+                  } else if (signalType === "accept") {
+                    const res = await callManager.acceptCall({
+                      user: currentSession,
+                      chatId,
+                    });
+                    if (res?.error && typeof ws.send === "function") {
+                      ws.send(JSON.stringify({ type: "call:error", chatId, error: res.error }));
+                    }
+                  } else if (signalType === "reject") {
+                    await callManager.rejectCall({
+                      user: currentSession,
+                      chatId,
+                      reason: data?.reason,
+                    });
+                  } else if (signalType === "end") {
+                    await callManager.endCall({
+                      user: currentSession,
+                      chatId,
+                    });
+                  } else if (["offer", "answer", "ice-candidate", "camera-state"].includes(signalType)) {
+                    await callManager.relaySignal({
+                      user: currentSession,
+                      chatId,
+                      signalType,
+                      payload: data || {},
+                    });
+                  }
+                } catch (_) {}
+              },
+            );
           }
         } catch (_) {}
       });

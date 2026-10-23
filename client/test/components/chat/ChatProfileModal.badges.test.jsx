@@ -427,4 +427,50 @@ describe("ChatProfileModal — member list row badges", () => {
       .element(page.getByLabelText("Server Admin"))
       .not.toBeInTheDocument();
   });
+
+  describe("ChatProfileModal call buttons in DM", () => {
+    test("enables call buttons when isInCall is false", async () => {
+      render(
+        <ChatProfileModal
+          open={true}
+          chat={makeDmChat()}
+          targetUser={makeTargetUser()}
+          currentUser={CURRENT_USER}
+          onStartVoiceCall={vi.fn()}
+          onStartVideoCall={vi.fn()}
+          isInCall={false}
+        />,
+      );
+
+      const voiceBtn = page.getByRole("button", { name: "Voice call" });
+      const videoBtn = page.getByRole("button", { name: "Video call" });
+      await expect.element(voiceBtn).toBeVisible();
+      await expect.element(videoBtn).toBeVisible();
+      await expect.element(voiceBtn).not.toBeDisabled();
+      await expect.element(videoBtn).not.toBeDisabled();
+    });
+
+    test("disables call buttons when isInCall is true", async () => {
+      render(
+        <ChatProfileModal
+          open={true}
+          chat={makeDmChat()}
+          targetUser={makeTargetUser()}
+          currentUser={CURRENT_USER}
+          onStartVoiceCall={vi.fn()}
+          onStartVideoCall={vi.fn()}
+          isInCall={true}
+        />,
+      );
+
+      const voiceBtn = page.getByRole("button", { name: "Voice call" });
+      const videoBtn = page.getByRole("button", { name: "Video call" });
+      await expect.element(voiceBtn).toBeVisible();
+      await expect.element(videoBtn).toBeVisible();
+      await expect.element(voiceBtn).toBeDisabled();
+      await expect.element(videoBtn).toBeDisabled();
+      expect(voiceBtn.element().getAttribute("title")).toBe("Already in a call");
+      expect(videoBtn.element().getAttribute("title")).toBe("Already in a call");
+    });
+  });
 });

@@ -19,6 +19,7 @@ import {
 } from "../../../icons/lucide.js";
 import { LayoutDashboardIcon } from "../../../icons/AnimatedIcons.jsx";
 import { hasPersian } from "../../../utils/fontUtils.js";
+import UserMenuButton from "../../sidebar/header/UserMenuButton.jsx";
 import { getAvatarInitials } from "../../../utils/avatarInitials.js";
 import { USERNAME_INPUT_PATTERN, useNameLimits } from "../../../utils/nameLimits.js";
 import { InlineError } from "../common/InlineError.jsx";
@@ -137,6 +138,8 @@ export function MobileSettingsPanel({
   appInfoError,
   onOpenWhatsNew,
   adminPanelEnabled = true,
+  onNavigateChats,
+  onNavigateCalls,
 }) {
   const { nicknameMax: NICKNAME_MAX, usernameMax: USERNAME_MAX } = useNameLimits();
   const handleClosePanel = useCallback(
@@ -556,19 +559,38 @@ export function MobileSettingsPanel({
 
   return (
     <>
-      <div className="relative flex h-full min-h-0 w-full overflow-hidden bg-slate-50 dark:bg-slate-900 md:hidden">
+      <div className="relative flex h-full min-h-0 w-full overflow-hidden bg-slate-50 dark:bg-slate-900">
         <section
           className={`absolute inset-0 z-10 flex w-full flex-col bg-slate-50 transition-transform duration-300 ease-out will-change-transform dark:bg-slate-900 ${
             settingsPanel ? "-translate-x-full" : "translate-x-0"
           }`}
         >
-          <div className="flex h-[72px] shrink-0 items-center justify-center border-b border-slate-300/80 bg-white px-4 py-4 dark:border-emerald-500/20 dark:bg-slate-900">
-            <span className="truncate text-base font-semibold text-slate-700 dark:text-slate-200">
+          <div className="grid w-full h-[72px] shrink-0 grid-cols-[1fr_auto_1fr] items-center border-b border-slate-300/80 bg-white px-4 py-4 dark:border-emerald-500/20 dark:bg-slate-900">
+            <div className="flex items-center gap-2">
+              <div className="hidden md:inline-flex">
+                <UserMenuButton
+                  user={user}
+                  displayName={displayName}
+                  displayInitials={displayInitials}
+                  userColor={resolvedUserColor}
+                  statusValue={statusValue}
+                  statusTextClass={statusTextClass}
+                  mobileTab="settings"
+                  onNavigateChats={onNavigateChats}
+                  onNavigateSettings={() => {}}
+                  onNavigateCalls={onNavigateCalls}
+                  handleLogout={handleLogout}
+                  onOpenOwnProfile={onOpenOwnProfile}
+                />
+              </div>
+            </div>
+            <span className="truncate text-center text-base font-semibold text-slate-700 dark:text-slate-200">
               Settings
             </span>
+            <div className="flex items-center justify-end gap-2" />
           </div>
 
-          <div className="app-scroll min-h-0 flex-1 overflow-y-auto p-4 pb-[calc(104px+env(safe-area-inset-bottom))]">
+          <div className="app-scroll min-h-0 flex-1 overflow-y-auto p-4 pb-[calc(104px+env(safe-area-inset-bottom))] md:pb-6">
             <div className="space-y-3">
               <MobileMenuCard>
                 <div className="flex items-center gap-3 px-4 py-4">
@@ -725,7 +747,7 @@ export function MobileSettingsPanel({
             <span className="ml-auto h-9 w-9 shrink-0" aria-hidden="true" />
           </div>
 
-          <div className="app-scroll min-h-0 flex-1 overflow-y-auto p-4 pb-[calc(104px+env(safe-area-inset-bottom))]">
+          <div className="app-scroll min-h-0 flex-1 overflow-y-auto p-4 pb-[calc(104px+env(safe-area-inset-bottom))] md:pb-6">
             {renderDetailPanel()}
           </div>
         </section>

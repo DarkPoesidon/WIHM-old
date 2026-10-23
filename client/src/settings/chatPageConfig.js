@@ -120,6 +120,8 @@ export const CHAT_PAGE_CONFIG = {
     60 *
     1000,
   fileUploadEnabled: readEnvBool("FILE_UPLOAD", true),
+  callsEnabled: readEnvBool("CALL", true),
+  videoCallsEnabled: readEnvBool("CALL_VIDEO", true),
 };
 
 // ─── Live override for admin-panel-configurable client settings ─────────────
@@ -142,6 +144,8 @@ export function setChatPageConfig({
   pendingFileTimeoutMs,
   pendingRetryIntervalMs,
   pendingStatusCheckIntervalMs,
+  callsEnabled,
+  videoCallsEnabled,
 } = {}) {
   if (Number.isFinite(messageFetchLimit) && messageFetchLimit > 0) {
     CHAT_PAGE_CONFIG.messageFetchLimit = Math.trunc(messageFetchLimit);
@@ -187,5 +191,11 @@ export function setChatPageConfig({
   }
   if (Number.isFinite(pendingStatusCheckIntervalMs) && pendingStatusCheckIntervalMs > 0) {
     CHAT_PAGE_CONFIG.pendingStatusCheckIntervalMs = Math.trunc(pendingStatusCheckIntervalMs);
+  }
+  if (typeof callsEnabled === "boolean") {
+    CHAT_PAGE_CONFIG.callsEnabled = callsEnabled;
+  }
+  if (typeof videoCallsEnabled === "boolean") {
+    CHAT_PAGE_CONFIG.videoCallsEnabled = videoCallsEnabled;
   }
 }

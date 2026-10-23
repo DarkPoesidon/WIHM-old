@@ -781,3 +781,57 @@ export async function claimAdminPrivileges(token) {
   });
   return res.json();
 }
+
+export async function fetchIceServers() {
+  try {
+    const res = await apiFetch(`${API_BASE}/api/calls/ice-servers`);
+    if (!res.ok) return [];
+    return await res.json().catch(() => []);
+  } catch {
+    return [];
+  }
+}
+
+// Asks the server whether a call is currently ringing for this user.
+export async function fetchIncomingCall() {
+  try {
+    const res = await apiFetch(`${API_BASE}/api/calls/incoming`);
+    if (!res.ok) return null;
+    return await res.json().catch(() => null);
+  } catch {
+    return null;
+  }
+}
+
+export async function sendCallSignal(action, body = {}) {
+  try {
+    const res = await apiFetch(`${API_BASE}/api/calls/${action}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    return res.ok ? await res.json().catch(() => ({})) : null;
+  } catch (err) {
+    console.error(`Call signal '${action}' failed:`, err);
+    return null;
+  }
+}
+
+// Fetches the signed-in user's voice/video call history across DM chats.
+export async function listCalls() {
+  const res = await apiFetch(`${API_BASE}/api/calls/history`);
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data?.error || "Failed to load call history");
+  }
+  const data = await res.json().catch(() => ({}));
+  return Array.isArray(data?.calls) ? data.calls : [];
+}
+
+// Removes a call-log entry from the signed-in user's own history.
+export const deleteCall = (payload) =>
+  apiFetch(`${API_BASE}/api/calls/history/delete`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });

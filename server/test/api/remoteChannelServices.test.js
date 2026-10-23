@@ -165,6 +165,47 @@ describe("admin services status", () => {
     expect(res.body.mediaWorker).toBeDefined();
     expect(res.body.remoteChannel).toBeDefined();
     expect(res.body.storage).toBeDefined();
+    expect(res.body.turn).toBeDefined();
+  });
+
+  test("GET /api/admin/services reports turn status when configured", async () => {
+    const sessionStore = makeSessionStore();
+    const userStore = makeUserStore([
+      {
+        id: "u-admin",
+        username: "admin",
+        nickname: "Admin",
+        role: "admin",
+        status: "online",
+      },
+    ]);
+    sessionStore.createSession("u-admin", "sid-admin");
+    const { app } = makeApp({
+      sessionStore,
+      userStore,
+      deps: {
+        isUserAdmin: () => true,
+        env: {
+          TURN_TOKEN_ID: "cf-token",
+          TURN_API_TOKEN: "cf-api",
+        },
+        fetch: async () => ({
+          ok: true,
+          json: async () => ({
+            iceServers: [{ urls: "turn:cf.turn.com" }],
+          }),
+        }),
+      },
+    });
+    const res = await request(app)
+      .get("/api/admin/services")
+      .set("Cookie", "sid=sid-admin");
+    expect(res.status).toBe(200);
+    expect(res.body.turn).toMatchObject({
+      configured: true,
+      managed: true,
+      reachable: true,
+    });
   });
 
   test("GET /api/admin/services reports storage reachability from checkHealth", async () => {

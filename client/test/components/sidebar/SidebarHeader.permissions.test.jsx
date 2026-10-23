@@ -54,26 +54,20 @@ describe("SidebarHeader permission prompt banner", () => {
     await expect.element(alertText).toBeVisible();
 
     const allowBtn = page.getByRole("button", { name: "Allow" });
-    await expect.element(allowBtn).toBeVisible();
+    await expect.element(allowBtn).not.toBeInTheDocument();
 
     const notNowBtn = page.getByRole("button", { name: "Not now" });
-    await expect.element(notNowBtn).toBeVisible();
+    await expect.element(notNowBtn).not.toBeInTheDocument();
 
-    // Verify "Not now" appears before "Allow" in DOM order (left-to-right)
-    const buttons = page.getByRole("button").all();
-    const buttonTexts = (await buttons).map((b) =>
-      b.element().textContent.trim(),
-    );
-    const notNowIndex = buttonTexts.indexOf("Not now");
-    const allowIndex = buttonTexts.indexOf("Allow");
-    expect(notNowIndex).toBeGreaterThan(-1);
-    expect(allowIndex).toBeGreaterThan(notNowIndex);
+    const dismissBtn = page.getByRole("button", { name: "Dismiss" });
+    await expect.element(dismissBtn).toBeVisible();
 
-    await allowBtn.click();
-    expect(onRequest).toHaveBeenCalledTimes(1);
-
-    await notNowBtn.click();
+    await dismissBtn.click();
     expect(onDismiss).toHaveBeenCalledWith("notification");
+    expect(onRequest).not.toHaveBeenCalled();
+
+    await alertText.click();
+    expect(onRequest).toHaveBeenCalledTimes(1);
   });
 
   test("renders microphone permission prompt card when mode is microphone", async () => {
@@ -105,26 +99,20 @@ describe("SidebarHeader permission prompt banner", () => {
     await expect.element(alertText).toBeVisible();
 
     const allowBtn = page.getByRole("button", { name: "Allow" });
-    await expect.element(allowBtn).toBeVisible();
+    await expect.element(allowBtn).not.toBeInTheDocument();
 
     const notNowBtn = page.getByRole("button", { name: "Not now" });
-    await expect.element(notNowBtn).toBeVisible();
+    await expect.element(notNowBtn).not.toBeInTheDocument();
 
-    // Verify "Not now" appears before "Allow" in DOM order (left-to-right)
-    const buttons = page.getByRole("button").all();
-    const buttonTexts = (await buttons).map((b) =>
-      b.element().textContent.trim(),
-    );
-    const notNowIndex = buttonTexts.indexOf("Not now");
-    const allowIndex = buttonTexts.indexOf("Allow");
-    expect(notNowIndex).toBeGreaterThan(-1);
-    expect(allowIndex).toBeGreaterThan(notNowIndex);
+    const dismissBtn = page.getByRole("button", { name: "Dismiss" });
+    await expect.element(dismissBtn).toBeVisible();
 
-    await allowBtn.click();
-    expect(onRequest).toHaveBeenCalledTimes(1);
-
-    await notNowBtn.click();
+    await dismissBtn.click();
     expect(onDismiss).toHaveBeenCalledWith("microphone");
+    expect(onRequest).not.toHaveBeenCalled();
+
+    await alertText.click();
+    expect(onRequest).toHaveBeenCalledTimes(1);
   });
 
   test("does not render prompt banner when permissionsPrompt.show is false", async () => {
@@ -175,5 +163,126 @@ describe("SidebarHeader permission prompt banner", () => {
 
     const alertText = page.getByText("Enable notifications");
     await expect.element(alertText).not.toBeInTheDocument();
+  });
+
+  test("does not render prompt banner when mobileTab is calls", async () => {
+    render(
+      <SidebarHeader
+        {...BASE_PROPS}
+        mobileTab="calls"
+        permissionsPrompt={{
+          show: true,
+          mode: "notification",
+          notification: {
+            show: true,
+            status: "default",
+            onRequest: vi.fn(),
+          },
+          onDismiss: vi.fn(),
+        }}
+      />,
+    );
+
+    const alertText = page.getByText("Enable notifications");
+    await expect.element(alertText).not.toBeInTheDocument();
+  });
+
+  test("does not render microphone prompt banner when mobileTab is calls", async () => {
+    render(
+      <SidebarHeader
+        {...BASE_PROPS}
+        mobileTab="calls"
+        permissionsPrompt={{
+          show: true,
+          mode: "microphone",
+          notification: {
+            show: false,
+            status: "default",
+            onRequest: vi.fn(),
+          },
+          microphone: {
+            show: true,
+            status: "unknown",
+            onRequest: vi.fn(),
+          },
+          onDismiss: vi.fn(),
+        }}
+      />,
+    );
+
+    const alertText = page.getByText("Enable microphone");
+    await expect.element(alertText).not.toBeInTheDocument();
+  });
+
+  test("does not render microphone prompt banner when mobileTab is settings", async () => {
+    render(
+      <SidebarHeader
+        {...BASE_PROPS}
+        mobileTab="settings"
+        permissionsPrompt={{
+          show: true,
+          mode: "microphone",
+          notification: {
+            show: false,
+            status: "default",
+            onRequest: vi.fn(),
+          },
+          microphone: {
+            show: true,
+            status: "unknown",
+            onRequest: vi.fn(),
+          },
+          onDismiss: vi.fn(),
+        }}
+      />,
+    );
+
+    const alertText = page.getByText("Enable microphone");
+    await expect.element(alertText).not.toBeInTheDocument();
+  });
+
+  test("renders insecure connection banner in chats tab", async () => {
+    window.localStorage.removeItem("songbird-insecure-dismissed");
+    render(
+      <SidebarHeader
+        {...BASE_PROPS}
+        mobileTab="chats"
+        insecureConnection={true}
+        isLocalhost={false}
+      />,
+    );
+
+    const bannerText = page.getByText("Connection is not secure");
+    await expect.element(bannerText).toBeVisible();
+  });
+
+  test("does not render insecure connection banner when mobileTab is calls", async () => {
+    window.localStorage.removeItem("songbird-insecure-dismissed");
+    render(
+      <SidebarHeader
+        {...BASE_PROPS}
+        mobileTab="calls"
+        insecureConnection={true}
+        isLocalhost={false}
+      />,
+    );
+
+    const bannerText = page.getByText("Connection is not secure");
+    await expect.element(bannerText).not.toBeInTheDocument();
+  });
+
+  test("does not render insecure connection banner when mobileTab is settings", async () => {
+    window.localStorage.removeItem("songbird-insecure-dismissed");
+    render(
+      <SidebarHeader
+        {...BASE_PROPS}
+        mobileTab="settings"
+        insecureConnection={true}
+        isLocalhost={false}
+      />,
+    );
+
+    const bannerText = page.getByText("Connection is not secure");
+    await expect.element(bannerText).not.toBeInTheDocument();
   });
 });

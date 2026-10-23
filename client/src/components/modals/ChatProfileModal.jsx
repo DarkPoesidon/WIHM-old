@@ -11,7 +11,9 @@ import {
   LogIn,
   LogOut,
   Pencil,
+  Phone,
   SatelliteDish,
+  Video,
   Volume2,
   VolumeX,
 } from "../../icons/lucide.js";
@@ -33,6 +35,7 @@ import VerifiedBadge from "../common/VerifiedBadge.jsx";
 import RemoteChannelQueueStatus from "./RemoteChannelQueueStatus.jsx";
 import Tooltip from "../common/Tooltip.jsx";
 import { useFocusTrap } from "../../hooks/useFocusTrap.js";
+import { isCallSupported } from "../../utils/callCapabilities.js";
 
 const MEMBERS_BATCH_SIZE = 10;
 
@@ -45,8 +48,13 @@ export default function ChatProfileModal({
   inviteLink,
   inviteLinkLoading = false,
   canViewInvite,
+  isInCall = false,
   onClose,
   onOpenChat,
+  onStartVoiceCall,
+  onStartVideoCall,
+  callsDisabled = false,
+  videoCallsDisabled = false,
   onToggleMute,
   onLeaveGroup,
   onOpenMember,
@@ -301,6 +309,11 @@ export default function ChatProfileModal({
         ? "#10b981"
         : targetUser?.color || "#10b981";
   const initials = getAvatarInitials(profileName);
+  const isDeletedTarget = Boolean(targetUser?.isDeleted || !targetUser?.username);
+  const callSupported = isCallSupported();
+  const isCallDisabled = isDeletedTarget || !callSupported || isInCall;
+  const isVoiceCallDisabled = isCallDisabled || callsDisabled;
+  const isVideoCallDisabled = isCallDisabled || callsDisabled || videoCallsDisabled;
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const members = Array.isArray(chat?.members) ? chat.members : [];
   const membersCountRaw = Number(chat?.membersCount);
@@ -471,23 +484,97 @@ export default function ChatProfileModal({
             className={`mt-4 ${
               isGroup || isChannel
                 ? "grid grid-cols-3 gap-2"
-                : "mx-auto grid w-full max-w-[18rem] grid-cols-2 gap-2"
+                : onStartVoiceCall || onStartVideoCall
+                  ? "grid grid-cols-4 gap-2"
+                  : "mx-auto grid w-full max-w-[18rem] grid-cols-2 gap-2"
             }`}
           >
             <button
               type="button"
               onClick={onOpenChat}
-              className="group rounded-2xl border border-emerald-200 bg-white px-2 py-3 text-emerald-700 transition hover:border-emerald-300 hover:bg-emerald-50 dark:border-emerald-500/30 dark:bg-slate-900 dark:text-emerald-200 dark:hover:bg-emerald-500/10"
+              className="group rounded-2xl border border-emerald-200 bg-white px-2 py-3 text-emerald-700 transition hover:border-emerald-300 hover:bg-emerald-50 dark:border-emerald-500/30 dark:bg-slate-900 dark:text-emerald-200 dark:hover:bg-emerald-500/10 cursor-pointer"
             >
               <div className="mx-auto inline-flex h-11 w-11 items-center justify-center rounded-full">
                 <Chat size={24} className="icon-anim-bob" />
               </div>
               <p className="mt-1 text-xs font-semibold">Chat</p>
             </button>
+            {!isGroup && !isChannel && onStartVoiceCall ? (
+              <button
+                type="button"
+                disabled={isVoiceCallDisabled}
+                title={
+                  callsDisabled
+                    ? "Calls are disabled by the server"
+                    : isDeletedTarget
+                      ? "Calls unavailable for deleted account"
+                      : !callSupported
+                        ? "Calls require a secure connection"
+                        : isInCall
+                          ? "Already in a call"
+                          : undefined
+                }
+                onClick={
+                  isVoiceCallDisabled
+                    ? undefined
+                    : () => {
+                        handleClose();
+                        onStartVoiceCall(targetUser);
+                      }
+                }
+                className={`group rounded-2xl border border-emerald-200 bg-white px-2 py-3 text-emerald-700 transition dark:border-emerald-500/30 dark:bg-slate-900 dark:text-emerald-200 ${
+                  isVoiceCallDisabled
+                    ? "opacity-40 cursor-not-allowed"
+                    : "hover:border-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 cursor-pointer"
+                }`}
+                aria-label="Voice call"
+              >
+                <div className="mx-auto inline-flex h-11 w-11 items-center justify-center rounded-full">
+                  <Phone size={24} className={isVoiceCallDisabled ? "" : "icon-anim-pop"} />
+                </div>
+                <p className="mt-1 text-xs font-semibold">Call</p>
+              </button>
+            ) : null}
+            {!isGroup && !isChannel && onStartVideoCall ? (
+              <button
+                type="button"
+                disabled={isVideoCallDisabled}
+                title={
+                  videoCallsDisabled
+                    ? "Video calls are disabled by the server"
+                    : isDeletedTarget
+                      ? "Calls unavailable for deleted account"
+                      : !callSupported
+                        ? "Calls require a secure connection"
+                        : isInCall
+                          ? "Already in a call"
+                          : undefined
+                }
+                onClick={
+                  isVideoCallDisabled
+                    ? undefined
+                    : () => {
+                        handleClose();
+                        onStartVideoCall(targetUser);
+                      }
+                }
+                className={`group rounded-2xl border border-emerald-200 bg-white px-2 py-3 text-emerald-700 transition dark:border-emerald-500/30 dark:bg-slate-900 dark:text-emerald-200 ${
+                  isVideoCallDisabled
+                    ? "opacity-40 cursor-not-allowed"
+                    : "hover:border-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 cursor-pointer"
+                }`}
+                aria-label="Video call"
+              >
+                <div className="mx-auto inline-flex h-11 w-11 items-center justify-center rounded-full">
+                  <Video size={24} className={isVideoCallDisabled ? "" : "icon-anim-pop"} />
+                </div>
+                <p className="mt-1 text-xs font-semibold">Video</p>
+              </button>
+            ) : null}
             <button
               type="button"
               onClick={onToggleMute}
-              className="group rounded-2xl border border-emerald-200 bg-white px-2 py-3 text-emerald-700 transition hover:border-emerald-300 hover:bg-emerald-50 dark:border-emerald-500/30 dark:bg-slate-900 dark:text-emerald-200 dark:hover:bg-emerald-500/10"
+              className="group rounded-2xl border border-emerald-200 bg-white px-2 py-3 text-emerald-700 transition hover:border-emerald-300 hover:bg-emerald-50 dark:border-emerald-500/30 dark:bg-slate-900 dark:text-emerald-200 dark:hover:bg-emerald-500/10 cursor-pointer"
             >
               <div className="mx-auto inline-flex h-11 w-11 items-center justify-center rounded-full">
                 {muted ? (
@@ -504,7 +591,7 @@ export default function ChatProfileModal({
               <button
                 type="button"
                 onClick={onLeaveGroup}
-                className="group rounded-2xl border border-rose-200 bg-rose-50 px-2 py-3 text-rose-600 transition hover:border-rose-300 hover:bg-rose-100 dark:border-rose-500/30 dark:bg-rose-900/30 dark:text-rose-200 dark:hover:bg-rose-900/45"
+                className="group rounded-2xl border border-rose-200 bg-rose-50 px-2 py-3 text-rose-600 transition hover:border-rose-300 hover:bg-rose-100 dark:border-rose-500/30 dark:bg-rose-900/30 dark:text-rose-200 dark:hover:bg-rose-900/45 cursor-pointer"
               >
                 <div className="mx-auto inline-flex h-11 w-11 items-center justify-center rounded-full">
                   <LogOut size={24} className="icon-anim-slide" />

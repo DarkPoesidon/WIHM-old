@@ -185,6 +185,12 @@ Configure runtime settings through the UI (replaces most `.env` variables):
 - Telegram proxy URL (nullable) — restart required
 - Songbird server-to-server proxy URL (nullable, live)
 
+#### Calls
+
+- Calls master toggle (live)
+- Video calls toggle (live)
+- Max call duration in minutes (0 = unlimited) — restart required
+
 #### Secrets (owner-only)
 
 - Read-only system secrets: Remote channel tick secret, Worker webhook secret, Admin API token. Visible only to the server owner, never to admins.
