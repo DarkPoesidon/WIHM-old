@@ -15,6 +15,7 @@ import {
   Users,
 } from "../../../icons/lucide.js";
 import { hasPersian } from "../../../utils/fontUtils.js";
+import UserMenuButton from "./UserMenuButton.jsx";
 
 export default function SidebarHeader({
   mobileTab,
@@ -47,6 +48,17 @@ export default function SidebarHeader({
   onScrollToTop,
   permissionsPrompt = null,
   insecureConnection = false,
+  user,
+  displayName,
+  displayInitials,
+  userColor,
+  statusValue,
+  statusTextClass,
+  onNavigateChats,
+  onNavigateSettings,
+  onNavigateCalls,
+  handleLogout,
+  onOpenOwnProfile,
 }) {
   const isCallsMode = mobileTab === "calls";
   const [showCreateMenu, setShowCreateMenu] = useState(false);
@@ -128,15 +140,35 @@ export default function SidebarHeader({
                   <Close size={18} className="icon-anim-pop" />
                 </button>
               ) : (
-                <button
-                  type="button"
-                  onClick={isCallsMode ? onEnterCallsEditMode : onEnterEdit}
-                  disabled={!hasChats}
-                  className="inline-flex items-center justify-center rounded-full border border-emerald-200 bg-white/80 p-2 text-emerald-700 transition hover:border-emerald-300 hover:shadow-[0_0_16px_rgba(16,185,129,0.22)] disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:border-emerald-200 disabled:hover:shadow-none dark:border-emerald-500/30 dark:bg-slate-950 dark:text-emerald-200"
-                  aria-label={editAriaLabel}
-                >
-                  <Pencil size={18} className="icon-anim-sway" />
-                </button>
+                <>
+                  <button
+                    type="button"
+                    onClick={isCallsMode ? onEnterCallsEditMode : onEnterEdit}
+                    disabled={!hasChats}
+                    className="inline-flex items-center justify-center rounded-full border border-emerald-200 bg-white/80 p-2 text-emerald-700 transition hover:border-emerald-300 hover:shadow-[0_0_16px_rgba(16,185,129,0.22)] disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:border-emerald-200 disabled:hover:shadow-none dark:border-emerald-500/30 dark:bg-slate-950 dark:text-emerald-200 md:hidden"
+                    aria-label={editAriaLabel}
+                  >
+                    <Pencil size={18} className="icon-anim-sway" />
+                  </button>
+                  <div className="hidden md:inline-flex">
+                    <UserMenuButton
+                      user={user}
+                      displayName={displayName}
+                      displayInitials={displayInitials}
+                      userColor={userColor}
+                      statusValue={statusValue}
+                      statusTextClass={statusTextClass}
+                      mobileTab={mobileTab}
+                      onNavigateChats={onNavigateChats}
+                      onNavigateSettings={onNavigateSettings}
+                      onNavigateCalls={onNavigateCalls}
+                      onEnterEdit={isCallsMode ? onEnterCallsEditMode : onEnterEdit}
+                      canEdit={hasChats}
+                      handleLogout={handleLogout}
+                      onOpenOwnProfile={onOpenOwnProfile}
+                    />
+                  </div>
+                </>
               )}
             </div>
             <h2 className="text-center text-lg font-semibold">
