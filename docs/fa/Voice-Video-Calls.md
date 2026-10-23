@@ -63,6 +63,129 @@ TURN_API_TOKEN="your-cloudflare-turn-api-token"
 - **شبکه‌های معمولی خانگی:** در بیشتر شبکه‌ها، سرور پیش‌فرض STUN گوگل (`stun:stun.l.google.com:19302`) برای برقراری مستقیم تماس کافی است.
 - **شبکه‌های موبایل و فایروال‌های محدودکننده:** چنانچه کاربران در شبکه‌های اپراتورهای موبایل (CGNAT) یا فایروال‌های شرکتی باشند، برقراری اتصال مستقیم ممکن است نیازمند یک سرور TURN رله (مانند [Coturn](https://github.com/coturn/coturn)) باشد.
 
+## راه اندازی سرور Coturn
+
+اگر به جای استفاده از سرویس های مدیریت شده مانند Cloudflare Calls، قصد دارید سرور TURN اختصاصی خود را راه اندازی کنید، میتوانید نرم افزار [Coturn](https://github.com/coturn/coturn) را روی یک سرور مجازی (VPS) لینوکسی با IP عمومی مستقر نمایید.
+
+### ۱. فایروال و پورت ها
+
+نرم افزار Coturn برای ترافیک کنترلی و تبادل جریان های صوتی/تصویری رله شده به پورت های زیر نیاز دارد:
+
+```bash
+# پورت های ترافیک کنترلی STUN/TURN
+sudo ufw allow 3478/tcp
+sudo ufw allow 3478/udp
+
+# بازه پورت های رله داده های صوتی و تصویری
+sudo ufw allow 49152:65535/udp
+```
+
+:::warning فایروال ارائه دهنده ابری
+چنانچه سرور شما روی ارائه دهندگانی مانند Hetzner، آروان کلاد، AWS EC2 یا دیجیتال اوشن قرار دارد، اطمینان حاصل کنید که این پورت ها (به ویژه بازه `49152:65535/udp`) در پنل فایروال/Security Groups کلاد نیز باز باشند.
+:::
+
+### ۲. نصب Coturn
+
+#### اوبونتو / دبیان (نصب سیستمی)
+
+```bash
+sudo apt update && sudo apt install -y coturn
+```
+
+در صورت نیاز، اجرای خودکار سرویس را در `/etc/default/coturn` فعال کنید:
+```bash
+sudo sed -i 's/#TURNSERVER_ENABLED=1/TURNSERVER_ENABLED=1/' /etc/default/coturn
+```
+
+#### داکر (Docker)
+
+```bash
+docker run -d --name coturn \
+  --network=host \
+  --restart=always \
+  -v /etc/coturn/turnserver.conf:/etc/coturn/turnserver.conf:ro \
+  coturn/coturn
+```
+
+### ۳. پیکربندی فایل `turnserver.conf`
+
+ابتدا از فایل پیشفرض نسخه پشتیبان تهیه کرده و فایل تنظیمات جدید را بسازید:
+
+```bash
+sudo mv /etc/turnserver.conf /etc/turnserver.conf.bak
+sudo nano /etc/turnserver.conf
+```
+
+محتوای زیر را درون فایل قرار دهید:
+
+```ini
+# پورت های شنود
+listening-port=3478
+alt-listening-port=3479
+
+# بازه پورت های رله مدیا
+min-port=49152
+max-port=65535
+
+# فعال سازی مکانیسم احراز هویت بلندمدت برای WebRTC
+fingerprint
+lt-cred-mech
+
+# نام دامنه یا قلمرو (Realm) و اطلاعات کاربری ثابت
+realm=your-domain.com
+user=songbird:YourSecurePassword123
+
+# تنظیم IP عمومی سرور
+# اگر سرور شما مستقیماً دارای IP عمومی روی کارت شبکه است:
+external-ip=YOUR_SERVER_PUBLIC_IP
+# اگر سرور پشت NAT قرار دارد (مانند سرورهای ابری یا VPC)، به صورت عمومی/داخلی وارد کنید:
+# external-ip=PUBLIC_IP/LOCAL_IP
+# به عنوان مثال: external-ip=203.0.113.10/10.0.0.5
+
+# امنیت و ثبت وقایع
+no-cli
+no-tls
+no-dtls
+log-file=/var/log/turnserver.log
+simple-log
+```
+
+:::info رمزنگاری در WebRTC
+جریان های رسانه ای در WebRTC به شکل پیشفرض و انتها به انتها توسط استانداردهای SRTP/DTLS رمزگذاری میشوند؛ از این رو پروتکل `turn:...:3478` روی UDP کمترین تاخیر و بالاترین کارایی را ارائه میدهد. در صورت تمایل به استفاده از ارتباط TLS روی پورت `5349` (`turns:`)، میتوانید گواهی SSL (مانند Let's Encrypt) دریافت کرده و مسیر فایل های `cert` و `pkey` را در تنظیمات تعیین کنید.
+:::
+
+### ۴. اجرای سرویس
+
+```bash
+sudo systemctl restart coturn
+sudo systemctl enable coturn
+sudo systemctl status coturn
+```
+
+بررسی باز بودن پورت:
+
+```bash
+sudo ss -ulpn | grep 3478
+```
+
+### ۵. تنظیم در فایل `.env` سانگبرد
+
+مقادیر زیر را در فایل `.env` سرور سانگبرد وارد کنید:
+
+```txt
+TURN_STUN_URL="stun:your-domain.com:3478"
+TURN_URL="turn:your-domain.com:3478"
+TURN_USERNAME="songbird"
+TURN_CREDENTIAL="YourSecurePassword123"
+```
+
+سپس سرور سانگبرد را بازنشانی (Restart) نمایید تا تنظیمات اعمال شوند.
+
+### ۶. اعتبارسنجی و تست
+
+- **پنل مدیریت سانگبرد:** به **پنل مدیریت** ← تب **سرویس ها** مراجعه کرده و وضعیت اتصال و تاخیر سرور TURN را بررسی نمایید.
+- **تست مستقل WebRTC:** از ابزار آنلاین [WebRTC Trickle ICE test](https://webrtc.github.io/samples/src/content/peerconnection/trickle-ice/) استفاده کنید؛ در صورت کارکرد صحیح سرور، نامزدهای اتصالی با نوع `relay` نمایش داده خواهند شد.
+
 ## قابلیت‌ها
 
 - **تماس صوتی:** کیفیت شفاف صدا به همراه کنترل قطع و وصل میکروفون (Mute).

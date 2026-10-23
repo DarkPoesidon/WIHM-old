@@ -58,6 +58,129 @@ Calls can be turned off per server via environment variables (or the admin panel
 - **Local / Direct Network:** For most home networks and standard connections, the default STUN server (`stun:stun.l.google.com:19302`) is sufficient.
 - **Mobile Networks / Restrictive Corporate Firewalls:** If participants are on mobile carrier connections with symmetric NAT or behind corporate firewalls, WebRTC peer-to-peer negotiation may fail without a TURN relay server (such as [Coturn](https://github.com/coturn/coturn)).
 
+## Setting Up Coturn
+
+If you choose self-hosted TURN over a managed provider like Cloudflare Calls, you can deploy [Coturn](https://github.com/coturn/coturn) on a Linux VPS with a public IP address.
+
+### 1. Firewall & Ports
+
+Coturn requires listening ports for control traffic and a high-port UDP range for relayed media streams:
+
+```bash
+# STUN/TURN control traffic
+sudo ufw allow 3478/tcp
+sudo ufw allow 3478/udp
+
+# Relay media port range
+sudo ufw allow 49152:65535/udp
+```
+
+:::warning Cloud Security Groups
+If your VPS is hosted on cloud providers like AWS EC2, GCP, DigitalOcean, or Hetzner, ensure these inbound firewall rules (especially `49152:65535/udp`) are also allowed in your cloud provider's network security group.
+:::
+
+### 2. Installation
+
+#### Ubuntu / Debian (Native)
+
+```bash
+sudo apt update && sudo apt install -y coturn
+```
+
+Enable automatic service startup in `/etc/default/coturn` if present:
+```bash
+sudo sed -i 's/#TURNSERVER_ENABLED=1/TURNSERVER_ENABLED=1/' /etc/default/coturn
+```
+
+#### Docker
+
+```bash
+docker run -d --name coturn \
+  --network=host \
+  --restart=always \
+  -v /etc/coturn/turnserver.conf:/etc/coturn/turnserver.conf:ro \
+  coturn/coturn
+```
+
+### 3. Configuration
+
+Backup the default template and create `/etc/turnserver.conf`:
+
+```bash
+sudo mv /etc/turnserver.conf /etc/turnserver.conf.bak
+sudo nano /etc/turnserver.conf
+```
+
+Paste the following minimal configuration:
+
+```ini
+# Listening ports
+listening-port=3478
+alt-listening-port=3479
+
+# Relay media port range
+min-port=49152
+max-port=65535
+
+# Enable Long-Term Credential mechanism (required for WebRTC)
+fingerprint
+lt-cred-mech
+
+# Realm & static credentials
+realm=your-domain.com
+user=songbird:YourSecurePassword123
+
+# Public IP binding
+# If the server has a direct public IP:
+external-ip=YOUR_SERVER_PUBLIC_IP
+# If behind a NAT/VPC (AWS EC2, GCP, etc.), specify: external-ip=PUBLIC_IP/LOCAL_IP
+# e.g.: external-ip=203.0.113.10/10.0.0.5
+
+# Security & logging
+no-cli
+no-tls
+no-dtls
+log-file=/var/log/turnserver.log
+simple-log
+```
+
+:::info WebRTC & Encryption
+WebRTC media traffic is end-to-end encrypted via SRTP/DTLS by default. Plain `turn:...:3478` with UDP provides the lowest latency and optimal relay performance. If you require TLS encapsulation over port `5349` (`turns:`), obtain an SSL certificate (e.g. Let's Encrypt), open port `5349` (`tcp`/`udp`), and configure `cert` and `pkey` paths in `turnserver.conf`.
+:::
+
+### 4. Start the Service
+
+```bash
+sudo systemctl restart coturn
+sudo systemctl enable coturn
+sudo systemctl status coturn
+```
+
+Verify the listening socket:
+
+```bash
+sudo ss -ulpn | grep 3478
+```
+
+### 5. Songbird Integration
+
+Set the environment variables in your Songbird `.env`:
+
+```txt
+TURN_STUN_URL="stun:your-domain.com:3478"
+TURN_URL="turn:your-domain.com:3478"
+TURN_USERNAME="songbird"
+TURN_CREDENTIAL="YourSecurePassword123"
+```
+
+Restart your Songbird server to apply changes.
+
+### 6. Verification
+
+- **Songbird Admin Panel:** Open **Admin Panel** → **Services** to test connectivity, reachability, and latency against your TURN relay.
+- **External ICE Test:** Test candidates via the [WebRTC Trickle ICE test](https://webrtc.github.io/samples/src/content/peerconnection/trickle-ice/). A successful connection will output a candidate with type `relay`.
+
+
 ## Features
 
 - **Voice Calls:** Crystal clear audio calling with microphone mute/unmute control.
