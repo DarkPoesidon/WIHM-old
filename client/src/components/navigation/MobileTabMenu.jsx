@@ -1,9 +1,10 @@
-import { Chat, Settings } from "../../icons/lucide.js";
+import { Chat, Phone, Settings } from "../../icons/lucide.js";
 
 export default function MobileTabMenu({
   hidden,
   mobileTab,
   onChats,
+  onCalls,
   onSettings,
 }) {
   return (
@@ -17,6 +18,23 @@ export default function MobileTabMenu({
       }}
     >
       <div className="mx-auto mb-2 flex max-w-sm items-center justify-between rounded-3xl border border-slate-300/90 bg-white/95 p-2 shadow-lg shadow-emerald-500/10 backdrop-blur-none dark:border-emerald-500/35 dark:bg-slate-900/95 md:backdrop-blur-sm">
+        <button
+          type="button"
+          onClick={onCalls}
+          className={`relative flex flex-1 flex-col items-center gap-1 rounded-2xl px-3 py-2 text-[11px] font-semibold transition ${
+            mobileTab === "calls"
+              ? "text-white"
+              : "text-emerald-700 dark:text-emerald-200"
+          }`}
+        >
+          {mobileTab === "calls" ? (
+            <span className="absolute inset-0 rounded-2xl bg-emerald-500" />
+          ) : null}
+          <span className="relative z-10">
+            <Phone className="icon-anim-bob" />
+          </span>
+          <span className="relative z-10">Calls</span>
+        </button>
         <button
           type="button"
           onClick={onChats}
@@ -55,4 +73,3 @@ export default function MobileTabMenu({
     </div>
   );
 }
-

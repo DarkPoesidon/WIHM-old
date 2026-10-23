@@ -1,4 +1,5 @@
 import { createCallManager } from "../lib/callManager.js";
+import { validateUuidBody } from "../lib/uuidMiddleware.js";
 
 /**
  * Register HTTP routes for WebRTC call setup and signaling fallback.
@@ -7,6 +8,11 @@ export function registerCallRoutes(app, deps) {
   const {
     getSessionFromRequest,
     callManager: providedCallManager,
+    listCallHistoryForUser,
+    findMessageById,
+    findChatById,
+    isMember,
+    hideMessageForUser,
   } = deps;
 
   const callManager =
@@ -155,4 +161,47 @@ export function registerCallRoutes(app, deps) {
     }
     res.json({ ok: true });
   });
+
+  // GET /api/calls/history — call-log entries across the user's DM chats.
+  app.get("/api/calls/history", async (req, res) => {
+    const user = requireUser(req, res);
+    if (!user) return;
+    if (typeof listCallHistoryForUser !== "function") {
+      return res.status(501).json({ error: "Not supported" });
+    }
+    const rows = await listCallHistoryForUser(user.id);
+    res.json({ calls: rows || [] });
+  });
+
+  // POST /api/calls/history/delete — remove a call-log entry from own history.
+  app.post(
+    "/api/calls/history/delete",
+    validateUuidBody([{ field: "messageId", required: true }]),
+    async (req, res) => {
+      const user = requireUser(req, res);
+      if (!user) return;
+      const { messageId } = req.body || {};
+      const awaiting = async (value) =>
+        value && typeof value.then === "function" ? await value : value;
+
+      const message = await awaiting(findMessageById?.(messageId));
+      if (!message) {
+        return res.status(404).json({ error: "Call not found" });
+      }
+      const rawChat = await awaiting(findChatById?.(message.chat_id));
+      if (!rawChat || rawChat.type !== "dm") {
+        return res.status(404).json({ error: "Call not found" });
+      }
+      const member = await awaiting(isMember?.(message.chat_id, user.id));
+      if (!member) {
+        return res.status(403).json({ error: "Not a member of this chat" });
+      }
+      if (!String(message.body || "").startsWith("[[call:")) {
+        return res.status(400).json({ error: "Not a call entry" });
+      }
+
+      await awaiting(hideMessageForUser?.(message.id, user.id));
+      res.json({ ok: true, id: message.id });
+    },
+  );
 }

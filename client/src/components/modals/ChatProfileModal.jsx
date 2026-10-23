@@ -48,6 +48,7 @@ export default function ChatProfileModal({
   inviteLink,
   inviteLinkLoading = false,
   canViewInvite,
+  isInCall = false,
   onClose,
   onOpenChat,
   onStartVoiceCall,
@@ -308,7 +309,7 @@ export default function ChatProfileModal({
   const initials = getAvatarInitials(profileName);
   const isDeletedTarget = Boolean(targetUser?.isDeleted || !targetUser?.username);
   const callSupported = isCallSupported();
-  const isCallDisabled = isDeletedTarget || !callSupported;
+  const isCallDisabled = isDeletedTarget || !callSupported || isInCall;
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const members = Array.isArray(chat?.members) ? chat.members : [];
   const membersCountRaw = Number(chat?.membersCount);
@@ -498,6 +499,15 @@ export default function ChatProfileModal({
               <button
                 type="button"
                 disabled={isCallDisabled}
+                title={
+                  isDeletedTarget
+                    ? "Calls unavailable for deleted account"
+                    : !callSupported
+                      ? "Calls require a secure connection"
+                      : isInCall
+                        ? "Already in a call"
+                        : undefined
+                }
                 onClick={
                   isCallDisabled
                     ? undefined
@@ -523,6 +533,15 @@ export default function ChatProfileModal({
               <button
                 type="button"
                 disabled={isCallDisabled}
+                title={
+                  isDeletedTarget
+                    ? "Calls unavailable for deleted account"
+                    : !callSupported
+                      ? "Calls require a secure connection"
+                      : isInCall
+                        ? "Already in a call"
+                        : undefined
+                }
                 onClick={
                   isCallDisabled
                     ? undefined

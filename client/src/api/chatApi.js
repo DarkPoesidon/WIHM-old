@@ -816,3 +816,22 @@ export async function sendCallSignal(action, body = {}) {
     return null;
   }
 }
+
+// Fetches the signed-in user's voice/video call history across DM chats.
+export async function listCalls() {
+  const res = await apiFetch(`${API_BASE}/api/calls/history`);
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data?.error || "Failed to load call history");
+  }
+  const data = await res.json().catch(() => ({}));
+  return Array.isArray(data?.calls) ? data.calls : [];
+}
+
+// Removes a call-log entry from the signed-in user's own history.
+export const deleteCall = (payload) =>
+  apiFetch(`${API_BASE}/api/calls/history/delete`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });

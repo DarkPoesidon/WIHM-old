@@ -581,20 +581,22 @@ export const CallScreen = memo(function CallScreen({
                 </p>
               </div>
             </div>
-            <button
-              type="button"
-              onClick={() => {
-                setRestoredFromPip(false);
-                setPipOriginStyle(undefined);
-                setPosition(null);
-                setMinimized(true);
-              }}
-              disabled={isEnding}
-              className={`ml-3 flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-transparent text-white/90 transition hover:bg-white/10 hover:text-white ${controlState}`}
-              aria-label="Chat"
-            >
-              <Chat size={26} />
-            </button>
+            <Tooltip label="Back to chats">
+              <button
+                type="button"
+                onClick={() => {
+                  setRestoredFromPip(false);
+                  setPipOriginStyle(undefined);
+                  setPosition(null);
+                  setMinimized(true);
+                }}
+                disabled={isEnding}
+                className={`ml-3 flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-transparent text-white/90 transition hover:bg-white/10 hover:text-white ${controlState}`}
+                aria-label="Chat"
+              >
+                <Chat size={26} />
+              </button>
+            </Tooltip>
           </div>
         ) : (
         <div className="relative z-20 flex shrink-0 flex-col items-center pt-14">

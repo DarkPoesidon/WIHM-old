@@ -126,6 +126,7 @@ export default function ChatWindowPanel({
   registerMessageRef = null,
   onStartVoiceCall,
   onStartVideoCall,
+  isInCall = false,
   isDmChat = false,
   showFloatingLabel = false,
 }) {
@@ -150,7 +151,7 @@ export default function ChatWindowPanel({
   const activePeerInitials = getAvatarInitials(activeFallbackTitle || "S");
   const isDeletedPeer = Boolean(activeHeaderPeer?.isDeleted || !activeHeaderPeer?.username);
   const callSupported = isCallSupported();
-  const isCallDisabled = isDeletedPeer || !callSupported;
+  const isCallDisabled = isDeletedPeer || !callSupported || isInCall;
   const showChannelMuteFooter = Boolean(
     activeChatId &&
       isChannelChat &&
@@ -1076,9 +1077,10 @@ export default function ChatWindowPanel({
           : null
       }
       onForwardMessage={onForwardMessage}
-      onCallLogCall={(type) =>
-        type === "video" ? onStartVideoCall?.() : onStartVoiceCall?.()
-      }
+      onCallLogCall={(type) => {
+        if (isCallDisabled) return;
+        type === "video" ? onStartVideoCall?.() : onStartVoiceCall?.();
+      }}
       mentionRefreshToken={mentionRefreshToken}
       onOpenContextMenu={onOpenContextMenu}
       visibilityRef={registerMessageRef ? registerMessageRef(msg) : null}
@@ -1170,7 +1172,9 @@ export default function ChatWindowPanel({
                           ? "Calls unavailable for deleted account"
                           : !callSupported
                             ? "Calls require a secure connection"
-                            : "Voice call"
+                            : isInCall
+                              ? "Already in a call"
+                              : "Voice call"
                       }
                       placement="bottom"
                     >
@@ -1196,7 +1200,9 @@ export default function ChatWindowPanel({
                           ? "Calls unavailable for deleted account"
                           : !callSupported
                             ? "Calls require a secure connection"
-                            : "Video call"
+                            : isInCall
+                              ? "Already in a call"
+                              : "Video call"
                       }
                       placement="bottom"
                     >

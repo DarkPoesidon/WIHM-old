@@ -8,12 +8,14 @@ import {
   Megaphone,
   Mic,
   Pencil,
+  PhoneCall,
   Plus,
   Search,
   Trash,
   Users,
 } from "../../../icons/lucide.js";
 import { hasPersian } from "../../../utils/fontUtils.js";
+import UserMenuButton from "./UserMenuButton.jsx";
 
 export default function SidebarHeader({
   mobileTab,
@@ -22,6 +24,14 @@ export default function SidebarHeader({
   isUpdating,
   hasChats,
   selectedChatsCount,
+  title = "Chats",
+  editAriaLabel = "Edit chat list",
+  deleteAriaLabel = "Delete chats",
+  newCallAriaLabel = "New call",
+  isInCall = false,
+  onEnterCallsEditMode,
+  onDeleteCalls,
+  onNewCall,
   onExitEdit,
   onEnterEdit,
   onDeleteChats,
@@ -38,7 +48,19 @@ export default function SidebarHeader({
   onScrollToTop,
   permissionsPrompt = null,
   insecureConnection = false,
+  user,
+  displayName,
+  displayInitials,
+  userColor,
+  statusValue,
+  statusTextClass,
+  onNavigateChats,
+  onNavigateSettings,
+  onNavigateCalls,
+  handleLogout,
+  onOpenOwnProfile,
 }) {
+  const isCallsMode = mobileTab === "calls";
   const [showCreateMenu, setShowCreateMenu] = useState(false);
   const createMenuRef = useRef(null);
   const searchInputRef = useRef(null);
@@ -78,7 +100,11 @@ export default function SidebarHeader({
   }, [showCreateMenu]);
 
   return (
-    <div className="border-b border-slate-300/80 bg-white px-6 py-3 dark:border-emerald-500/20 dark:bg-slate-900">
+    <div
+      className={`border-b border-slate-300/80 bg-white px-6 dark:border-emerald-500/20 dark:bg-slate-900 ${
+        isCallsMode ? "flex h-[72px] shrink-0 items-center" : "py-3"
+      }`}
+    >
       {mobileTab === "settings" ? (
         <div className="text-center text-lg font-semibold md:hidden">
           <span className="inline-flex items-center gap-2">
@@ -90,7 +116,7 @@ export default function SidebarHeader({
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-[1fr_auto_1fr] items-center">
+          <div className="grid w-full grid-cols-[1fr_auto_1fr] items-center">
             <div className="flex items-center gap-2">
               {chatsSearchFocused ? (
                 <button
@@ -114,15 +140,35 @@ export default function SidebarHeader({
                   <Close size={18} className="icon-anim-pop" />
                 </button>
               ) : (
-                <button
-                  type="button"
-                  onClick={onEnterEdit}
-                  disabled={!hasChats}
-                  className="inline-flex items-center justify-center rounded-full border border-emerald-200 bg-white/80 p-2 text-emerald-700 transition hover:border-emerald-300 hover:shadow-[0_0_16px_rgba(16,185,129,0.22)] disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:border-emerald-200 disabled:hover:shadow-none dark:border-emerald-500/30 dark:bg-slate-950 dark:text-emerald-200"
-                  aria-label="Edit chat list"
-                >
-                  <Pencil size={18} className="icon-anim-sway" />
-                </button>
+                <>
+                  <button
+                    type="button"
+                    onClick={isCallsMode ? onEnterCallsEditMode : onEnterEdit}
+                    disabled={!hasChats}
+                    className="inline-flex items-center justify-center rounded-full border border-emerald-200 bg-white/80 p-2 text-emerald-700 transition hover:border-emerald-300 hover:shadow-[0_0_16px_rgba(16,185,129,0.22)] disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:border-emerald-200 disabled:hover:shadow-none dark:border-emerald-500/30 dark:bg-slate-950 dark:text-emerald-200 md:hidden"
+                    aria-label={editAriaLabel}
+                  >
+                    <Pencil size={18} className="icon-anim-sway" />
+                  </button>
+                  <div className="hidden md:inline-flex">
+                    <UserMenuButton
+                      user={user}
+                      displayName={displayName}
+                      displayInitials={displayInitials}
+                      userColor={userColor}
+                      statusValue={statusValue}
+                      statusTextClass={statusTextClass}
+                      mobileTab={mobileTab}
+                      onNavigateChats={onNavigateChats}
+                      onNavigateSettings={onNavigateSettings}
+                      onNavigateCalls={onNavigateCalls}
+                      onEnterEdit={isCallsMode ? onEnterCallsEditMode : onEnterEdit}
+                      canEdit={hasChats}
+                      handleLogout={handleLogout}
+                      onOpenOwnProfile={onOpenOwnProfile}
+                    />
+                  </div>
+                </>
               )}
             </div>
             <h2 className="text-center text-lg font-semibold">
@@ -138,17 +184,17 @@ export default function SidebarHeader({
                   "Connecting..."
                 ) : isUpdating ? (
                   "Updating..."
-                ) : chatsScrollable ? (
+                ) :                 chatsScrollable ? (
                   <button
                     type="button"
                     onClick={onScrollToTop}
                     className="inline-flex cursor-pointer items-center gap-2 px-1 py-0.5 text-inherit"
-                    aria-label="Scroll chats to top"
+                    aria-label={`${title} to top`}
                   >
-                    Chats
+                    {title}
                   </button>
                 ) : (
-                  "Chats"
+                  title
                 )}
               </span>
             </h2>
@@ -158,12 +204,25 @@ export default function SidebarHeader({
               ) : editMode ? (
                 <button
                   type="button"
-                  onClick={onDeleteChats}
+                  onClick={isCallsMode ? onDeleteCalls : onDeleteChats}
                   disabled={!selectedChatsCount}
                   className="inline-flex items-center justify-center rounded-full border border-rose-200 bg-rose-50 p-2 text-rose-600 transition hover:border-rose-300 hover:shadow-[0_0_16px_rgba(244,63,94,0.22)] disabled:opacity-50 dark:border-rose-500/30 dark:bg-rose-900/40 dark:text-rose-200"
-                  aria-label="Delete chats"
+                  aria-label={deleteAriaLabel}
                 >
                   <Trash size={18} className="icon-anim-slide" />
+                </button>
+              ) : isCallsMode ? (
+                <button
+                  type="button"
+                  onClick={isInCall ? undefined : onNewCall}
+                  disabled={isInCall}
+                  title={isInCall ? "Already in a call" : undefined}
+                  className={`inline-flex items-center justify-center rounded-full border border-emerald-200 bg-white/80 p-2 text-emerald-700 transition hover:border-emerald-300 hover:shadow-[0_0_16px_rgba(16,185,129,0.22)] dark:border-emerald-500/30 dark:bg-slate-950 dark:text-emerald-200 ${
+                    isInCall ? "cursor-not-allowed opacity-50" : ""
+                  }`}
+                  aria-label={newCallAriaLabel}
+                >
+                  <PhoneCall size={18} className={isInCall ? "" : "icon-anim-pop"} />
                 </button>
               ) : (
                 <div className="relative" ref={createMenuRef}>
@@ -226,6 +285,7 @@ export default function SidebarHeader({
               )}
             </div>
           </div>
+          {!isCallsMode ? (
           <div className="mt-3">
             <label className="group relative block">
               {!hasSearchText && !chatsSearchFocused ? (
@@ -280,6 +340,7 @@ export default function SidebarHeader({
               ) : null}
             </label>
           </div>
+          ) : null}
           {permissionsPrompt?.show ? (
             <div className="mt-3 flex items-center justify-between gap-2 overflow-hidden rounded-2xl border border-emerald-200/80 bg-emerald-50/70 px-3 py-2 text-xs font-semibold text-emerald-800 shadow-xs dark:border-emerald-500/30 dark:bg-slate-800/60 dark:text-emerald-200">
               {permissionsPrompt?.notification?.show &&

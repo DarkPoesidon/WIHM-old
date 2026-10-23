@@ -328,6 +328,7 @@ export function useWebRTCCall({ realtimeSenderRef } = {}) {
     }) => {
       const normalizedChatId = String(chatId || "").trim();
       if (!normalizedChatId || !calleeUsername) return;
+      if (callStateRef.current !== "idle") return;
       if (!isCallSupported()) {
         console.warn("Calls are only supported over secure HTTPS connections");
         return;

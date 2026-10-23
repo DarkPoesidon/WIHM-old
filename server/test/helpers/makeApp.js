@@ -292,6 +292,7 @@ export function makeApp(overrides = {}) {
     listChatMembers: () => [],
     listChatMembersForChats: () => [],
     listChatsForUser: () => [],
+    listCallHistoryForUser: () => [],
     listUsers: () => [],
     searchUsers: () => [],
     searchPublicGroups: () => [],
