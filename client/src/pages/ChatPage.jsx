@@ -7124,7 +7124,13 @@ export default function ChatPage({ user, setUser, isDark, setIsDark, toggleTheme
       ) : null}
 
       <MobileTabMenu
-        hidden={mobileTab === "chat" && activeChatId}
+        hidden={
+          Boolean(
+            (mobileTab === "chat" && activeChatId) ||
+              (mobileTab === "chats" &&
+                (chatsSearchFocused || String(chatsSearchQuery || "").trim())),
+          )
+        }
         mobileTab={mobileTab}
         onChats={() => {
           if (mobileTab === "chats") {
