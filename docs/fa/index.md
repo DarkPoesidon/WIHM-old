@@ -41,10 +41,10 @@ features:
     title: Remote Channel
     details: کانال‌های Telegram یا کانال‌های Songbird دیگر را داخل کانال‌های خودتان mirror کنید.
     link: /fa/Remote-Channel-Setup
-  - icon: 🗃️
-    title: ابزارهای دیتابیس
-    details: کاربران، چت‌ها، فایل‌ها و بکاپ‌ها را با دستورات CLI یا پنل مدیریت مدیریت کنید.
-    link: /fa/Database-Commands
+  - icon: 📞
+    title: تماس صوتی و تصویری
+    details: تماس‌های صوتی و تصویری نظیر‌به‌نظیر با استفاده از WebRTC و سیگنالینگ کم‌تاخیر.
+    link: /fa/Voice-Video-Calls
   - icon: 🩺
     title: عیب‌یابی
     details: مشکلات DNS، شبکه، push و نصب را با راهنماهای کاربردی تشخیص دهید.

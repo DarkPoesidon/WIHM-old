@@ -41,10 +41,10 @@ features:
     title: Remote Channels
     details: Mirror Telegram channels or other Songbird channels into your own channels.
     link: /Remote-Channel-Setup
-  - icon: 🗃️
-    title: Database Tools
-    details: Manage users, chats, files, and backups with a full set of CLI commands or admin panel.
-    link: /Database-Commands
+  - icon: 📞
+    title: Voice & Video Calls
+    details: Real-time peer-to-peer voice and video calling powered by WebRTC with low-latency signaling.
+    link: /Voice-Video-Calls
   - icon: 🩺
     title: Troubleshooting
     details: Diagnose DNS, network, push, and deployment issues with practical guides.

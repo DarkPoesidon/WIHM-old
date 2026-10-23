@@ -21,6 +21,7 @@
 - 💬 **Chat Types**: Direct messages, groups, and channels
 - 📁 **Media Support**: File uploads, voice messages, video transcoding
 - 🔔 **Push Notifications**: Web push with VAPID
+- 📞 **Voice & Video Calls**: Real-time peer-to-peer and secure voice and video calling
 - 📡 **Remote Channels**: Mirror Telegram or Songbird channels (v0.10.3+)
 - 🛡️ **Admin Panel**: Full management interface with owner role (v0.11.0+)
 - 🔒 **Security**: Encryption at rest, bcrypt hashing, rate limiting
@@ -63,6 +64,7 @@ Full documentation lives at [docs.songbird.website](https://docs.songbird.websit
 - [Admin Panel](https://docs.songbird.website/Admin-Panel)
 - [Remote Channel Setup](https://docs.songbird.website/Remote-Channel-Setup)
 - [Push Notification Proxy](https://docs.songbird.website/Push-Notification-Proxy)
+- [Voice & Video Calls](https://docs.songbird.website/Voice-Video-Calls)
 - [Updating the deployed app](https://docs.songbird.website/Updating)
 - [Database Commands](https://docs.songbird.website/Database-Commands)
 - [Troubleshooting](https://docs.songbird.website/Troubleshooting)
