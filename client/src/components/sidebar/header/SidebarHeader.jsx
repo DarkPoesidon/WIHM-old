@@ -18,7 +18,7 @@ import { hasPersian } from "../../../utils/fontUtils.js";
 import UserMenuButton from "./UserMenuButton.jsx";
 
 export default function SidebarHeader({
-  mobileTab,
+  mobileTab = "chats",
   editMode,
   isConnected,
   isUpdating,
@@ -49,6 +49,7 @@ export default function SidebarHeader({
   onScrollToTop,
   permissionsPrompt = null,
   insecureConnection = false,
+  isLocalhost: isLocalhostProp,
   user,
   displayName,
   displayInitials,
@@ -62,6 +63,7 @@ export default function SidebarHeader({
   onOpenOwnProfile,
 }) {
   const isCallsMode = mobileTab === "calls";
+  const isChatsTab = mobileTab !== "calls" && mobileTab !== "settings";
   const [showCreateMenu, setShowCreateMenu] = useState(false);
   const createMenuRef = useRef(null);
   const searchInputRef = useRef(null);
@@ -73,11 +75,13 @@ export default function SidebarHeader({
     return window.localStorage.getItem("songbird-insecure-dismissed") === "1";
   });
   const isLocalhost =
-    typeof window !== "undefined" &&
-    (window.location.hostname === "localhost" ||
-      window.location.hostname === "127.0.0.1" ||
-      window.location.hostname === "::1" ||
-      window.location.hostname.endsWith(".localhost"));
+    typeof isLocalhostProp === "boolean"
+      ? isLocalhostProp
+      : typeof window !== "undefined" &&
+        (window.location.hostname === "localhost" ||
+          window.location.hostname === "127.0.0.1" ||
+          window.location.hostname === "::1" ||
+          window.location.hostname.endsWith(".localhost"));
 
   useEffect(() => {
     if (!insecureConnection || typeof window === "undefined") return;
@@ -87,7 +91,7 @@ export default function SidebarHeader({
   }, [insecureConnection]);
 
   const showInsecureBanner = Boolean(
-    insecureConnection && !hideInsecureBanner && !isLocalhost,
+    isChatsTab && insecureConnection && !hideInsecureBanner && !isLocalhost,
   );
 
   useEffect(() => {
@@ -348,8 +352,31 @@ export default function SidebarHeader({
             </label>
           </div>
           ) : null}
-          {permissionsPrompt?.show ? (
-            <div className="mt-3 flex items-center justify-between gap-2 overflow-hidden rounded-2xl border border-emerald-200/80 bg-emerald-50/70 px-3 py-2 text-xs font-semibold text-emerald-800 shadow-xs dark:border-emerald-500/30 dark:bg-slate-800/60 dark:text-emerald-200">
+          {isChatsTab && permissionsPrompt?.show ? (
+            <div
+              tabIndex={0}
+              onClick={
+                permissionsPrompt?.mode === "notification"
+                  ? permissionsPrompt?.notification?.onRequest
+                  : permissionsPrompt?.mode === "microphone"
+                    ? permissionsPrompt?.microphone?.onRequest
+                    : undefined
+              }
+              onKeyDown={(e) => {
+                if (
+                  e.target === e.currentTarget &&
+                  (e.key === "Enter" || e.key === " ")
+                ) {
+                  e.preventDefault();
+                  if (permissionsPrompt?.mode === "notification") {
+                    permissionsPrompt?.notification?.onRequest?.();
+                  } else if (permissionsPrompt?.mode === "microphone") {
+                    permissionsPrompt?.microphone?.onRequest?.();
+                  }
+                }
+              }}
+              className="mt-3 flex cursor-pointer items-center justify-between gap-2 overflow-hidden rounded-2xl border border-emerald-200/80 bg-emerald-50/70 px-3 py-2 text-xs font-semibold text-emerald-800 shadow-xs transition hover:border-emerald-300 hover:bg-emerald-100/70 focus:outline-hidden focus:ring-2 focus:ring-emerald-300/60 dark:border-emerald-500/30 dark:bg-slate-800/60 dark:text-emerald-200 dark:hover:bg-slate-800/90"
+            >
               {permissionsPrompt?.notification?.show &&
               permissionsPrompt?.mode === "notification" ? (
                 <>
@@ -359,24 +386,17 @@ export default function SidebarHeader({
                       Enable notifications
                     </span>
                   </div>
-                  <div className="flex shrink-0 items-center gap-1.5 whitespace-nowrap">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        permissionsPrompt.onDismiss?.("notification")
-                      }
-                      className="inline-flex h-7 shrink-0 items-center justify-center rounded-full border border-rose-200/80 bg-white/80 px-2.5 text-xs font-semibold text-rose-600 transition hover:border-rose-300 hover:bg-rose-50 dark:border-rose-500/30 dark:bg-slate-900/80 dark:text-rose-300 dark:hover:bg-rose-500/10"
-                    >
-                      Not now
-                    </button>
-                    <button
-                      type="button"
-                      onClick={permissionsPrompt.notification.onRequest}
-                      className="inline-flex h-7 shrink-0 items-center rounded-full bg-emerald-500 px-3 text-xs font-semibold text-white shadow-md shadow-emerald-500/25 transition hover:bg-emerald-400 hover:shadow-emerald-500/35"
-                    >
-                      Allow
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      permissionsPrompt.onDismiss?.("notification");
+                    }}
+                    className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-rose-200/80 bg-white/80 text-rose-600 transition hover:border-rose-300 hover:bg-rose-100 dark:border-rose-500/30 dark:bg-slate-900/80 dark:text-rose-200 dark:hover:bg-rose-500/10"
+                    aria-label="Dismiss"
+                  >
+                    <Close size={14} className="icon-anim-pop" />
+                  </button>
                 </>
               ) : null}
               {permissionsPrompt?.microphone?.show &&
@@ -388,24 +408,17 @@ export default function SidebarHeader({
                       Enable microphone
                     </span>
                   </div>
-                  <div className="flex shrink-0 items-center gap-1.5 whitespace-nowrap">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        permissionsPrompt.onDismiss?.("microphone")
-                      }
-                      className="inline-flex h-7 shrink-0 items-center justify-center rounded-full border border-rose-200/80 bg-white/80 px-2.5 text-xs font-semibold text-rose-600 transition hover:border-rose-300 hover:bg-rose-50 dark:border-rose-500/30 dark:bg-slate-900/80 dark:text-rose-300 dark:hover:bg-rose-500/10"
-                    >
-                      Not now
-                    </button>
-                    <button
-                      type="button"
-                      onClick={permissionsPrompt.microphone.onRequest}
-                      className="inline-flex h-7 shrink-0 items-center rounded-full bg-emerald-500 px-3 text-xs font-semibold text-white shadow-md shadow-emerald-500/25 transition hover:bg-emerald-400 hover:shadow-emerald-500/35"
-                    >
-                      Allow
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      permissionsPrompt.onDismiss?.("microphone");
+                    }}
+                    className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-rose-200/80 bg-white/80 text-rose-600 transition hover:border-rose-300 hover:bg-rose-100 dark:border-rose-500/30 dark:bg-slate-900/80 dark:text-rose-200 dark:hover:bg-rose-500/10"
+                    aria-label="Dismiss"
+                  >
+                    <Close size={14} className="icon-anim-pop" />
+                  </button>
                 </>
               ) : null}
             </div>
