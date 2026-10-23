@@ -11,7 +11,6 @@ import {
   Copy,
   Ghost,
   LoaderCircle,
-  Mic,
   Phone,
   Video,
 } from "../../icons/lucide.js";

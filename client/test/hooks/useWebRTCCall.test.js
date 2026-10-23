@@ -184,7 +184,6 @@ describe("useWebRTCCall state machine and helper logic", () => {
   });
 
   it("ignores startCall when call is already active / not idle", async () => {
-    let callState = "connected";
     const callStateRef = { current: "connected" };
     let started = false;
 

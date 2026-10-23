@@ -567,6 +567,7 @@ export function useChatEvents({
     loadChatsRef,
     pendingScrollToBottomRef,
     pendingScrollToUnreadRef,
+    realtimeSenderRef,
     scheduleMessageRefreshRef,
     setChats,
     setMessages,
