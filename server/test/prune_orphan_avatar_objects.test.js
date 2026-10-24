@@ -149,5 +149,71 @@ describe("Prune Orphan Avatar Objects in S3", () => {
       expect(result.prunedKeys).toEqual(["uploads/avatars/orphan-old.png"]);
       expect(deletedKeys).toEqual(["uploads/avatars/orphan-old.png"]);
     });
+
+    test("ignores directory markers ending with slash (e.g. uploads/avatars/ or avatars/)", async () => {
+      const twoHoursAgo = new Date(Date.now() - 2 * 3600 * 1000);
+
+      mockRemoteProvider.listObjects.mockImplementation(async (prefix) => {
+        if (String(prefix || "") === "avatars/") {
+          return [
+            {
+              key: "avatars/",
+              lastModified: twoHoursAgo,
+              size: 0,
+            },
+          ];
+        }
+        return [
+          {
+            key: "uploads/avatars/",
+            lastModified: twoHoursAgo,
+            size: 0,
+          },
+          {
+            key: "uploads/avatars/active-user.png",
+            lastModified: twoHoursAgo,
+            size: 1000,
+          },
+          {
+            key: "uploads/avatars/orphan-old.png",
+            lastModified: twoHoursAgo,
+            size: 3000,
+          },
+        ];
+      });
+
+      const jobs = createMessageFileJobs({
+        adminGetAll: (query) => {
+          const sql = String(query?.toSQL ? query.toSQL().sql : query);
+          if (sql.includes("users")) {
+            return [{ avatar_url: "/api/uploads/avatars/active-user.png" }];
+          }
+          return [];
+        },
+        adminRun: vi.fn(),
+        adminGetRow: () => null,
+        adminSave: () => {},
+        listMessageFilesByMessageIds: () => [],
+        removeStoredFileNames: () => {},
+        uploadRootDir: "/tmp/test",
+        fs: {},
+        path: {
+          join: (...p) => p.join("/"),
+          basename: (p) => p.split("/").filter(Boolean).pop() || "",
+        },
+        getSetting: () => null,
+        storageProvider: mockRemoteProvider,
+      });
+
+      const result = await jobs.pruneOrphanAvatarObjects({
+        maxAgeMs: 3600 * 1000,
+      });
+
+      expect(result.prunedCount).toBe(1);
+      expect(result.prunedKeys).toEqual(["uploads/avatars/orphan-old.png"]);
+      expect(deletedKeys).toEqual(["uploads/avatars/orphan-old.png"]);
+      expect(deletedKeys).not.toContain("uploads/avatars/");
+      expect(deletedKeys).not.toContain("avatars/");
+    });
   });
 });

@@ -635,8 +635,9 @@ export function createMessageFileJobs({
     }
     const seenKeys = new Set();
     const s3Objects = [...s3ObjectsNew, ...s3ObjectsLegacy].filter((obj) => {
-      if (!obj?.key || seenKeys.has(obj.key)) return false;
-      seenKeys.add(obj.key);
+      const cleanKey = String(obj?.key || "").trim();
+      if (!cleanKey || cleanKey.endsWith("/") || seenKeys.has(cleanKey)) return false;
+      seenKeys.add(cleanKey);
       return true;
     });
     if (!s3Objects || !s3Objects.length) {
