@@ -1,4 +1,4 @@
-## Summary
+# Summary
 
 Briefly describe what this PR introduces or changes.
 
@@ -17,7 +17,7 @@ Briefly describe what this PR introduces or changes.
 
 ## What's Included
 
-Keep this list aligned with the user-facing entries you added to `CHANGELOG.md`.
+List user-facing changes that comes with this PR:
 
 - 
 - 
@@ -62,5 +62,4 @@ Add screenshots or recordings if UI-related.
 - [ ] Code follows project structure
 - [ ] Commit messages follow conventions
 - [ ] No unnecessary console logs
-- [ ] Updated `CHANGELOG.md` when user-facing behavior changed
 - [ ] Ready for merge

@@ -65,4 +65,12 @@ Please include:
 ## 🔐 Security
 
 Do NOT submit secrets or private keys.
-If you discover a vulnerability, please report it privately.
+If you discover a vulnerability, please report it privately following our [Security Policy](SECURITY.md).
+
+## 📜 Code of Conduct
+
+All contributors and participants are expected to adhere to our [Code of Conduct](CODE_OF_CONDUCT.md).
+
+## ♿ Accessibility
+
+We strive to make Songbird accessible to everyone. Please consult our [Accessibility Statement](ACCESSIBILITY.md) for guidelines, conformance targets, and how to report barriers.
