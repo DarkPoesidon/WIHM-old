@@ -36,7 +36,10 @@ function readEnvBool(keys, fallback) {
 }
 
 function readDbConfig() {
-  const dbClient = (process.env.DB_CLIENT || "sqlite3").toLowerCase();
+  const dbClient = (
+    process.env.DB_CLIENT ||
+    (process.env.POSTGRES_URL || process.env.DATABASE_URL ? "postgres" : "sqlite3")
+  ).toLowerCase();
   return {
     client: ["postgres", "postgresql", "pg"].includes(dbClient) ? "postgres" : "sqlite3",
     postgres: {
@@ -45,7 +48,7 @@ function readDbConfig() {
       user: process.env.POSTGRES_USER || "postgres",
       password: process.env.POSTGRES_PASSWORD || "postgres",
       database: process.env.POSTGRES_DB || "songbird",
-      url: process.env.POSTGRES_URL || null,
+      url: process.env.POSTGRES_URL || process.env.DATABASE_URL || null,
       ssl: readEnvBool("POSTGRES_SSL", false),
     },
   };

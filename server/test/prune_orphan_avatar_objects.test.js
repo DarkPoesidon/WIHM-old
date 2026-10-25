@@ -215,5 +215,45 @@ describe("Prune Orphan Avatar Objects in S3", () => {
       expect(deletedKeys).not.toContain("uploads/avatars/");
       expect(deletedKeys).not.toContain("avatars/");
     });
+
+    test("aborts and deletes 0 files when activeFileNames is empty (fail-safe guard against empty/reset DB)", async () => {
+      const twoHoursAgo = new Date(Date.now() - 2 * 3600 * 1000);
+
+      mockRemoteProvider.listObjects.mockImplementation(async (prefix) => {
+        if (String(prefix || "") === "avatars/") return [];
+        return [
+          {
+            key: "uploads/avatars/avatar-user.png",
+            lastModified: twoHoursAgo,
+            size: 3000,
+          },
+        ];
+      });
+
+      const jobs = createMessageFileJobs({
+        adminGetAll: () => [],
+        adminRun: vi.fn(),
+        adminGetRow: () => null,
+        adminSave: () => {},
+        listMessageFilesByMessageIds: () => [],
+        removeStoredFileNames: () => {},
+        uploadRootDir: "/tmp/test",
+        fs: {},
+        path: {
+          join: (...p) => p.join("/"),
+          basename: (p) => p.split("/").filter(Boolean).pop() || "",
+        },
+        getSetting: () => null,
+        storageProvider: mockRemoteProvider,
+      });
+
+      const result = await jobs.pruneOrphanAvatarObjects({
+        maxAgeMs: 3600 * 1000,
+      });
+
+      expect(result.prunedCount).toBe(0);
+      expect(result.prunedKeys).toEqual([]);
+      expect(deletedKeys).toEqual([]);
+    });
   });
 });

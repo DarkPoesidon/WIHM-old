@@ -33,7 +33,10 @@ export const isRemoteMessageRow = (row) =>
   isRemoteMessageClientRequestId(row?.client_request_id || row?.clientRequestId);
 
 function isPostgresMode() {
-  const client = (process.env.DB_CLIENT || "sqlite3").toLowerCase();
+  const client = (
+    process.env.DB_CLIENT ||
+    (process.env.POSTGRES_URL || process.env.DATABASE_URL ? "postgres" : "sqlite3")
+  ).toLowerCase();
   return client === "postgres" || client === "postgresql" || client === "pg";
 }
 
