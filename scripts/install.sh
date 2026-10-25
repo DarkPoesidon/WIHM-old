@@ -2711,7 +2711,7 @@ write_nginx_site_config() {
   local key_line_path="$key_path"
   local current_listen_line=""
 
-  if [[ "$mode" == "http" && "$DEPLOY_MODE" == "domain" && "$CERT_MODE" == "certbot" ]]; then
+  if [[ "$mode" == "http" && "$CERT_MODE" == "certbot" ]]; then
     listen_line="listen 80 default_server;"
     alternate_listen_line="listen 80;"
   fi
@@ -3017,14 +3017,13 @@ configure_lego_ip_ssl() {
 
   log "Requesting 6-day IP certificate for ${CERTBOT_IP_ADDRESS} with lego..."
   run_logged_quiet run_as_root "$LEGO_BIN" \
+    run \
     --accept-tos \
     --email "$CERTBOT_EMAIL" \
     --path "$LEGO_STATE_DIR" \
-    --disable-cn \
     --http \
     --http.webroot "$ACME_WEBROOT" \
     --domains "$CERTBOT_IP_ADDRESS" \
-    run \
     --profile shortlived || {
       warn "ERROR: lego failed for IP ${CERTBOT_IP_ADDRESS}"
       return 1
@@ -3051,7 +3050,7 @@ Wants=network-online.target
 Type=oneshot
 User=root
 Group=root
-ExecStart=${LEGO_BIN} --accept-tos --email ${CERTBOT_EMAIL} --path ${LEGO_STATE_DIR} --disable-cn --http --http.webroot ${ACME_WEBROOT} --domains ${CERTBOT_IP_ADDRESS} renew --dynamic --profile shortlived
+ExecStart=${LEGO_BIN} run --accept-tos --email ${CERTBOT_EMAIL} --path ${LEGO_STATE_DIR} --http --http.webroot ${ACME_WEBROOT} --domains ${CERTBOT_IP_ADDRESS} --profile shortlived
 ExecStartPost=/bin/bash -lc 'cat "${LEGO_STATE_DIR}/certificates/${CERTBOT_IP_ADDRESS}.crt" > "${CERT_INSTALL_DIR}/fullchain.pem" && if [[ -f "${LEGO_STATE_DIR}/certificates/${CERTBOT_IP_ADDRESS}.issuer.crt" ]]; then cat "${LEGO_STATE_DIR}/certificates/${CERTBOT_IP_ADDRESS}.issuer.crt" >> "${CERT_INSTALL_DIR}/fullchain.pem"; fi && cp -Lf "${LEGO_STATE_DIR}/certificates/${CERTBOT_IP_ADDRESS}.key" "${CERT_INSTALL_DIR}/privkey.pem" && chmod 644 "${CERT_INSTALL_DIR}/fullchain.pem" && chmod 600 "${CERT_INSTALL_DIR}/privkey.pem" && systemctl reload nginx'
 
 [Install]

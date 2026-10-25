@@ -1721,3 +1721,78 @@ setup_test_git_repo() {
   [ "$POSTGRES_HOST" = "db.example.com" ]
   [ "$POSTGRES_SSL" = "true" ]
 }
+
+# ===========================================================================
+# lego IP SSL & renewal configuration
+# ===========================================================================
+
+@test "configure_lego_ip_ssl: invokes lego with run subcommand first and valid lego v5 flags" {
+  CERTBOT_IP_ADDRESS="1.2.3.4"
+  CERTBOT_EMAIL="test@example.com"
+  LEGO_BIN="$TEST_DIR/fake_lego"
+  touch "$LEGO_BIN"
+  chmod +x "$LEGO_BIN"
+  ACME_WEBROOT="$TEST_DIR/acme"
+  LEGO_STATE_DIR="$TEST_DIR/lego"
+  CERT_INSTALL_DIR="$TEST_DIR/ssl"
+
+  ensure_lego_installed() { return 0; }
+  install_lego_certificate_files() { return 0; }
+  configure_lego_renewal_timer() { return 0; }
+
+  local lego_args_file="$TEST_DIR/lego_args"
+  run_logged_quiet() {
+    shift # shift off run_as_root
+    printf '%s\n' "$*" > "$lego_args_file"
+    return 0
+  }
+  export -f ensure_lego_installed install_lego_certificate_files configure_lego_renewal_timer run_logged_quiet
+  export CERTBOT_IP_ADDRESS CERTBOT_EMAIL LEGO_BIN ACME_WEBROOT LEGO_STATE_DIR CERT_INSTALL_DIR
+
+  run configure_lego_ip_ssl
+  [ "$status" -eq 0 ]
+  local args
+  args="$(cat "$lego_args_file")"
+  [[ "$args" =~ "$LEGO_BIN run " ]]
+  [[ ! "$args" =~ "--disable-cn" ]]
+  [[ "$args" =~ "--accept-tos" ]]
+  [[ "$args" =~ "--email test@example.com" ]]
+  [[ "$args" =~ "--domains 1.2.3.4" ]]
+  [[ "$args" =~ "--profile shortlived" ]]
+}
+
+@test "configure_lego_renewal_timer: writes ExecStart with run subcommand and valid lego v5 flags" {
+  LEGO_BIN="$TEST_DIR/fake_lego"
+  touch "$LEGO_BIN"
+  chmod +x "$LEGO_BIN"
+  LEGO_RENEW_SERVICE_FILE="$TEST_DIR/lego-renew.service"
+  LEGO_RENEW_TIMER_FILE="$TEST_DIR/lego-renew.timer"
+  CERTBOT_EMAIL="test@example.com"
+  LEGO_STATE_DIR="$TEST_DIR/lego"
+  ACME_WEBROOT="$TEST_DIR/acme"
+  CERTBOT_IP_ADDRESS="1.2.3.4"
+  CERT_INSTALL_DIR="$TEST_DIR/ssl"
+
+  run configure_lego_renewal_timer
+  [ "$status" -eq 0 ]
+  [ -f "$LEGO_RENEW_SERVICE_FILE" ]
+  grep -Fq "ExecStart=$LEGO_BIN run --accept-tos --email test@example.com --path $TEST_DIR/lego --http --http.webroot $TEST_DIR/acme --domains 1.2.3.4 --profile shortlived" "$LEGO_RENEW_SERVICE_FILE"
+}
+
+@test "write_nginx_site_config: listens on port 80 for initial HTTP setup in IP certbot mode" {
+  DEPLOY_MODE="ip"
+  CERT_MODE="certbot"
+  CLIENT_PORT="443"
+  SERVER_PORT="3000"
+  NGINX_SITE_FILE="$TEST_DIR/songbird_nginx.conf"
+  NGINX_SERVER_NAME="144.31.68.17"
+  MAX_UPLOAD_MB="50"
+  ACME_WEBROOT="$TEST_DIR/acme"
+
+  write_nginx_site_config "http"
+  [ "$?" -eq 0 ]
+  [ -f "$NGINX_SITE_FILE" ]
+  grep -Fq "listen 80 default_server;" "$NGINX_SITE_FILE"
+}
+
+
