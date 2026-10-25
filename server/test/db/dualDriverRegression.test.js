@@ -58,6 +58,7 @@ import {
   getAll,
   getRow,
   createMessage,
+  listCallHistoryForUser,
   setMessageForwardOrigin,
   deleteChatById,
 } from "../../db.js";
@@ -133,6 +134,31 @@ describe("Dual Database Driver Regression Tests (SQLite & Postgres)", () => {
       expect(typeof resPromise?.then).toBe("function");
       const mutedUserIds = await resPromise;
       expect(mutedUserIds).toEqual([10]);
+    });
+
+    test("listCallHistoryForUser returns Promise resolving to call history under Postgres mode", async () => {
+      process.env.DB_CLIENT = "postgres";
+      vi.spyOn(dbKnex, "raw").mockImplementation(async () => {
+        return {
+          rows: [
+            {
+              id: "msg-1",
+              chat_id: "chat-1",
+              user_id: "user-1",
+              body: "[[call:voice:connected:60]]",
+              created_at: "2026-01-01 00:00:00",
+              peer_id: "user-2",
+              peer_username: "bob",
+            },
+          ],
+        };
+      });
+
+      const resPromise = listCallHistoryForUser("user-1");
+      expect(typeof resPromise?.then).toBe("function");
+      const rows = await resPromise;
+      expect(rows).toHaveLength(1);
+      expect(rows[0].peer_username).toBe("bob");
     });
 
     test("findChatByGroupUsername returns Promise resolving to chat or null under Postgres mode", async () => {

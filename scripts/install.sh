@@ -1483,24 +1483,66 @@ lego_supports_shortlived_profile() {
   [[ "$help_text" == *"--profile"* ]]
 }
 
+get_installed_lego_version() {
+  [[ -x "$LEGO_BIN" ]] || return 1
+  local ver_output=""
+  ver_output="$("$LEGO_BIN" --version 2>&1 || true)"
+  if [[ "$ver_output" =~ version[[:space:]]+v?([0-9]+(\.[0-9]+)*) ]]; then
+    printf "%s" "${BASH_REMATCH[1]}"
+    return 0
+  fi
+  return 1
+}
+
+lego_version_ge() {
+  local v1="$1"
+  local v2="$2"
+  if have_cmd dpkg; then
+    dpkg --compare-versions "$v1" ge "$v2"
+  else
+    [[ "$v1" == "$v2" || "$(printf '%s\n%s\n' "$v1" "$v2" | sort -V | head -n 1)" == "$v2" ]]
+  fi
+}
+
 ensure_lego_installed() {
+  local installed_version=""
+  local has_installed_lego="no"
+
   if [[ -x "$LEGO_BIN" ]]; then
-    if lego_supports_shortlived_profile; then
-      log "lego binary already installed at ${LEGO_BIN}."
-      return 0
+    has_installed_lego="yes"
+    installed_version="$(get_installed_lego_version || true)"
+    if ! lego_supports_shortlived_profile; then
+      warn "Existing lego binary at ${LEGO_BIN} does not support --profile; upgrading."
     fi
-    warn "Existing lego binary at ${LEGO_BIN} does not support --profile; upgrading."
   fi
 
   local latest_url=""
   latest_url="$(curl -fsSLI -o /dev/null -w '%{url_effective}' https://github.com/go-acme/lego/releases/latest)" || {
+    if [[ "$has_installed_lego" == "yes" && $(lego_supports_shortlived_profile; echo $?) -eq 0 ]]; then
+      log "Unable to check latest lego release from GitHub; using existing lego binary at ${LEGO_BIN}."
+      return 0
+    fi
     warn "Unable to resolve latest lego release URL."
     return 1
   }
   local latest_tag="${latest_url##*/}"
   if [[ -z "$latest_tag" ]]; then
+    if [[ "$has_installed_lego" == "yes" && $(lego_supports_shortlived_profile; echo $?) -eq 0 ]]; then
+      log "Unable to determine latest lego release tag; using existing lego binary at ${LEGO_BIN}."
+      return 0
+    fi
     warn "Unable to determine latest lego release tag."
     return 1
+  fi
+
+  local clean_latest_tag="${latest_tag#v}"
+
+  if [[ "$has_installed_lego" == "yes" && -n "$installed_version" ]]; then
+    if lego_supports_shortlived_profile && lego_version_ge "$installed_version" "$clean_latest_tag"; then
+      log "lego binary is already up to date (${installed_version} >= ${clean_latest_tag}) at ${LEGO_BIN}."
+      return 0
+    fi
+    log "Newer lego version available (${clean_latest_tag} > ${installed_version}); upgrading..."
   fi
 
   local arch=""
@@ -2711,7 +2753,7 @@ write_nginx_site_config() {
   local key_line_path="$key_path"
   local current_listen_line=""
 
-  if [[ "$mode" == "http" && "$DEPLOY_MODE" == "domain" && "$CERT_MODE" == "certbot" ]]; then
+  if [[ "$mode" == "http" && "$CERT_MODE" == "certbot" ]]; then
     listen_line="listen 80 default_server;"
     alternate_listen_line="listen 80;"
   fi
@@ -3017,14 +3059,13 @@ configure_lego_ip_ssl() {
 
   log "Requesting 6-day IP certificate for ${CERTBOT_IP_ADDRESS} with lego..."
   run_logged_quiet run_as_root "$LEGO_BIN" \
+    run \
     --accept-tos \
     --email "$CERTBOT_EMAIL" \
     --path "$LEGO_STATE_DIR" \
-    --disable-cn \
     --http \
     --http.webroot "$ACME_WEBROOT" \
     --domains "$CERTBOT_IP_ADDRESS" \
-    run \
     --profile shortlived || {
       warn "ERROR: lego failed for IP ${CERTBOT_IP_ADDRESS}"
       return 1
@@ -3051,7 +3092,7 @@ Wants=network-online.target
 Type=oneshot
 User=root
 Group=root
-ExecStart=${LEGO_BIN} --accept-tos --email ${CERTBOT_EMAIL} --path ${LEGO_STATE_DIR} --disable-cn --http --http.webroot ${ACME_WEBROOT} --domains ${CERTBOT_IP_ADDRESS} renew --dynamic --profile shortlived
+ExecStart=${LEGO_BIN} run --accept-tos --email ${CERTBOT_EMAIL} --path ${LEGO_STATE_DIR} --http --http.webroot ${ACME_WEBROOT} --domains ${CERTBOT_IP_ADDRESS} --profile shortlived
 ExecStartPost=/bin/bash -lc 'cat "${LEGO_STATE_DIR}/certificates/${CERTBOT_IP_ADDRESS}.crt" > "${CERT_INSTALL_DIR}/fullchain.pem" && if [[ -f "${LEGO_STATE_DIR}/certificates/${CERTBOT_IP_ADDRESS}.issuer.crt" ]]; then cat "${LEGO_STATE_DIR}/certificates/${CERTBOT_IP_ADDRESS}.issuer.crt" >> "${CERT_INSTALL_DIR}/fullchain.pem"; fi && cp -Lf "${LEGO_STATE_DIR}/certificates/${CERTBOT_IP_ADDRESS}.key" "${CERT_INSTALL_DIR}/privkey.pem" && chmod 644 "${CERT_INSTALL_DIR}/fullchain.pem" && chmod 600 "${CERT_INSTALL_DIR}/privkey.pem" && systemctl reload nginx'
 
 [Install]
