@@ -1483,24 +1483,66 @@ lego_supports_shortlived_profile() {
   [[ "$help_text" == *"--profile"* ]]
 }
 
+get_installed_lego_version() {
+  [[ -x "$LEGO_BIN" ]] || return 1
+  local ver_output=""
+  ver_output="$("$LEGO_BIN" --version 2>&1 || true)"
+  if [[ "$ver_output" =~ version[[:space:]]+v?([0-9]+(\.[0-9]+)*) ]]; then
+    printf "%s" "${BASH_REMATCH[1]}"
+    return 0
+  fi
+  return 1
+}
+
+lego_version_ge() {
+  local v1="$1"
+  local v2="$2"
+  if have_cmd dpkg; then
+    dpkg --compare-versions "$v1" ge "$v2"
+  else
+    [[ "$v1" == "$v2" || "$(printf '%s\n%s\n' "$v1" "$v2" | sort -V | head -n 1)" == "$v2" ]]
+  fi
+}
+
 ensure_lego_installed() {
+  local installed_version=""
+  local has_installed_lego="no"
+
   if [[ -x "$LEGO_BIN" ]]; then
-    if lego_supports_shortlived_profile; then
-      log "lego binary already installed at ${LEGO_BIN}."
-      return 0
+    has_installed_lego="yes"
+    installed_version="$(get_installed_lego_version || true)"
+    if ! lego_supports_shortlived_profile; then
+      warn "Existing lego binary at ${LEGO_BIN} does not support --profile; upgrading."
     fi
-    warn "Existing lego binary at ${LEGO_BIN} does not support --profile; upgrading."
   fi
 
   local latest_url=""
   latest_url="$(curl -fsSLI -o /dev/null -w '%{url_effective}' https://github.com/go-acme/lego/releases/latest)" || {
+    if [[ "$has_installed_lego" == "yes" && $(lego_supports_shortlived_profile; echo $?) -eq 0 ]]; then
+      log "Unable to check latest lego release from GitHub; using existing lego binary at ${LEGO_BIN}."
+      return 0
+    fi
     warn "Unable to resolve latest lego release URL."
     return 1
   }
   local latest_tag="${latest_url##*/}"
   if [[ -z "$latest_tag" ]]; then
+    if [[ "$has_installed_lego" == "yes" && $(lego_supports_shortlived_profile; echo $?) -eq 0 ]]; then
+      log "Unable to determine latest lego release tag; using existing lego binary at ${LEGO_BIN}."
+      return 0
+    fi
     warn "Unable to determine latest lego release tag."
     return 1
+  fi
+
+  local clean_latest_tag="${latest_tag#v}"
+
+  if [[ "$has_installed_lego" == "yes" && -n "$installed_version" ]]; then
+    if lego_supports_shortlived_profile && lego_version_ge "$installed_version" "$clean_latest_tag"; then
+      log "lego binary is already up to date (${installed_version} >= ${clean_latest_tag}) at ${LEGO_BIN}."
+      return 0
+    fi
+    log "Newer lego version available (${clean_latest_tag} > ${installed_version}); upgrading..."
   fi
 
   local arch=""

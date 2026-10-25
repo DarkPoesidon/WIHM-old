@@ -837,6 +837,104 @@ make_valid_source_dir() {
   [ "$status" -ne 0 ]
 }
 
+@test "get_installed_lego_version: parses version output correctly" {
+  LEGO_BIN="$TEST_DIR/lego"
+  cat > "$LEGO_BIN" <<'EOF'
+#!/bin/sh
+echo "lego version 5.5.2 linux/amd64"
+EOF
+  chmod +x "$LEGO_BIN"
+
+  result="$(get_installed_lego_version)"
+  [ "$result" = "5.5.2" ]
+}
+
+@test "ensure_lego_installed: upgrades existing lego binary when newer version is available" {
+  LEGO_BIN="$TEST_DIR/lego"
+  cat > "$LEGO_BIN" <<'EOF'
+#!/bin/sh
+if [ "$1" = "--version" ]; then
+  echo "lego version 5.0.0 linux/amd64"
+  exit 0
+fi
+if [ "$1" = "run" ] && [ "$2" = "--help" ]; then
+  echo "--profile shortlived"
+  exit 0
+fi
+EOF
+  chmod +x "$LEGO_BIN"
+
+  local download_performed="$TEST_DIR/download_performed"
+  curl() {
+    if [[ "$*" == *"/releases/latest"* ]]; then
+      printf "https://github.com/go-acme/lego/releases/tag/v5.5.2"
+      return 0
+    fi
+    if [[ "$*" == *"lego_v5.5.2_linux_"* ]]; then
+      touch "$download_performed"
+      local out_file="${@: -1}"
+      local dummy_dir="$TEST_DIR/dummy_lego"
+      mkdir -p "$dummy_dir"
+      cat > "$dummy_dir/lego" <<'DUMMY_EOF'
+#!/bin/sh
+if [ "$1" = "--version" ]; then
+  echo "lego version 5.5.2 linux/amd64"
+  exit 0
+fi
+if [ "$1" = "run" ] && [ "$2" = "--help" ]; then
+  echo "--profile shortlived"
+  exit 0
+fi
+DUMMY_EOF
+      chmod +x "$dummy_dir/lego"
+      tar -czf "$out_file" -C "$dummy_dir" lego
+      return 0
+    fi
+    return 1
+  }
+  export -f curl
+  export LEGO_BIN download_performed
+
+  run ensure_lego_installed
+  [ "$status" -eq 0 ]
+  [ -f "$download_performed" ]
+  [[ "$output" =~ "upgrading" || "$output" =~ "Newer lego version available" ]]
+}
+
+@test "ensure_lego_installed: skips download when existing lego is already up to date" {
+  LEGO_BIN="$TEST_DIR/lego"
+  cat > "$LEGO_BIN" <<'EOF'
+#!/bin/sh
+if [ "$1" = "--version" ]; then
+  echo "lego version 5.5.2 linux/amd64"
+  exit 0
+fi
+if [ "$1" = "run" ] && [ "$2" = "--help" ]; then
+  echo "--profile shortlived"
+  exit 0
+fi
+EOF
+  chmod +x "$LEGO_BIN"
+
+  local download_performed="$TEST_DIR/download_performed"
+  curl() {
+    if [[ "$*" == *"/releases/latest"* ]]; then
+      printf "https://github.com/go-acme/lego/releases/tag/v5.5.2"
+      return 0
+    fi
+    touch "$download_performed"
+    return 1
+  }
+  export -f curl
+  export LEGO_BIN download_performed
+
+  run ensure_lego_installed
+  [ "$status" -eq 0 ]
+  [ ! -f "$download_performed" ]
+  [[ "$output" =~ "already up to date" ]]
+}
+
+
 # ===========================================================================
 # have_cmd
 # ===========================================================================
