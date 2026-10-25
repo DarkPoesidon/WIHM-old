@@ -418,6 +418,69 @@ describe("/api/calls endpoints", () => {
         .set("Cookie", "sid=alice-token3");
       expect(res.status).toBe(500);
     });
+
+    it("returns call rows when session resolution is asynchronous (Postgres mode)", async () => {
+      const listHistory = vi.fn((userId) => {
+        if (!userId) return [];
+        return [
+          {
+            id: CALL_LOG_ID_1,
+            chat_id: CHAT_ID,
+            user_id: BOB_ID,
+            body: "[[call:voice:connected:120]]",
+            peer_username: "bob",
+          },
+        ];
+      });
+
+      const instance = makeApp({
+        userStore: makeUserStore([ALICE]),
+        deps: {
+          requireSession: vi.fn(async (req, res) => {
+            const cookies = req.headers?.cookie || "";
+            if (cookies.includes("sid=async-token")) return ALICE;
+            res.status(401).json({ error: "Not authenticated" });
+            return null;
+          }),
+          listCallHistoryForUser: listHistory,
+        },
+      });
+
+      const res = await request(instance.app)
+        .get("/api/calls/history")
+        .set("Cookie", "sid=async-token");
+
+      expect(res.status).toBe(200);
+      expect(listHistory).toHaveBeenCalledWith(ALICE_ID);
+      expect(res.body.calls).toHaveLength(1);
+    });
+
+    it("returns call rows when only getSessionFromRequest is provided and returns a Promise", async () => {
+      const listHistory = vi.fn((userId) => {
+        if (!userId) return [];
+        return [{ id: CALL_LOG_ID_1, chat_id: CHAT_ID, body: "[[call:voice:failed]]" }];
+      });
+
+      const instance = makeApp({
+        userStore: makeUserStore([ALICE]),
+        deps: {
+          requireSession: undefined,
+          getSessionFromRequest: vi.fn(async (req) => {
+            const cookies = req.headers?.cookie || "";
+            return cookies.includes("sid=async-token") ? ALICE : null;
+          }),
+          listCallHistoryForUser: listHistory,
+        },
+      });
+
+      const res = await request(instance.app)
+        .get("/api/calls/history")
+        .set("Cookie", "sid=async-token");
+
+      expect(res.status).toBe(200);
+      expect(listHistory).toHaveBeenCalledWith(ALICE_ID);
+      expect(res.body.calls).toHaveLength(1);
+    });
   });
 
   describe("POST /api/calls/history/delete", () => {
