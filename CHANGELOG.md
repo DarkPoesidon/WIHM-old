@@ -1,3 +1,12 @@
+## 0.13.1
+
+### Bug Fixes
+
+- 📞 Await async session resolution in call routes for PostgreSQL
+- 🛠️ Check and auto-upgrade lego binary when newer release is available
+- 📜 Update lego CLI invocation syntax for lego v5 compatibility
+- 🪣 Ignore directory marker keys during orphan avatar pruning in object storage
+
 ## 0.13.0
 
 ### New Features
