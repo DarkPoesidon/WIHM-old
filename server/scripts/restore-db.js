@@ -14,7 +14,7 @@ import {
 } from "./_cli.js";
 import { createPostgresMaintenance } from "../lib/postgresMaintenance.js";
 import { readDbConfig } from "../settings/env.js";
-import { detectRunningServer } from "./_db-admin.js";
+import { detectRunningServer, openDatabase } from "./_db-admin.js";
 
 const projectRootDir = path.resolve(serverDir, "..");
 dotenv.config({ path: path.join(projectRootDir, ".env"), quiet: true });
@@ -187,7 +187,15 @@ async function main() {
     }
   } else {
     try {
+      const walPath = `${dbPath}-wal`;
+      const shmPath = `${dbPath}-shm`;
+      try { if (fs.existsSync(walPath)) fs.unlinkSync(walPath); } catch {}
+      try { if (fs.existsSync(shmPath)) fs.unlinkSync(shmPath); } catch {}
       fs.copyFileSync(sourcePath, dbPath);
+      try {
+        const adminDb = await openDatabase({ dbPath });
+        await adminDb.close();
+      } catch (_) {}
     } catch (error) {
       console.error(`Restore failed: ${error?.message || error}`);
       process.exit(1);

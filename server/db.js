@@ -83,10 +83,21 @@ function writeDatabaseToDisk() {
   databaseDirty = false;
 }
 
+function cleanupWalFiles() {
+  const walPath = `${dbPath}-wal`;
+  const shmPath = `${dbPath}-shm`;
+  try {
+    if (fs.existsSync(walPath)) fs.unlinkSync(walPath);
+  } catch {}
+  try {
+    if (fs.existsSync(shmPath)) fs.unlinkSync(shmPath);
+  } catch {}
+}
+
 // Reload the in-memory database from the file on disk. Used after a restore
 // replaces songbird.db underneath the running process. Cancels any pending
 // debounced save first so we never overwrite the freshly restored file.
-function reloadDatabaseFromDisk() {
+async function reloadDatabaseFromDisk() {
   if (pendingSaveTimer) {
     clearTimeout(pendingSaveTimer);
     pendingSaveTimer = null;
@@ -99,19 +110,66 @@ function reloadDatabaseFromDisk() {
     try {
       betterDb.close();
     } catch {}
-    try {
-      betterDb = new Database(dbPath);
-      betterDb.pragma("journal_mode = WAL");
-    } catch {}
+    betterDb = null;
   }
-  if (SQL) {
+  if (db) {
+    try {
+      db.close();
+    } catch {}
+    db = null;
+  }
+  cleanupWalFiles();
+  if (isPostgresMode()) return;
+  try {
+    betterDb = new Database(dbPath);
+    betterDb.pragma("journal_mode = WAL");
+  } catch {
+    betterDb = null;
+  }
+  if (!betterDb && SQL) {
     const buffer = fs.readFileSync(dbPath);
-    const next = new SQL.Database(buffer);
-    try {
-      if (db) db.close();
-    } catch {}
-    db = next;
+    db = new SQL.Database(buffer);
   }
+  await runDatabaseMigrations();
+}
+
+export async function restoreDatabase(fileBuffer) {
+  if (pendingSaveTimer) {
+    clearTimeout(pendingSaveTimer);
+    pendingSaveTimer = null;
+  }
+  databaseDirty = false;
+  if (betterDb) {
+    try {
+      betterDb.close();
+    } catch {}
+    betterDb = null;
+  }
+  if (db) {
+    try {
+      db.close();
+    } catch {}
+    db = null;
+  }
+  cleanupWalFiles();
+  if (!fs.existsSync(dataDir)) {
+    fs.mkdirSync(dataDir, { recursive: true });
+  }
+  const tmpPath = path.join(dataDir, `.restore-${Date.now()}.db`);
+  fs.writeFileSync(tmpPath, fileBuffer);
+  fs.renameSync(tmpPath, dbPath);
+  if (isPostgresMode()) return;
+  try {
+    betterDb = new Database(dbPath);
+    betterDb.pragma("journal_mode = WAL");
+  } catch {
+    betterDb = null;
+  }
+  if (!betterDb && SQL) {
+    const buffer = fs.readFileSync(dbPath);
+    db = new SQL.Database(buffer);
+  }
+  await runDatabaseMigrations();
 }
 
 function createPreMigrationBackup(fromVersion, toVersion) {
@@ -4297,8 +4355,8 @@ export async function vacuumDatabase() {
   saveDatabase();
 }
 
-export function reloadDatabase() {
-  reloadDatabaseFromDisk();
+export async function reloadDatabase() {
+  await reloadDatabaseFromDisk();
 }
 
 // Wipe all messages and their file records (keeps users, chats, memberships).

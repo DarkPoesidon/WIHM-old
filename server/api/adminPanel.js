@@ -2015,11 +2015,22 @@ function registerAdminPanelRoutes(app, deps) {
     const dbPath  = nodePath.join(dataDir, "songbird.db");
 
     try {
-      if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
-      const tmpPath = nodePath.join(dataDir, `.restore-${Date.now()}.db`);
-      fs.writeFileSync(tmpPath, file.buffer);
-      fs.renameSync(tmpPath, dbPath);
-      reloadDatabase();
+      if (typeof deps.restoreDatabase === "function") {
+        await deps.restoreDatabase(file.buffer);
+      } else {
+        if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
+        const walPath = `${dbPath}-wal`;
+        const shmPath = `${dbPath}-shm`;
+        try { if (fs.existsSync(walPath)) fs.unlinkSync(walPath); } catch {}
+        try { if (fs.existsSync(shmPath)) fs.unlinkSync(shmPath); } catch {}
+        const tmpPath = nodePath.join(dataDir, `.restore-${Date.now()}.db`);
+        fs.writeFileSync(tmpPath, file.buffer);
+        fs.renameSync(tmpPath, dbPath);
+        reloadDatabase();
+      }
+      if (typeof deps.loadSettings === "function") {
+        await deps.loadSettings(deps.dbGetAllSettings || deps.dbGetAll);
+      }
       broadcastAll({ type: "session_revoked" });
       log(session, "db.restore", { targetType: "system", targetLabel: file.originalname || "uploaded.db" });
       res.json({ ok: true });

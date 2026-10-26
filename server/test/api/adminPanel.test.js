@@ -208,6 +208,66 @@ describe("PostgreSQL maintenance actions", () => {
     expect(deleteRes.status).toBe(409);
     expect(dropDatabase).not.toHaveBeenCalled();
   });
+
+  test("restores SQLite database through restoreDatabase and reloads settings", async () => {
+    const restoreDatabase = vi.fn(async () => {});
+    const loadSettings = vi.fn(async () => {});
+    const broadcastAll = vi.fn();
+    const { app } = makeAdminApp({
+      restoreDatabase,
+      loadSettings,
+      broadcastAll,
+    });
+
+    const validHeader = Buffer.from("SQLite format 3\0");
+    const mockDbBuffer = Buffer.concat([validHeader, Buffer.alloc(100)]);
+
+    const res = await request(app)
+      .post("/api/admin/maintenance/restore")
+      .set("Cookie", "sid=admin-session")
+      .attach("database", mockDbBuffer, "backup.db");
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ ok: true });
+    expect(restoreDatabase).toHaveBeenCalledWith(expect.any(Buffer));
+    expect(loadSettings).toHaveBeenCalled();
+    expect(broadcastAll).toHaveBeenCalledWith({ type: "session_revoked" });
+  });
+
+  test("cleans up stale WAL and SHM files in SQLite restore fallback", async () => {
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "songbird-admin-restore-"));
+    temporaryPaths.push(tempDir);
+    const dbPath = path.join(tempDir, "songbird.db");
+    const walPath = `${dbPath}-wal`;
+    const shmPath = `${dbPath}-shm`;
+    fs.writeFileSync(dbPath, "OLD_DB");
+    fs.writeFileSync(walPath, "OLD_WAL");
+    fs.writeFileSync(shmPath, "OLD_SHM");
+
+    const reloadDatabase = vi.fn();
+    const { app } = makeAdminApp({
+      dataDir: tempDir,
+      fs,
+      path,
+      restoreDatabase: null,
+      reloadDatabase,
+    });
+
+    const validHeader = Buffer.from("SQLite format 3\0");
+    const newDbBuffer = Buffer.concat([validHeader, Buffer.from("NEW_RESTORED_DB")]);
+
+    const res = await request(app)
+      .post("/api/admin/maintenance/restore")
+      .set("Cookie", "sid=admin-session")
+      .attach("database", newDbBuffer, "backup.db");
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ ok: true });
+    expect(fs.existsSync(walPath)).toBe(false);
+    expect(fs.existsSync(shmPath)).toBe(false);
+    expect(fs.readFileSync(dbPath)).toEqual(newDbBuffer);
+    expect(reloadDatabase).toHaveBeenCalled();
+  });
 });
 describe("async PostgreSQL admin dependencies", () => {
   test("/api/admin/chats awaits the async chat list result", async () => {
