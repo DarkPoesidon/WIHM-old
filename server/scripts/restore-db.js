@@ -1,6 +1,8 @@
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
+import dotenv from "dotenv";
 import {
   confirmAction,
   getCliArgs,
@@ -15,6 +17,9 @@ import { readDbConfig } from "../settings/env.js";
 import { detectRunningServer } from "./_db-admin.js";
 
 const projectRootDir = path.resolve(serverDir, "..");
+dotenv.config({ path: path.join(projectRootDir, ".env"), quiet: true });
+dotenv.config({ path: path.join(serverDir, ".env"), override: true, quiet: true });
+
 const dbPath = path.join(dataDir, "songbird.db");
 const backupDir = path.join(dataDir, "backups");
 const serviceName = process.env.SONGBIRD_SERVICE_NAME || "songbird.service";
@@ -22,25 +27,75 @@ const serviceUser = process.env.SONGBIRD_SERVICE_USER || "songbird";
 const serviceGroup = process.env.SONGBIRD_SERVICE_GROUP || serviceUser;
 
 function listDbBackups(extension) {
-  if (!fs.existsSync(backupDir)) return [];
-  return fs
-    .readdirSync(backupDir, { withFileTypes: true })
-    .filter((entry) => entry.isFile() && entry.name.toLowerCase().endsWith(extension))
-    .map((entry) => path.join(backupDir, entry.name))
-    .sort((a, b) => fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs);
+  const dirs = [backupDir];
+  if (typeof process.getuid === "function" && process.getuid() === 0 && fs.existsSync("/root")) {
+    dirs.push("/root");
+  }
+  const files = [];
+  for (const dir of dirs) {
+    if (!fs.existsSync(dir)) continue;
+    try {
+      const entries = fs
+        .readdirSync(dir, { withFileTypes: true })
+        .filter((entry) => entry.isFile() && entry.name.toLowerCase().endsWith(extension))
+        .filter((entry) => dir !== "/root" || entry.name.startsWith("songbird-backup-"))
+        .map((entry) => path.join(dir, entry.name));
+      files.push(...entries);
+    } catch (_) {}
+  }
+  return files.sort((a, b) => {
+    try {
+      return fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs;
+    } catch (_) {
+      return 0;
+    }
+  });
 }
 
 function resolveDbPath(value, extension) {
-  const resolved = path.resolve(String(value || "").trim());
-  if (!resolved || path.extname(resolved).toLowerCase() !== extension) return null;
-  if (!fs.existsSync(resolved) || !fs.statSync(resolved).isFile()) return null;
-  return resolved;
+  const input = String(value || "").trim();
+  if (!input) return { resolved: null, error: null };
+
+  const expandedInput = input.startsWith("~/")
+    ? path.join(os.homedir(), input.slice(2))
+    : input;
+
+  const candidates = [
+    path.resolve(expandedInput),
+    process.env.INIT_CWD ? path.resolve(process.env.INIT_CWD, expandedInput) : null,
+    path.resolve(projectRootDir, expandedInput),
+    path.resolve(backupDir, expandedInput),
+  ].filter(Boolean);
+
+  let permissionError = null;
+
+  for (const candidate of candidates) {
+    if (path.extname(candidate).toLowerCase() !== extension) continue;
+
+    try {
+      const stats = fs.statSync(candidate);
+      if (stats.isFile()) {
+        fs.accessSync(candidate, fs.constants.R_OK);
+        return { resolved: candidate, error: null };
+      }
+    } catch (err) {
+      if (err.code === "EACCES" || err.code === "EPERM") {
+        permissionError = `Permission denied accessing backup file: ${candidate}`;
+      }
+    }
+  }
+
+  return { resolved: null, error: permissionError };
 }
 
 async function resolveBackupPath(args, extension) {
   const fileFlag = getFlagValue(args, "--file");
   if (fileFlag) {
-    const resolved = resolveDbPath(fileFlag, extension);
+    const { resolved, error } = resolveDbPath(fileFlag, extension);
+    if (error) {
+      console.error(error);
+      process.exit(1);
+    }
     if (!resolved) {
       console.error(`Backup file not found or is not a ${extension} file: ${String(fileFlag).trim()}`);
       process.exit(1);
@@ -64,7 +119,11 @@ async function resolveBackupPath(args, extension) {
 
   while (true) {
     const answer = await promptInput({ prompt: `Enter the full path to the backup ${extension} file: `, required: true });
-    const resolved = resolveDbPath(answer, extension);
+    const { resolved, error } = resolveDbPath(answer, extension);
+    if (error) {
+      console.error(error);
+      continue;
+    }
     if (resolved) return resolved;
     console.log(`Backup file must be an existing ${extension} file.`);
   }
