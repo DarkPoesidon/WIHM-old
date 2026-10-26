@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeEach } from "vitest";
-import { normalizeEnvSecret, ensureSystemSecrets, updateEnvValue } from "../../lib/secrets.js";
+import { normalizeEnvSecret, ensureSystemSecrets, updateEnvValue, syncSecretsFromDatabase } from "../../lib/secrets.js";
 
 describe("secrets.js", () => {
   beforeEach(() => {
@@ -378,5 +378,62 @@ describe("secrets.js", () => {
 
     updateEnvValue("/tmp/.env", "FOO", "new_val", { fsImpl: mockFs });
     expect(writeCount).toBe(1);
+  });
+
+  test("syncSecretsFromDatabase updates process.env and .env with secrets from restored database", async () => {
+    process.env.STORAGE_ENCRYPTION_KEY = "old-env-storage-key";
+    process.env.VAPID_PUBLIC_KEY = "old-env-vapid-pub";
+    process.env.VAPID_PRIVATE_KEY = "old-env-vapid-priv";
+
+    let envContent = [
+      "STORAGE_ENCRYPTION_KEY=old-env-storage-key",
+      "VAPID_PUBLIC_KEY=old-env-vapid-pub",
+      "VAPID_PRIVATE_KEY=old-env-vapid-priv",
+      "PORT=3000",
+    ].join("\n");
+
+    const mockFs = {
+      existsSync: () => true,
+      readFileSync: () => envContent,
+      writeFileSync: (_, content) => {
+        envContent = content;
+      },
+    };
+
+    const restoredDbStore = {
+      STORAGE_ENCRYPTION_KEY: "restored-db-storage-key",
+      VAPID_PUBLIC_KEY: "restored-db-vapid-pub",
+      VAPID_PRIVATE_KEY: "restored-db-vapid-priv",
+      ADMIN_API_TOKEN: "restored-admin-token",
+    };
+    const { mockGetRow, mockRun } = makeDbMocks(restoredDbStore);
+
+    await syncSecretsFromDatabase({
+      dbGetRow: mockGetRow,
+      projectRootDir: "/test-project",
+      fsImpl: mockFs,
+      pathImpl: { join: (...parts) => parts.join("/") },
+    });
+
+    expect(process.env.STORAGE_ENCRYPTION_KEY).toBe("restored-db-storage-key");
+    expect(process.env.VAPID_PUBLIC_KEY).toBe("restored-db-vapid-pub");
+    expect(process.env.VAPID_PRIVATE_KEY).toBe("restored-db-vapid-priv");
+    expect(process.env.ADMIN_API_TOKEN).toBe("restored-admin-token");
+
+    expect(envContent).toContain("STORAGE_ENCRYPTION_KEY=restored-db-storage-key");
+    expect(envContent).toContain("VAPID_PUBLIC_KEY=restored-db-vapid-pub");
+    expect(envContent).toContain("VAPID_PRIVATE_KEY=restored-db-vapid-priv");
+    expect(envContent).toContain("PORT=3000");
+
+    // ensureSystemSecrets now succeeds without throwing immutable mismatch
+    await expect(
+      ensureSystemSecrets({
+        dbGetRow: mockGetRow,
+        dbRun: mockRun,
+        projectRootDir: "/test-project",
+        fsImpl: mockFs,
+        pathImpl: { join: (...parts) => parts.join("/") },
+      }),
+    ).resolves.toBeDefined();
   });
 });

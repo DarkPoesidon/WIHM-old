@@ -15,6 +15,7 @@ import {
 import { createPostgresMaintenance } from "../lib/postgresMaintenance.js";
 import { readDbConfig } from "../settings/env.js";
 import { detectRunningServer, openDatabase } from "./_db-admin.js";
+import { syncSecretsFromDatabase } from "../lib/secrets.js";
 
 const projectRootDir = path.resolve(serverDir, "..");
 dotenv.config({ path: path.join(projectRootDir, ".env"), quiet: true });
@@ -181,6 +182,15 @@ async function main() {
     console.log(`PostgreSQL active — restoring native archive "${path.basename(sourcePath)}"...`);
     try {
       await createPostgresMaintenance({ config: dbConfig }).restore(sourcePath);
+      try {
+        const adminDb = await openDatabase();
+        await syncSecretsFromDatabase({
+          dbGetRow: (query) => adminDb.getRow(query),
+          projectRootDir,
+          serverDir,
+        });
+        await adminDb.close();
+      } catch (_) {}
     } catch (error) {
       console.error(`PostgreSQL restore failed: ${error?.message || error}`);
       process.exit(1);
@@ -194,6 +204,11 @@ async function main() {
       fs.copyFileSync(sourcePath, dbPath);
       try {
         const adminDb = await openDatabase({ dbPath });
+        await syncSecretsFromDatabase({
+          dbGetRow: (query) => adminDb.getRow(query),
+          projectRootDir,
+          serverDir,
+        });
         await adminDb.close();
       } catch (_) {}
     } catch (error) {

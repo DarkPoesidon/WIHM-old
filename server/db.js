@@ -11,7 +11,7 @@ import { migrations } from "./migrations/index.js";
 import { setUserColor } from "./settings/colors.js";
 import { generateUuid } from "./lib/uuidUtils.js";
 import { storageEncryption } from "./lib/storageEncryption.js";
-import { ensureSystemSecrets } from "./lib/secrets.js";
+import { ensureSystemSecrets, syncSecretsFromDatabase } from "./lib/secrets.js";
 
 const serverDir = path.dirname(fileURLToPath(import.meta.url));
 const projectRootDir = path.resolve(serverDir, "..");
@@ -131,6 +131,11 @@ async function reloadDatabaseFromDisk() {
     db = new SQL.Database(buffer);
   }
   await runDatabaseMigrations();
+  await syncSecretsFromDatabase({
+    dbGetRow: (query) => getRow(query),
+    projectRootDir,
+    serverDir,
+  });
 }
 
 export async function restoreDatabase(fileBuffer) {
@@ -170,6 +175,11 @@ export async function restoreDatabase(fileBuffer) {
     db = new SQL.Database(buffer);
   }
   await runDatabaseMigrations();
+  await syncSecretsFromDatabase({
+    dbGetRow: (query) => getRow(query),
+    projectRootDir,
+    serverDir,
+  });
 }
 
 function createPreMigrationBackup(fromVersion, toVersion) {
