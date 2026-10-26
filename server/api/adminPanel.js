@@ -581,7 +581,7 @@ function registerAdminPanelRoutes(app, deps) {
         };
       }
     }
-    // ── Database — postgres ping (sqlite mode has no external DB to ping) ──
+    // ── Database health probe (sqlite and postgres) ──
     // `dbConfig` is resolved once at startup from DB_CLIENT; fall back to the
     // env so the card still renders correctly when deps omit it (tests).
     const rawDbClient = String(
@@ -590,9 +590,8 @@ function registerAdminPanelRoutes(app, deps) {
     const dbClient = ["postgres", "postgresql", "pg"].includes(rawDbClient)
       ? "postgres"
       : "sqlite3";
-    const isPostgres = dbClient === "postgres";
-    let database = { client: dbClient, configured: isPostgres, reachable: null, latencyMs: null };
-    if (isPostgres) {
+    let database = { client: dbClient, configured: true, reachable: null, latencyMs: null };
+    if (typeof adminGetRow === "function") {
       const started = Date.now();
       const timeout = new Promise((_, reject) => {
         const timer = setTimeout(

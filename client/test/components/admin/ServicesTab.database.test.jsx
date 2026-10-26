@@ -20,25 +20,47 @@ function makeData(database) {
 }
 
 describe("ServicesTab database card", () => {
-  test("sqlite mode renders a disabled Database card", async () => {
+  test("sqlite mode renders an active Database card with latency", async () => {
     render(
       <ServicesTab
         data={makeData({
           client: "sqlite3",
-          configured: false,
-          reachable: null,
-          latencyMs: null,
+          configured: true,
+          reachable: true,
+          latencyMs: 2,
         })}
       />,
     );
     const card = page.getByRole("button", { name: /database/i });
     await expect.element(card).toBeInTheDocument();
-    await expect.element(card).toBeDisabled();
+    await expect.element(card).toBeEnabled();
     await expect
-      .element(card.getByText("SQLite mode — local file database."))
+      .element(card.getByText("SQLite · local · 2ms"))
       .toBeInTheDocument();
     await expect
-      .element(card.getByText("Disabled", { exact: true }))
+      .element(card.getByText("Active", { exact: true }))
+      .toBeInTheDocument();
+  });
+
+  test("unreachable sqlite reports Unreachable", async () => {
+    render(
+      <ServicesTab
+        data={makeData({
+          client: "sqlite3",
+          configured: true,
+          reachable: false,
+          latencyMs: 5,
+        })}
+      />,
+    );
+    const card = page.getByRole("button", { name: /database/i });
+    await expect.element(card).toBeInTheDocument();
+    await expect.element(card).toBeEnabled();
+    await expect
+      .element(card.getByText("SQLite unreachable."))
+      .toBeInTheDocument();
+    await expect
+      .element(card.getByText("Unreachable", { exact: true }))
       .toBeInTheDocument();
   });
 
