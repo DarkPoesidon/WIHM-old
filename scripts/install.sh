@@ -129,6 +129,16 @@ NODE_EXEC_PATH=""
 NPM_EXEC_PATH=""
 SKIP_CLEAR_ON_EXIT="0"
 MENU_ACTION_PAUSED="0"
+ENABLE_COTURN="${ENABLE_COTURN:-no}"
+COTURN_PORT="${COTURN_PORT:-3478}"
+COTURN_MIN_PORT="${COTURN_MIN_PORT:-49152}"
+COTURN_MAX_PORT="${COTURN_MAX_PORT:-65535}"
+COTURN_EXTERNAL_IP="${COTURN_EXTERNAL_IP:-}"
+COTURN_REALM="${COTURN_REALM:-}"
+COTURN_USER="${COTURN_USER:-songbird}"
+COTURN_PASSWORD="${COTURN_PASSWORD:-}"
+COTURN_CONF_FILE="${COTURN_CONF_FILE:-/etc/turnserver.conf}"
+COTURN_DEFAULT_FILE="${COTURN_DEFAULT_FILE:-/etc/default/coturn}"
 
 resolve_current_script_path() {
   local source_hint="${BASH_SOURCE[0]:-$0}"
@@ -421,6 +431,13 @@ show_deployment_success_frame() {
         else
           lines+=("Visit: https://${visit_ip}:${CLIENT_PORT}")
         fi
+      fi
+      if [[ "${ENABLE_COTURN:-no}" == "yes" ]]; then
+        lines+=("")
+        lines+=("Coturn TURN Server Configured:")
+        lines+=("  Listening Port: ${COTURN_PORT}/tcp, ${COTURN_PORT}/udp")
+        lines+=("  Relay Ports:    ${COTURN_MIN_PORT}:${COTURN_MAX_PORT}/udp")
+        lines+=("  Note: Open these UDP/TCP ports in your Cloud Security Group / Firewall.")
       fi
       ;;
     update)
@@ -801,6 +818,133 @@ prompt_worker_port() {
     fi
     printf "Port must be an integer between 1 and 65535.\n"
   done
+}
+
+is_valid_ipv4() {
+  local ip="$1"
+  if [[ ! "$ip" =~ ^([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})$ ]]; then
+    return 1
+  fi
+  local o1="${BASH_REMATCH[1]}"
+  local o2="${BASH_REMATCH[2]}"
+  local o3="${BASH_REMATCH[3]}"
+  local o4="${BASH_REMATCH[4]}"
+  if (( o1 > 255 || o2 > 255 || o3 > 255 || o4 > 255 )); then
+    return 1
+  fi
+  return 0
+}
+
+detect_public_ip() {
+  local ip=""
+  local service=""
+  for service in "https://api.ipify.org" "https://icanhazip.com" "https://ifconfig.me/ip"; do
+    if ip="$(curl -4s --max-time 3 "$service" 2>/dev/null | tr -d '[:space:]')" && is_valid_ipv4 "$ip"; then
+      printf "%s" "$ip"
+      return 0
+    fi
+  done
+
+  ip="$(ip route get 1.1.1.1 2>/dev/null | awk '{print $7}' | tr -d '[:space:]' || true)"
+  if is_valid_ipv4 "$ip"; then
+    printf "%s" "$ip"
+    return 0
+  fi
+
+  ip="$(hostname -I 2>/dev/null | awk '{print $1}' | tr -d '[:space:]' || true)"
+  if is_valid_ipv4 "$ip"; then
+    printf "%s" "$ip"
+    return 0
+  fi
+
+  return 1
+}
+
+prompt_public_ip() {
+  local prompt_label="${1:-Enter public IP address}"
+  local detected_ip=""
+  detected_ip="$(detect_public_ip 2>/dev/null || true)"
+  local value=""
+
+  while true; do
+    if [[ -n "$detected_ip" ]]; then
+      prompt_read "${prompt_label} [default: ${detected_ip}]: " value
+      if [[ -z "$value" ]]; then
+        printf "%s" "$detected_ip"
+        return 0
+      fi
+    else
+      prompt_read "${prompt_label}: " value
+    fi
+
+    value="$(printf "%s" "$value" | tr -d '[:space:]')"
+    if is_valid_ipv4 "$value"; then
+      printf "%s" "$value"
+      return 0
+    fi
+    printf "Invalid IPv4 address format. Please enter a valid IP address.\n"
+  done
+}
+
+prompt_coturn_port() {
+  local default_port="${1:-3478}"
+  local value=""
+  while true; do
+    prompt_read "Enter Coturn listening port (default: $default_port): " value
+    if [[ -z "$value" ]]; then
+      value="$default_port"
+    fi
+    if [[ "$value" =~ ^[0-9]+$ ]] && (( value >= 1 && value <= 65535 )); then
+      if [[ -n "${SERVER_PORT:-}" && "$value" == "$SERVER_PORT" ]]; then
+        printf "Coturn listening port cannot conflict with server port (%s).\n" "$SERVER_PORT"
+        continue
+      fi
+      if [[ -n "${CLIENT_PORT:-}" && "$value" == "$CLIENT_PORT" ]]; then
+        printf "Coturn listening port cannot conflict with client port (%s).\n" "$CLIENT_PORT"
+        continue
+      fi
+      if [[ -n "${WORKER_PORT:-}" && "$value" == "$WORKER_PORT" ]]; then
+        printf "Coturn listening port cannot conflict with media worker port (%s).\n" "$WORKER_PORT"
+        continue
+      fi
+      printf "%s" "$value"
+      return 0
+    fi
+    printf "Port must be an integer between 1 and 65535.\n"
+  done
+}
+
+prompt_coturn_relay_ports() {
+  local default_min="${1:-49152}"
+  local default_max="${2:-65535}"
+  local min_val=""
+  local max_val=""
+  while true; do
+    prompt_read "Enter Coturn minimum relay port (default: $default_min): " min_val
+    [[ -z "$min_val" ]] && min_val="$default_min"
+    if [[ ! "$min_val" =~ ^[0-9]+$ ]] || (( min_val < 1 || min_val > 65535 )); then
+      printf "Port must be an integer between 1 and 65535.\n"
+      continue
+    fi
+    break
+  done
+
+  while true; do
+    prompt_read "Enter Coturn maximum relay port (default: $default_max): " max_val
+    [[ -z "$max_val" ]] && max_val="$default_max"
+    if [[ ! "$max_val" =~ ^[0-9]+$ ]] || (( max_val < 1 || max_val > 65535 )); then
+      printf "Port must be an integer between 1 and 65535.\n"
+      continue
+    fi
+    if (( max_val < min_val )); then
+      printf "Maximum relay port must be greater than or equal to minimum relay port (%s).\n" "$min_val"
+      continue
+    fi
+    break
+  done
+
+  COTURN_MIN_PORT="$min_val"
+  COTURN_MAX_PORT="$max_val"
 }
 
 normalize_path_input() {
@@ -1191,9 +1335,10 @@ install_required_packages() {
     nginx
     ffmpeg
     nano
-    zip
-    unzip
   )
+  if [[ "$SOURCE_MODE" == "offline" ]]; then
+    required_pkgs+=(unzip)
+  fi
   if [[ "$DB_CLIENT" == "postgres" || "$DB_CLIENT" == "postgresql" || "$DB_CLIENT" == "pg" ]]; then
     required_pkgs+=(postgresql-client)
   fi
@@ -1202,6 +1347,9 @@ install_required_packages() {
   fi
   if [[ "$CERT_MODE" == "certbot" && "$DEPLOY_MODE" == "domain" ]]; then
     required_pkgs+=(python3-certbot-nginx)
+  fi
+  if [[ "${ENABLE_COTURN:-no}" == "yes" ]]; then
+    required_pkgs+=(coturn)
   fi
   local missing_pkgs=()
   local pkg=""
@@ -2234,6 +2382,20 @@ EOF" || return 1
   if [[ -n "$CERTBOT_EMAIL" ]]; then
     replace_env_value "$env_file" "VAPID_SUBJECT" "mailto:${CERTBOT_EMAIL}" || return 1
   fi
+  if [[ "${ENABLE_COTURN:-no}" == "yes" ]]; then
+    local turn_host="${COTURN_EXTERNAL_IP:-127.0.0.1}"
+    if [[ "${DEPLOY_MODE:-}" == "domain" && ${#DOMAIN_NAMES[@]} -gt 0 ]]; then
+      turn_host="${DOMAIN_NAMES[0]}"
+    fi
+    run_silent run_as_root bash -lc "cat >> '$env_file' <<EOF
+
+# WebRTC / Voice & Video Calls (Coturn Relay)
+TURN_STUN_URL=\"stun:${turn_host}:${COTURN_PORT}\"
+TURN_URL=\"turn:${turn_host}:${COTURN_PORT}\"
+TURN_USERNAME=\"${COTURN_USER}\"
+TURN_CREDENTIAL=\"${COTURN_PASSWORD}\"
+EOF" || return 1
+  fi
   log "Wrote environment config to ${env_file}."
 }
 
@@ -2579,7 +2741,7 @@ collect_install_options() {
     certbot)
       CERTBOT_EMAIL="$(prompt_non_empty "Enter email for Let's Encrypt renewal notices")"
       if [[ "$DEPLOY_MODE" == "ip" ]]; then
-        CERTBOT_IP_ADDRESS="$(prompt_non_empty "Enter the public IP address for the TLS certificate")"
+        CERTBOT_IP_ADDRESS="$(prompt_public_ip "Enter the public IP address for the TLS certificate")"
         NGINX_SERVER_NAME="$CERTBOT_IP_ADDRESS"
       fi
       ;;
@@ -2639,6 +2801,19 @@ collect_install_options() {
   WORKER_PORT="$(prompt_worker_port "$DEFAULT_WORKER_PORT")"
   if [[ "$CERT_MODE" != "http" ]]; then
     log "Using HTTP redirect on port 80 and HTTPS on port ${CLIENT_PORT}."
+  fi
+
+  ENABLE_COTURN="$(prompt_yes_no "Install and configure Coturn TURN/STUN relay for voice & video calls?" "no")"
+  if [[ "$ENABLE_COTURN" == "yes" ]]; then
+    COTURN_PORT="$(prompt_coturn_port "3478")"
+    prompt_coturn_relay_ports "49152" "65535"
+    COTURN_EXTERNAL_IP="$(prompt_public_ip "Enter public IP for Coturn external-ip binding")"
+    local default_realm="$COTURN_EXTERNAL_IP"
+    if [[ "$DEPLOY_MODE" == "domain" && ${#DOMAIN_NAMES[@]} -gt 0 ]]; then
+      default_realm="${DOMAIN_NAMES[0]}"
+    fi
+    prompt_read "Enter Coturn realm (default: $default_realm): " COTURN_REALM
+    [[ -z "$COTURN_REALM" ]] && COTURN_REALM="$default_realm"
   fi
 
 }
@@ -3234,6 +3409,60 @@ configure_ssl_if_needed() {
   run_as_root nginx -t || return 1
   run_as_root systemctl reload nginx || return 1
   log "Nginx SSL configured for domain groups: ${DOMAIN_GROUPS[*]}"
+}
+
+configure_coturn() {
+  log "Configuring Coturn TURN/STUN server..."
+  local conf_file="${COTURN_CONF_FILE:-/etc/turnserver.conf}"
+  local default_file="${COTURN_DEFAULT_FILE:-/etc/default/coturn}"
+
+  if [[ -z "$COTURN_PASSWORD" ]]; then
+    COTURN_PASSWORD="$(generate_secret_hex 2>/dev/null || od -An -tx1 -N32 /dev/urandom 2>/dev/null | tr -d ' \n' || printf "secret%s" "$RANDOM$RANDOM")"
+  fi
+  COTURN_USER="${COTURN_USER:-songbird}"
+
+  if run_as_root test -f "$default_file"; then
+    if run_as_root grep -q "TURNSERVER_ENABLED" "$default_file"; then
+      run_silent run_as_root sed -i 's/^#*TURNSERVER_ENABLED=.*/TURNSERVER_ENABLED=1/' "$default_file" || true
+    else
+      printf "\nTURNSERVER_ENABLED=1\n" | run_as_root tee -a "$default_file" >/dev/null || true
+    fi
+  fi
+
+  local conf_dir
+  conf_dir="$(dirname "$conf_file")"
+  if ! run_as_root test -d "$conf_dir"; then
+    run_silent run_as_root mkdir -p "$conf_dir" || return 1
+  fi
+
+  if run_as_root test -f "$conf_file" && ! run_as_root test -f "${conf_file}.bak"; then
+    run_silent run_as_root cp "$conf_file" "${conf_file}.bak" || true
+  fi
+
+  if ! run_silent run_as_root tee "$conf_file" >/dev/null <<EOF
+listening-port=${COTURN_PORT}
+min-port=${COTURN_MIN_PORT}
+max-port=${COTURN_MAX_PORT}
+fingerprint
+lt-cred-mech
+realm=${COTURN_REALM}
+user=${COTURN_USER}:${COTURN_PASSWORD}
+external-ip=${COTURN_EXTERNAL_IP}
+no-cli
+no-tls
+no-dtls
+log-file=/var/log/turnserver.log
+simple-log
+EOF
+  then
+    warn "Failed to write Coturn configuration at ${conf_file}."
+    return 1
+  fi
+
+  run_silent run_as_root systemctl restart coturn || true
+  run_silent run_as_root systemctl enable coturn || true
+  log "Coturn configured and service restarted."
+  return 0
 }
 
 restore_backup_if_provided() {
@@ -3950,6 +4179,10 @@ install_songbird() {
   configure_nginx || return 1
   log "Starting TLS setup..."
   configure_ssl_if_needed || return 1
+
+  if [[ "${ENABLE_COTURN:-no}" == "yes" ]]; then
+    configure_coturn || warn "Coturn configuration failed. Check /var/log/turnserver.log for details."
+  fi
 
   if install_global_command_from_path "$INSTALL_DIR/scripts/install.sh"; then
     log "Global command synchronized to script version ${LAST_GLOBAL_COMMAND_VERSION:-$SCRIPT_VERSION}."

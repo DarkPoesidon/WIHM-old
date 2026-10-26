@@ -1893,4 +1893,182 @@ setup_test_git_repo() {
   grep -Fq "listen 80 default_server;" "$NGINX_SITE_FILE"
 }
 
+# ===========================================================================
+# IPv4 Validation & Auto-Detection
+# ===========================================================================
+
+@test "is_valid_ipv4: accepts valid IPv4 addresses" {
+  run is_valid_ipv4 "1.2.3.4"
+  [ "$status" -eq 0 ]
+  run is_valid_ipv4 "192.168.1.100"
+  [ "$status" -eq 0 ]
+  run is_valid_ipv4 "255.255.255.255"
+  [ "$status" -eq 0 ]
+  run is_valid_ipv4 "0.0.0.0"
+  [ "$status" -eq 0 ]
+}
+
+@test "is_valid_ipv4: rejects invalid IPv4 addresses" {
+  run is_valid_ipv4 "256.0.0.1"
+  [ "$status" -ne 0 ]
+  run is_valid_ipv4 "1.2.3.4.5"
+  [ "$status" -ne 0 ]
+  run is_valid_ipv4 "1.2.3"
+  [ "$status" -ne 0 ]
+  run is_valid_ipv4 "not-an-ip"
+  [ "$status" -ne 0 ]
+  run is_valid_ipv4 ""
+  [ "$status" -ne 0 ]
+  run is_valid_ipv4 "1.2.3.-1"
+  [ "$status" -ne 0 ]
+}
+
+@test "detect_public_ip: returns IP from external provider when curl succeeds" {
+  curl() {
+    printf "203.0.113.42\n"
+    return 0
+  }
+  export -f curl
+
+  run detect_public_ip
+  [ "$status" -eq 0 ]
+  [ "$output" = "203.0.113.42" ]
+}
+
+@test "detect_public_ip: falls back to local route IP when curl fails" {
+  curl() { return 1; }
+  ip() {
+    printf "1.1.1.1 via 10.0.0.1 dev eth0 src 198.51.100.5 uid 1000\n"
+    return 0
+  }
+  export -f curl ip
+
+  run detect_public_ip
+  [ "$status" -eq 0 ]
+  [ "$output" = "198.51.100.5" ]
+}
+
+@test "prompt_public_ip: uses detected default when user input is empty" {
+  detect_public_ip() { printf "203.0.113.99\n"; return 0; }
+  prompt_read() { eval "$2=''"; return 0; }
+  export -f detect_public_ip prompt_read
+
+  run prompt_public_ip "Enter IP"
+  [ "$status" -eq 0 ]
+  [ "$output" = "203.0.113.99" ]
+}
+
+@test "prompt_public_ip: accepts valid user input" {
+  detect_public_ip() { printf "203.0.113.99\n"; return 0; }
+  prompt_read() { eval "$2='198.51.100.77'"; return 0; }
+  export -f detect_public_ip prompt_read
+
+  run prompt_public_ip "Enter IP"
+  [ "$status" -eq 0 ]
+  [ "$output" = "198.51.100.77" ]
+}
+
+# ===========================================================================
+# Coturn Port Prompts & Configuration
+# ===========================================================================
+
+@test "prompt_coturn_port: returns default 3478 when input is empty" {
+  prompt_read() { eval "$2=''"; return 0; }
+  SERVER_PORT="3000"
+  CLIENT_PORT="80"
+  WORKER_PORT="3001"
+  export -f prompt_read
+  export SERVER_PORT CLIENT_PORT WORKER_PORT
+
+  run prompt_coturn_port
+  [ "$status" -eq 0 ]
+  [ "$output" = "3478" ]
+}
+
+@test "prompt_coturn_port: accepts custom port that does not collide" {
+  prompt_read() { eval "$2='3479'"; return 0; }
+  SERVER_PORT="3000"
+  CLIENT_PORT="80"
+  WORKER_PORT="3001"
+  export -f prompt_read
+  export SERVER_PORT CLIENT_PORT WORKER_PORT
+
+  run prompt_coturn_port
+  [ "$status" -eq 0 ]
+  [ "$output" = "3479" ]
+}
+
+@test "configure_coturn: generates turnserver.conf and enables systemd service" {
+  COTURN_PORT="3478"
+  COTURN_MIN_PORT="49152"
+  COTURN_MAX_PORT="65535"
+  COTURN_EXTERNAL_IP="203.0.113.1"
+  COTURN_REALM="chat.example.com"
+  COTURN_USER="songbird"
+  COTURN_PASSWORD="supersecretpassword123"
+
+  COTURN_CONF_FILE="$TEST_DIR/turnserver.conf"
+  COTURN_DEFAULT_FILE="$TEST_DIR/coturn_default"
+  printf "#TURNSERVER_ENABLED=1\n" > "$COTURN_DEFAULT_FILE"
+
+  local restarted_service=""
+  local enabled_service=""
+  systemctl() {
+    if [[ "$1" == "restart" ]]; then
+      restarted_service="$2"
+    elif [[ "$1" == "enable" ]]; then
+      enabled_service="$2"
+    fi
+    return 0
+  }
+  export -f systemctl
+  export COTURN_PORT COTURN_MIN_PORT COTURN_MAX_PORT COTURN_EXTERNAL_IP COTURN_REALM COTURN_USER COTURN_PASSWORD COTURN_CONF_FILE COTURN_DEFAULT_FILE
+
+  run configure_coturn
+  [ "$status" -eq 0 ]
+
+  [ -f "$COTURN_CONF_FILE" ]
+  local conf
+  conf="$(cat "$COTURN_CONF_FILE")"
+  [[ "$conf" =~ "listening-port=3478" ]]
+  [[ "$conf" =~ "min-port=49152" ]]
+  [[ "$conf" =~ "max-port=65535" ]]
+  [[ "$conf" =~ "fingerprint" ]]
+  [[ "$conf" =~ "lt-cred-mech" ]]
+  [[ "$conf" =~ "realm=chat.example.com" ]]
+  [[ "$conf" =~ "user=songbird:supersecretpassword123" ]]
+  [[ "$conf" =~ "external-ip=203.0.113.1" ]]
+
+  local default_content
+  default_content="$(cat "$COTURN_DEFAULT_FILE")"
+  [[ "$default_content" =~ "TURNSERVER_ENABLED=1" ]]
+  [[ ! "$default_content" =~ "#TURNSERVER_ENABLED=1" ]]
+}
+
+@test "write_env_fallback: writes TURN_* settings when ENABLE_COTURN is yes" {
+  local env_file="$TEST_DIR/songbird.env"
+  SERVER_PORT="3000"
+  CLIENT_PORT="80"
+  WORKER_PORT="3001"
+  ENABLE_COTURN="yes"
+  COTURN_PORT="3478"
+  COTURN_USER="songbird"
+  COTURN_PASSWORD="coturnpassword123"
+  COTURN_EXTERNAL_IP="203.0.113.10"
+  DEPLOY_MODE="ip"
+
+  export SERVER_PORT CLIENT_PORT WORKER_PORT ENABLE_COTURN COTURN_PORT COTURN_USER COTURN_PASSWORD COTURN_EXTERNAL_IP DEPLOY_MODE
+
+  run write_env_fallback "$env_file"
+  [ "$status" -eq 0 ]
+  [ -f "$env_file" ]
+
+  local env_content
+  env_content="$(cat "$env_file")"
+  [[ "$env_content" =~ 'TURN_STUN_URL="stun:203.0.113.10:3478"' ]]
+  [[ "$env_content" =~ 'TURN_URL="turn:203.0.113.10:3478"' ]]
+  [[ "$env_content" =~ 'TURN_USERNAME="songbird"' ]]
+  [[ "$env_content" =~ 'TURN_CREDENTIAL="coturnpassword123"' ]]
+}
+
 
