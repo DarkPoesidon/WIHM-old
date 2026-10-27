@@ -127,6 +127,16 @@ validate_current_account() {
   fi
 }
 
+is_privileged_data_command() {
+  local arg
+  for arg in "$@"; do
+    if [[ "$arg" == *"restore-db.js"* || "$arg" == *"db:restore"* ]]; then
+      return 0
+    fi
+  done
+  return 1
+}
+
 execute_data_command() {
   local mode="$1" runtime_user="$2" runtime_group="$3"
   shift 3
@@ -149,6 +159,10 @@ execute_data_command() {
         validate_instance_data_dir
         "$MKDIR_BIN" -p "$DATA_DIR"
         "$CHOWN_BIN" -R "${runtime_user}:${runtime_group}" "$DATA_DIR"
+        if is_privileged_data_command "$@"; then
+          export DATA_DIR
+          exec "$@"
+        fi
         exec "$RUNUSER_BIN" -u "$runtime_user" -g "$runtime_group" -- "$ENV_BIN" -i \
           PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
           DATA_DIR="$DATA_DIR" \

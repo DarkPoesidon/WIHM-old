@@ -173,4 +173,52 @@ describe("UserMenuButton Component", () => {
 
     expect(handleLogout).toHaveBeenCalledTimes(1);
   });
+
+  test("shows verified badge when user.verified is true", async () => {
+    render(
+      <UserMenuButton
+        user={{ ...mockUser, verified: true }}
+        displayName="John Doe"
+      />,
+    );
+
+    const button = page.getByRole("button", { name: "User menu" });
+    await button.click();
+
+    await expect
+      .element(page.getByLabelText("Verified"))
+      .toBeInTheDocument();
+  });
+
+  test("hides verified badge when user.verified is false", async () => {
+    render(
+      <UserMenuButton
+        user={{ ...mockUser, verified: false }}
+        displayName="John Doe"
+      />,
+    );
+
+    const button = page.getByRole("button", { name: "User menu" });
+    await button.click();
+
+    await expect
+      .element(page.getByLabelText("Verified"))
+      .not.toBeInTheDocument();
+  });
+
+  test("hides verified badge when user.verified is 0", async () => {
+    render(
+      <UserMenuButton
+        user={{ ...mockUser, verified: 0 }}
+        displayName="John Doe"
+      />,
+    );
+
+    const button = page.getByRole("button", { name: "User menu" });
+    await button.click();
+
+    await expect
+      .element(page.getByLabelText("Verified"))
+      .not.toBeInTheDocument();
+  });
 });

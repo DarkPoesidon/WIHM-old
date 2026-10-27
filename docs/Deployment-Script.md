@@ -90,7 +90,13 @@ During install the script asks for core settings and writes them into `.env`:
 
 Encryption and push keys (`STORAGE_ENCRYPTION_KEY`, `VAPID_*`) are generated automatically. The full list of variables you can tune later lives in [Environment Variables](./Environment-Variables.md).
 
-### 6. First-run owner creation
+### 6. Coturn TURN/STUN relay (Optional)
+
+Songbird supports audio and video calls via WebRTC. When users are behind symmetric NATs or restrictive firewalls, a TURN/STUN relay server is necessary to establish peer-to-peer media connections.
+
+The deployment script can automatically install and configure a dedicated [Coturn](https://github.com/coturn/coturn) relay server on the host.
+
+### 7. First-run owner creation
 
 After installation completes and the service starts, you'll be prompted to create an owner user on first access. This owner account has full admin panel access for managing users, chats, and system settings. See [Admin Panel](./Admin-Panel.md) for details.
 

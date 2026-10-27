@@ -26,14 +26,17 @@ const dataDir = path.resolve(
 const dbPath = path.join(dataDir, "songbird.db");
 
 export function createKnexInstance() {
-  const dbClient = (process.env.DB_CLIENT || "sqlite3").toLowerCase();
+  const dbClient = (
+    process.env.DB_CLIENT ||
+    (process.env.POSTGRES_URL || process.env.DATABASE_URL ? "postgres" : "sqlite3")
+  ).toLowerCase();
 
   if (
     dbClient === "postgres" ||
     dbClient === "postgresql" ||
     dbClient === "pg"
   ) {
-    const connection = process.env.POSTGRES_URL || {
+    const connection = process.env.POSTGRES_URL || process.env.DATABASE_URL || {
       host: process.env.POSTGRES_HOST || "127.0.0.1",
       port: Number(process.env.POSTGRES_PORT || 5432),
       user: process.env.POSTGRES_USER || "postgres",

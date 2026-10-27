@@ -120,7 +120,7 @@ export default function UserMenuButton({
                 >
                   {resolvedName}
                 </span>
-                <VerifiedBadge verified={user?.verified} size={14} />
+                {Boolean(user?.verified) && <VerifiedBadge size={14} />}
                 <UserRoleBadge role={user?.role} size={14} />
               </p>
               <p className={`truncate text-xs ${resolvedStatusClass}`}>

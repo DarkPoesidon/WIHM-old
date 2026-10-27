@@ -62,6 +62,10 @@ Calls can be turned off per server via environment variables (or the admin panel
 
 If you choose self-hosted TURN over a managed provider like Cloudflare Calls, you can deploy [Coturn](https://github.com/coturn/coturn) on a Linux VPS with a public IP address.
 
+:::tip
+   It is recommended to use the [deployment script](./Deployment-Script.md) which could automatically install and configure Coturn for you!
+:::
+
 ### 1. Firewall & Ports
 
 Coturn requires listening ports for control traffic and a high-port UDP range for relayed media streams:

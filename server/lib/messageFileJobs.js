@@ -564,6 +564,14 @@ export function createMessageFileJobs({
           }
         });
       } catch (_) {}
+
+      let totalAvatarRows = 0;
+      try {
+        totalAvatarRows = (userRows ? userRows.length : 0) + (chatRows ? chatRows.length : 0);
+      } catch (_) {}
+      if (totalAvatarRows === 0) {
+        keysToCheck = keysToCheck.filter((k) => !avatarKeysToCheck.includes(k));
+      }
     }
 
     const orphanKeys = keysToCheck.filter((key) => !referencedKeysSet.has(key));
@@ -658,29 +666,35 @@ export function createMessageFileJobs({
 
     const activeFileNames = new Set();
 
-    const rawUsers = adminGetAll(
-      dbKnex("users").select("avatar_url").whereNotNull("avatar_url"),
-    );
-    const userRows =
-      (rawUsers && typeof rawUsers.then === "function"
-        ? await rawUsers
-        : rawUsers) || [];
-    userRows.forEach((r) => {
-      const fn = path.basename(String(r?.avatar_url || "").trim());
-      if (fn) activeFileNames.add(fn);
-    });
+    try {
+      const rawUsers = adminGetAll(
+        dbKnex("users").select("avatar_url").whereNotNull("avatar_url"),
+      );
+      const userRows =
+        (rawUsers && typeof rawUsers.then === "function"
+          ? await rawUsers
+          : rawUsers) || [];
+      userRows.forEach((r) => {
+        const fn = path.basename(String(r?.avatar_url || "").trim());
+        if (fn) activeFileNames.add(fn);
+      });
+    } catch (_) {
+      return { prunedCount: 0, prunedKeys: [] };
+    }
 
-    const rawChats = adminGetAll(
-      dbKnex("chats").select("group_avatar_url").whereNotNull("group_avatar_url"),
-    );
-    const chatRows =
-      (rawChats && typeof rawChats.then === "function"
-        ? await rawChats
-        : rawChats) || [];
-    chatRows.forEach((r) => {
-      const fn = path.basename(String(r?.group_avatar_url || "").trim());
-      if (fn) activeFileNames.add(fn);
-    });
+    try {
+      const rawChats = adminGetAll(
+        dbKnex("chats").select("group_avatar_url").whereNotNull("group_avatar_url"),
+      );
+      const chatRows =
+        (rawChats && typeof rawChats.then === "function"
+          ? await rawChats
+          : rawChats) || [];
+      chatRows.forEach((r) => {
+        const fn = path.basename(String(r?.group_avatar_url || "").trim());
+        if (fn) activeFileNames.add(fn);
+      });
+    } catch (_) {}
 
     try {
       const rawSources = adminGetAll(
@@ -698,6 +712,10 @@ export function createMessageFileJobs({
       });
     } catch (_) {}
 
+    if (activeFileNames.size === 0) {
+      return { prunedCount: 0, prunedKeys: [] };
+    }
+
     const prunedKeys = [];
     for (const obj of candidates) {
       const fileName = path.basename(obj.key);
@@ -705,8 +723,8 @@ export function createMessageFileJobs({
         try {
           if (typeof activeStorageProvider.deleteFile === "function") {
             await activeStorageProvider.deleteFile(obj.key);
+            prunedKeys.push(obj.key);
           }
-          prunedKeys.push(obj.key);
         } catch (_) {}
       }
     }

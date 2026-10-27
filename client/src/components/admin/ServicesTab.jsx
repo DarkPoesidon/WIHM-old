@@ -170,17 +170,20 @@ const ServicesTab = forwardRef(function ServicesTab(
     }
   };
 
-  // Database ping is postgres-only; in sqlite mode there is no external
-  // database to probe so the card stays disabled and grayed out.
-  const isPostgres =
-    database?.configured === true || database?.client === "postgres";
+  const isPostgres = database?.client === "postgres";
   const databaseReachable = database?.reachable;
-  const databaseDescription = !isPostgres
-    ? "SQLite mode — local file database."
-    : databaseReachable === false
-      ? "PostgreSQL configured but unreachable."
-      : `PostgreSQL` +
-        (databaseReachable && database?.latencyMs != null ? ` · ${database.latencyMs}ms` : "");
+  const isDatabaseConfigured = database?.configured !== false;
+  const databaseDescription = !isDatabaseConfigured
+    ? "Database disabled."
+    : isPostgres
+      ? databaseReachable === false
+        ? "PostgreSQL configured but unreachable."
+        : `PostgreSQL` +
+          (databaseReachable && database?.latencyMs != null ? ` · ${database.latencyMs}ms` : "")
+      : databaseReachable === false
+        ? "SQLite unreachable."
+        : `SQLite · local` +
+          (databaseReachable && database?.latencyMs != null ? ` · ${database.latencyMs}ms` : "");
   const handleDatabaseCheck = async () => {
     flashStatus("database", "busy", "Checking…");
     try {
@@ -281,9 +284,9 @@ const ServicesTab = forwardRef(function ServicesTab(
             label="Database"
             description={databaseDescription}
             onClick={handleDatabaseCheck}
-            disabled={!isPostgres}
+            disabled={!isDatabaseConfigured}
             status={
-              !isPostgres
+              !isDatabaseConfigured
                 ? { type: "error", label: "Disabled" }
                 : rowStatus.database ||
                   (database

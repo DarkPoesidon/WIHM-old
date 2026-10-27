@@ -3,6 +3,7 @@ import {
   isMessageAuthoredByUser,
   isMessageFromOtherUser,
 } from "../../utils/messageOwnership.js";
+import { parseServerDate as defaultParseServerDate } from "../../utils/chatFormat.js";
 
 const SILENT_FETCH_TRACK_MAX_CHATS = 40;
 const SILENT_FETCH_MIN_INTERVAL_MS = 320;
@@ -10,6 +11,48 @@ const SILENT_FETCH_MIN_INTERVAL_MS = 320;
 const isDocumentActive = () => {
   if (typeof document === "undefined") return false;
   return document.visibilityState === "visible" && document.hasFocus();
+};
+
+export const compareMessages = (
+  left,
+  right,
+  parseServerDateFn = defaultParseServerDate,
+) => {
+  const leftIsPending =
+    left?._delivery === "sending" || Boolean(left?._processingPending);
+  const rightIsPending =
+    right?._delivery === "sending" || Boolean(right?._processingPending);
+  if (leftIsPending !== rightIsPending) {
+    return leftIsPending ? 1 : -1;
+  }
+  if (leftIsPending && rightIsPending) {
+    const leftQueuedAt = Number(left?._queuedAt || 0);
+    const rightQueuedAt = Number(right?._queuedAt || 0);
+    if (leftQueuedAt !== rightQueuedAt) {
+      return leftQueuedAt - rightQueuedAt;
+    }
+  }
+  const leftDate = left?.created_at || left?._createdAt || left?.createdAt;
+  const rightDate = right?.created_at || right?._createdAt || right?.createdAt;
+  const parseFn =
+    typeof parseServerDateFn === "function"
+      ? parseServerDateFn
+      : defaultParseServerDate;
+  const leftTimeRaw = Number(leftDate ? parseFn(leftDate).getTime() : 0);
+  const rightTimeRaw = Number(rightDate ? parseFn(rightDate).getTime() : 0);
+  const leftTime = Number.isFinite(leftTimeRaw) ? leftTimeRaw : 0;
+  const rightTime = Number.isFinite(rightTimeRaw) ? rightTimeRaw : 0;
+  if (leftTime !== rightTime) {
+    return leftTime - rightTime;
+  }
+  const leftId = String(left?._serverId || left?.id || "");
+  const rightId = String(right?._serverId || right?.id || "");
+  if (leftId && rightId) {
+    return leftId.localeCompare(rightId);
+  }
+  return String(left?._clientId || "").localeCompare(
+    String(right?._clientId || ""),
+  );
 };
 
 export function useMessagesLoader({
@@ -379,12 +422,6 @@ export function useMessagesLoader({
             return serverIds.has(serverId);
           });
         }
-        const prevLatestVisibleTime = basePrev.reduce((max, msg) => {
-          const t = Number(
-            msg?._visibilityTime || parseServerDate(msg?.created_at).getTime(),
-          );
-          return Number.isFinite(t) ? Math.max(max, t) : max;
-        }, 0);
         const prevByServerId = new Map(
           basePrev
             .filter((msg) => Boolean(String(msg._serverId || msg.id || "").trim()))
@@ -523,7 +560,6 @@ export function useMessagesLoader({
               _chatId: existingLocal._chatId,
               _delivery: undefined,
               _awaitingServerEcho: false,
-              _visibilityTime: existingLocal?._visibilityTime,
               _readByMe:
                 Boolean(serverMsg?.read_by_me) ||
                 Boolean(existingLocal?._readByMe) ||
@@ -542,33 +578,6 @@ export function useMessagesLoader({
                 Number(serverMsg?.seenCount || 0),
                 Number(existingLocal?.seenCount || 0),
               ) || undefined,
-            };
-          },
-        );
-        const nextMessagesWithVisibility = nextMessagesWithLocalIdentity.map(
-          (serverMsg) => {
-            if (serverMsg?._visibilityTime) return serverMsg;
-            const hasVideo = Array.isArray(serverMsg?.files)
-              ? serverMsg.files.some((file) =>
-                  String(file?.mimeType || "")
-                    .toLowerCase()
-                    .startsWith("video/"),
-                )
-              : false;
-            const isFromOther = isMessageFromOtherUser(serverMsg, user);
-            const createdAtMs = parseServerDate(
-              serverMsg?.created_at,
-            ).getTime();
-            const revealedLate =
-              isFromOther &&
-              hasVideo &&
-              Number.isFinite(createdAtMs) &&
-              prevLatestVisibleTime > 0 &&
-              createdAtMs < prevLatestVisibleTime;
-            if (!revealedLate) return serverMsg;
-            return {
-              ...serverMsg,
-              _visibilityTime: Date.now(),
             };
           },
         );
@@ -716,60 +725,22 @@ export function useMessagesLoader({
           ) {
             return false;
           }
-          return !nextMessagesWithVisibility.some(
+          return !nextMessagesWithLocalIdentity.some(
             (serverMsg) =>
               String(serverMsg.id) === String(msg._serverId || msg.id),
           );
         });
-        const nextMessagesVisible = nextMessagesWithVisibility.filter(
+        const nextMessagesVisible = nextMessagesWithLocalIdentity.filter(
           (msg) => !isServerMessageShadowedByPendingUpload(msg, pendingLocal),
         );
-        const compareMessages = (left, right) => {
-          const leftIsPending =
-            left?._delivery === "sending" || Boolean(left?._processingPending);
-          const rightIsPending =
-            right?._delivery === "sending" ||
-            Boolean(right?._processingPending);
-          if (leftIsPending !== rightIsPending) {
-            return leftIsPending ? 1 : -1;
-          }
-          if (leftIsPending && rightIsPending) {
-            const leftQueuedAt = Number(left?._queuedAt || 0);
-            const rightQueuedAt = Number(right?._queuedAt || 0);
-            if (leftQueuedAt !== rightQueuedAt) {
-              return leftQueuedAt - rightQueuedAt;
-            }
-          }
-          const leftDate = left?.created_at || left?._createdAt || left?.createdAt;
-          const rightDate = right?.created_at || right?._createdAt || right?.createdAt;
-          const leftTimeRaw = Number(
-            left?._visibilityTime ||
-              (leftDate ? parseServerDate(leftDate).getTime() : 0),
-          );
-          const rightTimeRaw = Number(
-            right?._visibilityTime ||
-              (rightDate ? parseServerDate(rightDate).getTime() : 0),
-          );
-          const leftTime = Number.isFinite(leftTimeRaw) ? leftTimeRaw : 0;
-          const rightTime = Number.isFinite(rightTimeRaw) ? rightTimeRaw : 0;
-          if (leftTime !== rightTime) {
-            return leftTime - rightTime;
-          }
-          const leftId = String(left?._serverId || left?.id || "");
-          const rightId = String(right?._serverId || right?.id || "");
-          if (leftId && rightId) {
-            return leftId.localeCompare(rightId);
-          }
-          return String(left?._clientId || "").localeCompare(
-            String(right?._clientId || ""),
-          );
-        };
+        const sortComparator = (left, right) =>
+          compareMessages(left, right, parseServerDate);
 
         let mergedNext = [
           ...nextMessagesVisible,
           ...optimisticSentLocal,
           ...pendingLocal,
-        ].sort(compareMessages);
+        ].sort(sortComparator);
 
         const nowMs = Date.now();
         const rescuedOptimistic = basePrev.filter((msg) => {
@@ -793,7 +764,7 @@ export function useMessagesLoader({
         });
         if (rescuedOptimistic.length) {
           mergedNext = [...mergedNext, ...rescuedOptimistic].sort(
-            compareMessages,
+            sortComparator,
           );
         }
 
@@ -916,7 +887,7 @@ export function useMessagesLoader({
             return !mergedById.has(key);
           });
           if (carriedOlder.length) {
-            mergedNext = [...carriedOlder, ...mergedNext].sort(compareMessages);
+            mergedNext = [...carriedOlder, ...mergedNext].sort(sortComparator);
           }
         }
         return mergedNext;

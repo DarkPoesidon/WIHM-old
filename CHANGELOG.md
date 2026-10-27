@@ -1,3 +1,18 @@
+## 0.13.2
+
+### New Features
+
+- 🌐 Optional coturn TURN server setup in the deployment script
+
+### Bug Fixes
+
+- 🎬 Preserve chronological ordering for video messages on chat reopen
+- 🛠️ Resolve relative paths for database restore command and polished restore database system
+- 🖼️ Prevent false avatar deletion from storage buckets
+- 🗃️ Enable database health check in SQLite mode
+- 🏅 Conditionally render verified badge in desktop user menu
+- 🔗 Display channel type in invite modal
+
 ## 0.13.1
 
 ### Bug Fixes

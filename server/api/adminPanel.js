@@ -581,7 +581,7 @@ function registerAdminPanelRoutes(app, deps) {
         };
       }
     }
-    // ── Database — postgres ping (sqlite mode has no external DB to ping) ──
+    // ── Database health probe (sqlite and postgres) ──
     // `dbConfig` is resolved once at startup from DB_CLIENT; fall back to the
     // env so the card still renders correctly when deps omit it (tests).
     const rawDbClient = String(
@@ -590,9 +590,8 @@ function registerAdminPanelRoutes(app, deps) {
     const dbClient = ["postgres", "postgresql", "pg"].includes(rawDbClient)
       ? "postgres"
       : "sqlite3";
-    const isPostgres = dbClient === "postgres";
-    let database = { client: dbClient, configured: isPostgres, reachable: null, latencyMs: null };
-    if (isPostgres) {
+    let database = { client: dbClient, configured: true, reachable: null, latencyMs: null };
+    if (typeof adminGetRow === "function") {
       const started = Date.now();
       const timeout = new Promise((_, reject) => {
         const timer = setTimeout(
@@ -2015,11 +2014,22 @@ function registerAdminPanelRoutes(app, deps) {
     const dbPath  = nodePath.join(dataDir, "songbird.db");
 
     try {
-      if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
-      const tmpPath = nodePath.join(dataDir, `.restore-${Date.now()}.db`);
-      fs.writeFileSync(tmpPath, file.buffer);
-      fs.renameSync(tmpPath, dbPath);
-      reloadDatabase();
+      if (typeof deps.restoreDatabase === "function") {
+        await deps.restoreDatabase(file.buffer);
+      } else {
+        if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
+        const walPath = `${dbPath}-wal`;
+        const shmPath = `${dbPath}-shm`;
+        try { if (fs.existsSync(walPath)) fs.unlinkSync(walPath); } catch {}
+        try { if (fs.existsSync(shmPath)) fs.unlinkSync(shmPath); } catch {}
+        const tmpPath = nodePath.join(dataDir, `.restore-${Date.now()}.db`);
+        fs.writeFileSync(tmpPath, file.buffer);
+        fs.renameSync(tmpPath, dbPath);
+        reloadDatabase();
+      }
+      if (typeof deps.loadSettings === "function") {
+        await deps.loadSettings(deps.dbGetAllSettings || deps.dbGetAll);
+      }
       broadcastAll({ type: "session_revoked" });
       log(session, "db.restore", { targetType: "system", targetLabel: file.originalname || "uploaded.db" });
       res.json({ ok: true });

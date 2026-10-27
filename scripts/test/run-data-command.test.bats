@@ -320,3 +320,53 @@ make_data_target() {
   [ ! -e "$TEST_DIR/path-id-ran" ]
   [ ! -e "$TEST_DIR/function-id-ran" ]
 }
+
+@test "is_privileged_data_command detects restore commands" {
+  source "$LAUNCHER"
+
+  run is_privileged_data_command node scripts/restore-db.js -y
+  [ "$status" -eq 0 ]
+
+  run is_privileged_data_command bash -lc "cd /opt/songbird && npm --prefix server run db:restore"
+  [ "$status" -eq 0 ]
+
+  run is_privileged_data_command node scripts/backup-db.js
+  [ "$status" -eq 1 ]
+
+  run is_privileged_data_command node scripts/create-user.js
+  [ "$status" -eq 1 ]
+}
+
+@test "systemd custom-user mode executes restore commands without dropping to runuser when invoked by root" {
+  if [[ "$EUID" -ne 0 ]]; then
+    skip "requires a root caller to exercise the ownership-repair branch"
+  fi
+
+  local install_dir="$TEST_DIR/install"
+  local isolated_launcher="$install_dir/scripts/run-data-command.sh"
+  local target="$TEST_DIR/restore-db.js"
+  mkdir -p "$install_dir/scripts"
+  cp "$LAUNCHER" "$isolated_launcher"
+  chmod 755 "$isolated_launcher"
+  source "$isolated_launcher"
+
+  DATA_DIR="$install_dir/data"
+  make_data_target "$target"
+  CHOWN_BIN="$TEST_DIR/chown"
+  RUNUSER_BIN="$TEST_DIR/runuser"
+  printf '%s\n' \
+    '#!/bin/bash' \
+    'printf "%s\n" "$*" > "$TEST_DIR/chown-args"' > "$CHOWN_BIN"
+  printf '%s\n' \
+    '#!/bin/bash' \
+    'touch "$TEST_DIR/runuser-ran"' > "$RUNUSER_BIN"
+  chmod 755 "$CHOWN_BIN" "$RUNUSER_BIN"
+
+  run execute_data_command systemd appuser appgroup "$target"
+
+  [ "$status" -eq 0 ]
+  [ "$output" = "" ]
+  [ -e "$DATA_DIR/target-ran" ]
+  [ "$(<"$TEST_DIR/chown-args")" = "-R appuser:appgroup $DATA_DIR" ]
+  [ ! -e "$TEST_DIR/runuser-ran" ]
+}

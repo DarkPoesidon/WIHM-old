@@ -427,6 +427,7 @@ export function makeApp(overrides = {}) {
     adminDeleteChat: () => {},
     vacuumDatabase: () => {},
     reloadDatabase: () => {},
+    restoreDatabase: () => {},
     adminClearAllMessages: () => {},
     adminResetDatabase: () => {},
     dbConfig: { client: "sqlite3" },

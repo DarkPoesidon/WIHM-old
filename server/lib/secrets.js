@@ -228,3 +228,48 @@ export async function ensureSystemSecrets({
     VAPID_SUBJECT: subject,
   };
 }
+
+export async function syncSecretsFromDatabase({
+  dbGetRow,
+  projectRootDir,
+  serverDir,
+  fsImpl = fs,
+  pathImpl = path,
+} = {}) {
+  const targetEnvPaths = [
+    projectRootDir ? pathImpl.join(String(projectRootDir), ".env") : null,
+    serverDir ? pathImpl.join(String(serverDir), ".env") : null,
+  ].filter(Boolean);
+
+  const secretKeys = [
+    "STORAGE_ENCRYPTION_KEY",
+    "ADMIN_API_TOKEN",
+    "WEBHOOK_SECRET",
+    "REMOTE_CHANNEL_CRON_SECRET",
+    "VAPID_PUBLIC_KEY",
+    "VAPID_PRIVATE_KEY",
+    "VAPID_SUBJECT",
+  ];
+
+  for (const key of secretKeys) {
+    let value = null;
+    if (typeof dbGetRow === "function") {
+      try {
+        const row = await dbGetRow(
+          dbKnex("app_settings").where({ key }).select("value").first(),
+        );
+        if (row?.value) {
+          value = normalizeEnvSecret(row.value);
+        }
+      } catch {}
+    }
+    if (value) {
+      process.env[key] = value;
+      for (const envPath of targetEnvPaths) {
+        if (fsImpl.existsSync(envPath)) {
+          updateEnvValue(envPath, key, value, { fsImpl });
+        }
+      }
+    }
+  }
+}

@@ -332,7 +332,8 @@ export function createUploadTools({
         (storageProvider.type === "remote" || storageProvider.type === "s3")) ||
       (!storageProvider &&
         (process.env.STORAGE_DRIVER === "remote" ||
-          process.env.STORAGE_DRIVER === "s3"));
+          process.env.STORAGE_DRIVER === "s3")) ||
+      Boolean(process.env.STORAGE_ENDPOINT || process.env.STORAGE_BUCKET);
     if (isRemote) {
       return normalized || null;
     }
