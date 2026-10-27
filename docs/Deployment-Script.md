@@ -156,7 +156,7 @@ You can also restore defaults (clear all mirrors) from the same menu.
 You can use these mirrors in Iran's restricted environment:
 - NodeSource:
 ```
-https://mirror-nodejs.runflare.com/dist/v24.18.0/node-v24.18.0-linux-x64.tar.gz
+https://mirror-nodejs.runflare.com/dist/v24.22.1/node-v24.22.1-linux-x64.tar.gz
 ```
 - APT:
 ```

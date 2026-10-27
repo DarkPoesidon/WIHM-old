@@ -163,7 +163,7 @@ Songbird از تماس های صوتی و تصویری از طریق WebRTC پش
 می‌توانید از این mirrorها در محیط محدودشده ایران استفاده کنید:
 - NodeSource:
 ```
-https://mirror-nodejs.runflare.com/dist/v24.18.0/node-v24.18.0-linux-x64.tar.gz
+https://mirror-nodejs.runflare.com/dist/v24.22.1/node-v24.22.1-linux-x64.tar.gz
 ```
 - APT:
 ```

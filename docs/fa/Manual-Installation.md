@@ -39,7 +39,7 @@ curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/latest/install.sh | bash
 
 ```bash
 curl https://get.volta.sh | bash
-volta install node@24.11.1 npm@11.6.4
+volta install node@24.22.1 npm@11.6.4
 ```
 
 ## ۲. کلون‌کردن مخزن
@@ -97,7 +97,7 @@ WantedBy=multi-user.target
 - اگر Node.js را با استفاده از nvm نصب کرده‌اید، این مسیر Node را در `ExecStart` تنظیم کنید:
 
 ```ini
-ExecStart=/root/.nvm/versions/node/v24.11.1/bin/node index.js
+ExecStart=/root/.nvm/versions/node/v24.22.1/bin/node index.js
 ```
 
 - اگر Node.js را با استفاده از volta نصب کرده‌اید، این مسیر Node را در `ExecStart` تنظیم کنید:
