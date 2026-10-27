@@ -1,15 +1,19 @@
 import { useState } from "react";
 import { useRef } from "react";
-import { Check, Copy, Users } from "../../icons/lucide.js";
+import { Check, Copy, Megaphone, Users } from "../../icons/lucide.js";
 import { copyTextToClipboard } from "../../utils/clipboard.js";
 import { useFocusTrap } from "../../hooks/useFocusTrap.js";
 
-export default function GroupInviteLinkModal({ open, inviteLink, onClose }) {
+export default function GroupInviteLinkModal({ open, inviteLink, onClose, type = "group" }) {
   const [copied, setCopied] = useState(false);
   const dialogRef = useRef(null);
   useFocusTrap(dialogRef, open);
 
   if (!open) return null;
+
+  const isChannel = type === "channel";
+  const Icon = isChannel ? Megaphone : Users;
+  const label = isChannel ? "Channel" : "Group";
 
   const handleCopyInviteLink = async () => {
     const value = String(inviteLink || "");
@@ -29,11 +33,11 @@ export default function GroupInviteLinkModal({ open, inviteLink, onClose }) {
         className="w-full max-w-md rounded-2xl border border-emerald-100/70 bg-white p-6 shadow-xl dark:border-emerald-500/30 dark:bg-slate-950"
       >
         <h3 id="invite-link-modal-title" className="flex items-center gap-2 text-lg font-semibold text-emerald-700 dark:text-emerald-200">
-          <Users size={18} />
-          Group created
+          <Icon size={18} />
+          {label} created
         </h3>
         <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
-          Share this invite link so others can join your group.
+          Share this invite link so others can join your {label.toLowerCase()}.
         </p>
         <button
           type="button"

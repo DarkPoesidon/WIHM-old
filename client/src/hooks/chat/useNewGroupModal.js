@@ -33,6 +33,7 @@ export function useNewGroupModal({
   const [newGroupError, setNewGroupError] = useState("");
   const [groupInviteOpen, setGroupInviteOpen] = useState(false);
   const [createdGroupInviteLink, setCreatedGroupInviteLink] = useState("");
+  const [createdGroupInviteType, setCreatedGroupInviteType] = useState("group");
   const [editGroupInviteToken, setEditGroupInviteToken] = useState("");
   const [regeneratingGroupInviteLink, setRegeneratingGroupInviteLink] =
     useState(false);
@@ -125,6 +126,8 @@ export function useNewGroupModal({
     setGroupInviteOpen,
     createdGroupInviteLink,
     setCreatedGroupInviteLink,
+    createdGroupInviteType,
+    setCreatedGroupInviteType,
     editGroupInviteToken,
     setEditGroupInviteToken,
     regeneratingGroupInviteLink,

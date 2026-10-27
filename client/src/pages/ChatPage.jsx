@@ -771,6 +771,8 @@ export default function ChatPage({ user, setUser, isDark, setIsDark, toggleTheme
     setGroupInviteOpen,
     createdGroupInviteLink,
     setCreatedGroupInviteLink,
+    createdGroupInviteType,
+    setCreatedGroupInviteType,
     editGroupInviteToken,
     setEditGroupInviteToken,
     regeneratingGroupInviteLink,
@@ -6484,6 +6486,7 @@ export default function ChatPage({ user, setUser, isDark, setIsDark, toggleTheme
       }
       if (!editingGroup) {
         setCreatedGroupInviteLink(String(data?.inviteLink || ""));
+        setCreatedGroupInviteType(isChannel ? "channel" : "group");
         setGroupInviteOpen(Boolean(data?.inviteLink));
       }
       closeNewGroupModal();
@@ -7337,7 +7340,11 @@ export default function ChatPage({ user, setUser, isDark, setIsDark, toggleTheme
           <GroupInviteLinkModal
             open={groupInviteOpen}
             inviteLink={createdGroupInviteLink}
-            onClose={() => setGroupInviteOpen(false)}
+            type={createdGroupInviteType}
+            onClose={() => {
+              setGroupInviteOpen(false);
+              setCreatedGroupInviteType("group");
+            }}
           />
         </Suspense>
       ) : null}
