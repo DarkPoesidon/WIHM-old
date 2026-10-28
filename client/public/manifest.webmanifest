@@ -1,7 +1,7 @@
 {
-  "name": "Songbird",
-  "short_name": "Songbird",
-  "description": "Songbird chat",
+  "name": "WIHM",
+  "short_name": "WIHM",
+  "description": "WIHM Messenger",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

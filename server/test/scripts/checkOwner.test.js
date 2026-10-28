@@ -1,4 +1,4 @@
-import fs from "node:fs";
+﻿import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
@@ -12,7 +12,7 @@ const serverDir = path.resolve(
 describe("check-owner CLI", () => {
   test("exits 1 when no owner exists and exits 0 when owner exists", () => {
     const tempDir = fs.mkdtempSync(
-      path.join(os.tmpdir(), "songbird-check-owner-"),
+      path.join(os.tmpdir(), "WIHM-check-owner-"),
     );
     const dataDir = path.join(tempDir, "data");
 

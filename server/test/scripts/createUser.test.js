@@ -1,4 +1,4 @@
-import fs from "node:fs";
+﻿import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
@@ -12,7 +12,7 @@ const serverDir = path.resolve(
 describe("create-user CLI", () => {
   test("creates a requested owner role in a local SQLite database", () => {
     const tempDir = fs.mkdtempSync(
-      path.join(os.tmpdir(), "songbird-create-user-"),
+      path.join(os.tmpdir(), "WIHM-create-user-"),
     );
     const dataDir = path.join(tempDir, "data");
     const queryScript = `

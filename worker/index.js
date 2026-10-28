@@ -1,4 +1,4 @@
-import http from "node:http";
+﻿import http from "node:http";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -18,7 +18,7 @@ import {
 const workerDir = path.dirname(fileURLToPath(import.meta.url));
 const projectRootDir = path.resolve(workerDir, "..");
 
-process.title = "songbird-worker";
+process.title = "WIHM-worker";
 
 if (typeof process.loadEnvFile === "function") {
   try { process.loadEnvFile(path.join(projectRootDir, ".env")); } catch {}
@@ -84,7 +84,7 @@ class AsyncQueue {
 
 const jobQueue = new AsyncQueue(WORKER_CONCURRENCY);
 
-const tmpDir = path.join(os.tmpdir(), "songbird-media-worker");
+const tmpDir = path.join(os.tmpdir(), "WIHM-media-worker");
 fs.mkdirSync(tmpDir, { recursive: true });
 
 const tempPath = (suffix = "") =>
@@ -217,7 +217,7 @@ async function notifyCallback(url, payload, secret, maxRetries = 5) {
         headers: {
           "Content-Type": "application/json",
           ...(effectiveSecret
-            ? { "x-songbird-webhook-secret": effectiveSecret }
+            ? { "x-WIHM-webhook-secret": effectiveSecret }
             : {}),
         },
         body: JSON.stringify(payload),
@@ -502,7 +502,7 @@ export async function processMirrorJob({
   try {
     await downloadWithRetry(async () => {
       const headers = downloadSecret
-        ? { "x-songbird-mirror-secret": downloadSecret }
+        ? { "x-WIHM-mirror-secret": downloadSecret }
         : {};
       const res = await fetch(downloadUrl, { headers });
       if (!res.ok) {
@@ -613,7 +613,7 @@ export function createWorkerServer(options = {}) {
   const processMirrorFn = options.processMirrorJob || processMirrorJob;
 
   const checkSecret = (req, res) => {
-    const incomingSecret = req.headers["x-songbird-webhook-secret"];
+    const incomingSecret = req.headers["x-WIHM-webhook-secret"];
     if (effectiveWebhookSecret && incomingSecret !== effectiveWebhookSecret) {
       res.writeHead(401, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ error: "Unauthorized" }));
@@ -634,7 +634,7 @@ export function createWorkerServer(options = {}) {
       return res.end(
         JSON.stringify({
           status: "ok",
-          service: "songbird-media-worker",
+          service: "WIHM-media-worker",
           queue: {
             pending: effectiveQueue.pending,
             queued: effectiveQueue.size,
@@ -647,7 +647,7 @@ export function createWorkerServer(options = {}) {
     // Transcode dispatch endpoint
     if (req.method === "POST" && url.pathname === "/transcode") {
       if (!checkSecret(req, res)) return;
-      const incomingSecret = req.headers["x-songbird-webhook-secret"];
+      const incomingSecret = req.headers["x-WIHM-webhook-secret"];
 
       let payload;
       try {
@@ -713,7 +713,7 @@ export function createWorkerServer(options = {}) {
     // Mirror dispatch endpoint (Remote Channel media handoff)
     if (req.method === "POST" && url.pathname === "/mirror-media") {
       if (!checkSecret(req, res)) return;
-      const incomingSecret = req.headers["x-songbird-webhook-secret"];
+      const incomingSecret = req.headers["x-WIHM-webhook-secret"];
 
       let payload;
       try {
@@ -800,7 +800,7 @@ if (
 ) {
   server.listen(PORT, () => {
     console.log(
-      `[songbird-worker] listening on port ${PORT} (storage: ${storage.type})`,
+      `[WIHM-worker] listening on port ${PORT} (storage: ${storage.type})`,
     );
   });
 

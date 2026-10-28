@@ -1,4 +1,4 @@
-# Admin Panel
+﻿# Admin Panel
 
 The Admin Panel provides a web-based interface for managing users, chats, runtime settings, and system operations. It's accessible to users with the **owner** or **admin** role.
 
@@ -23,7 +23,7 @@ There are two primary ways to grant an account **owner** or **admin** privileges
 1. Create or edit a user and give them the **owner** or **admin** role (prompted on fresh install, or later via the [Deployment Script](./Deployment-Script.md)):
 
   ```bash
-  songbird-deploy
+  WIHM-deploy
   # Navigate to "Manage Database" submenu
   # Select "Create user" or "Edit user"
   # Follow prompts and select either "owner" or "admin" role
@@ -31,7 +31,7 @@ There are two primary ways to grant an account **owner** or **admin** privileges
   :::info You can also use [database commands](./Database-Commands.md) if you prefer:
 
    ```bash
-   cd /opt/songbird/server
+   cd /opt/WIHM/server
    # If you want to create a new user
    npm run db:user:create
    # Or if you want to promote a user
@@ -40,7 +40,7 @@ There are two primary ways to grant an account **owner** or **admin** privileges
    ```
   :::
 
-2. Log in to your Songbird instance with the promoted account.
+2. Log in to your WIHM instance with the promoted account.
 
 3. Click the **Admin Panel** button in the sidebar (accessible only by owner and admins).
 
@@ -48,7 +48,7 @@ There are two primary ways to grant an account **owner** or **admin** privileges
 
 For deployments on PaaS providers (such as Render, Railway, or Fly.io) or container platforms where terminal access is unavailable, authenticated users can claim privileges directly via the web UI:
 
-1. Configure `ADMIN_API_TOKEN` in your environment variables (e.g., in your PaaS dashboard settings). If not set, Songbird auto-generates a token on first boot and saves it in `.env`.
+1. Configure `ADMIN_API_TOKEN` in your environment variables (e.g., in your PaaS dashboard settings). If not set, WIHM auto-generates a token on first boot and saves it in `.env`.
 2. Log in to your registered user account.
 3. Open your browser and navigate directly to `/admin`.
 4. Enter the `ADMIN_API_TOKEN` in the Emergency Admin Access prompt.
@@ -69,7 +69,7 @@ Do not share `ADMIN_API_TOKEN` and keep it private. Anyone can access the admin 
 
 ## Dashboard Tab
 
-The Dashboard provides an overview of your Songbird instance:
+The Dashboard provides an overview of your WIHM instance:
 
 - **Statistics**: Total users, chats, messages, and uploaded files
 - **System Info**: Uptime, and environment
@@ -77,7 +77,7 @@ The Dashboard provides an overview of your Songbird instance:
 
 ## Users Tab
 
-Manage all users in your Songbird instance:
+Manage all users in your WIHM instance:
 
 ### Features
 
@@ -183,7 +183,7 @@ Configure runtime settings through the UI (replaces most `.env` variables):
 - Push notification proxy URL (nullable) — restart required
 - Object storage proxy URL (nullable) — restart required
 - Telegram proxy URL (nullable) — restart required
-- Songbird server-to-server proxy URL (nullable, live)
+- WIHM server-to-server proxy URL (nullable, live)
 
 #### Calls
 
@@ -238,7 +238,7 @@ Perform system administration tasks:
 
 **Restore**
 - SQLite backups can be uploaded and restored while the service is running
-- PostgreSQL restore is deliberately offline-only: stop Songbird, then use `npm run db:restore -- -y --file <backup.dump>`
+- PostgreSQL restore is deliberately offline-only: stop WIHM, then use `npm run db:restore -- -y --file <backup.dump>`
 
 **Vacuum**
 - SQLite compacts the database file with `VACUUM`
@@ -253,19 +253,19 @@ Perform system administration tasks:
 - See if update is available
 
 **Restart Service**
-- Restart the Songbird server
+- Restart the WIHM server
 - Applies pending changes
 - Reconnects all clients
 
 **Stop Service**
-- Gracefully stop the Songbird server
+- Gracefully stop the WIHM server
 - Requires manual start via systemd/Docker
 
 :::warning Permission Requirements
 
 Service control (restart/stop) requires the right setup depending on deployment:
 
-- **Docker**: The `songbird` container must have the Docker socket mounted (`/var/run/docker.sock`). This is included in the default `docker-compose.yaml`. The `SONGBIRD_CONTAINER_NAME` environment variable tells the app which container to target (defaults to `songbird`). See [Install via Docker](./Installation-Docker.md#admin-panel-service-control).
+- **Docker**: The `WIHM` container must have the Docker socket mounted (`/var/run/docker.sock`). This is included in the default `docker-compose.yaml`. The `WIHM_CONTAINER_NAME` environment variable tells the app which container to target (defaults to `WIHM`). See [Install via Docker](./Installation-Docker.md#admin-panel-service-control).
 - **Systemd**: The service user must have `sudo` privileges for `systemctl`. See [Troubleshooting](./Troubleshooting.md#admin-panel-issues).
 
 :::
@@ -316,7 +316,7 @@ When disabled:
 Most admin operations can still be performed via CLI:
 
 ```bash
-cd /opt/songbird/server
+cd /opt/WIHM/server
 
 # User management
 npm run db:user:create

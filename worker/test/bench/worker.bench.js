@@ -1,4 +1,4 @@
-import { describe, test, afterAll } from "vitest";
+﻿import { describe, test, afterAll } from "vitest";
 import fs from "node:fs";
 import path from "node:path";
 import os from "node:os";
@@ -14,7 +14,7 @@ import { resolveDataDir, createStorage } from "../../storage.js";
 
 const tempBenchDir = path.join(
   os.tmpdir(),
-  "songbird-worker-bench-" + crypto.randomUUID(),
+  "WIHM-worker-bench-" + crypto.randomUUID(),
 );
 fs.mkdirSync(tempBenchDir, { recursive: true });
 
@@ -142,7 +142,7 @@ describe("File Decryption to Temp Path", () => {
 describe("Storage Resolution & Factory", () => {
   test("resolveDataDir with custom data dir", async ({ bench }) => {
     await bench("resolveDataDir with custom data dir", () => {
-      resolveDataDir("/var/songbird/data");
+      resolveDataDir("/var/WIHM/data");
     }).run();
   });
 
@@ -164,7 +164,7 @@ describe("Storage Resolution & Factory", () => {
         driver: "s3",
         endpoint: "https://s3.example.com",
         region: "us-east-1",
-        bucket: "songbird-media",
+        bucket: "WIHM-media",
         accessKeyId: "AKIATEST1234",
         secretAccessKey: "SECRETKEY1234",
       });

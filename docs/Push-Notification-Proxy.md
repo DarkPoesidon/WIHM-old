@@ -1,4 +1,4 @@
-# Push Notification Proxy
+﻿# Push Notification Proxy
 
 If your server cannot reach push service endpoints (Google FCM, Mozilla Push Service, Apple Push) due to firewall restrictions or network policies, configure a proxy:
 
@@ -25,13 +25,13 @@ PUSH_PROXY_URL="http://your-proxy-server:3128"
 **2. Restart service**
 
 ```bash
-sudo systemctl restart songbird
+sudo systemctl restart WIHM
 ```
 
 **3. Verify in logs**
 
 ```bash
-journalctl -u songbird -f | grep push
+journalctl -u WIHM -f | grep push
 # Should show: [push] Using proxy: http://your-proxy-server:3128
 ```
 

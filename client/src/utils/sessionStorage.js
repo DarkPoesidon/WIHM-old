@@ -1,6 +1,6 @@
-import { normalizeUuid } from "./uuidUtils.js";
+﻿import { normalizeUuid } from "./uuidUtils.js";
 
-export const SESSION_USER_KEY = "songbird-session-user";
+export const SESSION_USER_KEY = "wihm-session-user";
 
 function getStorage() {
   if (typeof localStorage !== "undefined") return localStorage;

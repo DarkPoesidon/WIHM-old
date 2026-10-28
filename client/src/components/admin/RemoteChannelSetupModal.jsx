@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+﻿import { useCallback, useEffect, useState } from "react";
 import { apiFetch } from "../../api/chatApi.js";
 import {
   AlertCircle,
@@ -351,7 +351,7 @@ export default function RemoteChannelSetupModal({ open, onClose, onChanged }) {
             <p className="text-center text-[11px] text-slate-400 dark:text-slate-500">
               For more information visit the{" "}
               <a
-                href="https://docs.songbird.website/Remote-Channel-Setup"
+                href="https://docs.wihm.website/Remote-Channel-Setup"
                 target="_blank"
                 rel="noreferrer"
                 className="font-semibold text-emerald-600 hover:underline dark:text-emerald-400"

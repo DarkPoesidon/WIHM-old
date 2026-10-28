@@ -1,4 +1,4 @@
-import { spawn } from "node:child_process";
+﻿import { spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -24,7 +24,7 @@ export async function isLocalWorkerHealthy(
     if (!res || !res.ok) return false;
     const body = await res.json().catch(() => ({}));
     return (
-      body && (body.status === "ok" || body.service === "songbird-media-worker")
+      body && (body.status === "ok" || body.service === "wihm-media-worker")
     );
   } catch {
     clearTimeout(timeoutId);
@@ -164,7 +164,7 @@ export async function ensureLocalWorkerRunning(options = {}) {
     process.once("SIGTERM", cleanup);
 
     console.log(
-      `[localWorkerManager] Auto-started local Songbird Media Worker on port ${workerPort} (PID: ${child.pid}, mode: ${storageProcessingMode})`,
+      `[localWorkerManager] Auto-started local WIHM Media Worker on port ${workerPort} (PID: ${child.pid}, mode: ${storageProcessingMode})`,
     );
 
     return {

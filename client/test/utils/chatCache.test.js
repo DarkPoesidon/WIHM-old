@@ -1,4 +1,4 @@
-import { describe, test, expect } from "vitest";
+﻿import { describe, test, expect } from "vitest";
 import {
   safeParseJson,
   normalizeMessageBody,
@@ -84,35 +84,35 @@ describe("normalizeMessageBody", () => {
 describe("buildChatListCacheKey", () => {
   test("lowercases the username", () => {
     expect(buildChatListCacheKey("Alice")).toBe(
-      "songbird-chat-list-cache:alice",
+      "wihm-chat-list-cache:alice",
     );
   });
 
   test("handles empty username", () => {
-    expect(buildChatListCacheKey("")).toBe("songbird-chat-list-cache:");
+    expect(buildChatListCacheKey("")).toBe("wihm-chat-list-cache:");
   });
 
   test("handles null username", () => {
-    expect(buildChatListCacheKey(null)).toBe("songbird-chat-list-cache:");
+    expect(buildChatListCacheKey(null)).toBe("wihm-chat-list-cache:");
   });
 });
 
 describe("buildMessagesCacheKey", () => {
   test("includes both username and chatId", () => {
     expect(buildMessagesCacheKey("Alice", "550e8400-e29b-41d4-a716-446655440000")).toBe(
-      "songbird-chat-messages-cache:alice:550e8400-e29b-41d4-a716-446655440000",
+      "wihm-chat-messages-cache:alice:550e8400-e29b-41d4-a716-446655440000",
     );
   });
 
   test("uses chatId as-is (string UUID)", () => {
     expect(buildMessagesCacheKey("alice", "10")).toBe(
-      "songbird-chat-messages-cache:alice:10",
+      "wihm-chat-messages-cache:alice:10",
     );
   });
 
   test("defaults chatId to empty string for falsy values", () => {
     expect(buildMessagesCacheKey("alice", null)).toBe(
-      "songbird-chat-messages-cache:alice:",
+      "wihm-chat-messages-cache:alice:",
     );
   });
 });
@@ -120,7 +120,7 @@ describe("buildMessagesCacheKey", () => {
 describe("buildMessagesIndexKey", () => {
   test("lowercases the username", () => {
     expect(buildMessagesIndexKey("Bob")).toBe(
-      "songbird-chat-messages-index:bob",
+      "wihm-chat-messages-index:bob",
     );
   });
 });
@@ -128,7 +128,7 @@ describe("buildMessagesIndexKey", () => {
 describe("buildChannelSeenCacheKey", () => {
   test("includes both username and chatId", () => {
     expect(buildChannelSeenCacheKey("alice", 3)).toBe(
-      "songbird-channel-seen:alice:3",
+      "wihm-channel-seen:alice:3",
     );
   });
 });

@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: songbird
+    name: wihm
     runtime: docker
     dockerfilePath: ./Dockerfile
     plan: free
@@ -13,7 +13,7 @@ services:
       - key: DB_CLIENT
         value: postgres
       # Provide your PostgreSQL connection string (e.g. from Neon, Supabase, Aiven, or Render Postgres)
-      # Example: postgresql://user:password@ep-xyz.us-east-2.aws.neon.tech/songbird?sslmode=require
+      # Example: postgresql://user:password@ep-xyz.us-east-2.aws.neon.tech/wihm?sslmode=require
       - key: POSTGRES_URL
         sync: false
       - key: POSTGRES_SSL

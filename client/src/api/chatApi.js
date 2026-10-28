@@ -1,13 +1,23 @@
 import { extractMediaPreprocessMetadata } from "../utils/mediaPreprocess.js";
 
-const API_BASE = "";
+export const API_BASE = (
+  typeof import.meta !== "undefined" && import.meta.env?.VITE_API_BASE
+    ? String(import.meta.env.VITE_API_BASE).replace(/\/+$/, "")
+    : ""
+);
 
 const withCredentials = (options = {}) => ({
   credentials: "include",
   ...options,
 });
 
-export const apiFetch = (url, options = {}) => fetch(url, withCredentials(options));
+export const apiFetch = (url, options = {}) => {
+  const targetUrl =
+    API_BASE && typeof url === "string" && url.startsWith("/")
+      ? `${API_BASE}${url}`
+      : url;
+  return fetch(targetUrl, withCredentials(options));
+};
 
 export const fetchHealth = () => apiFetch(`${API_BASE}/api/health`);
 
@@ -380,6 +390,25 @@ export const getSseStreamUrl = (username) =>
   `${API_BASE}/api/events?username=${encodeURIComponent(username)}`;
 
 export const getWebSocketUrl = (username) => {
+  const customWsUrl =
+    typeof import.meta !== "undefined" && import.meta.env?.VITE_WS_URL
+      ? String(import.meta.env.VITE_WS_URL).trim()
+      : "";
+  if (customWsUrl) {
+    const query = username ? `?username=${encodeURIComponent(username)}` : "";
+    const base = customWsUrl.replace(/\/+$/, "");
+    return base.endsWith("/ws") ? `${base}${query}` : `${base}/ws${query}`;
+  }
+  if (API_BASE && /^https?:\/\//i.test(API_BASE)) {
+    try {
+      const url = new URL(API_BASE);
+      const protocol = url.protocol === "https:" ? "wss:" : "ws:";
+      const query = username ? `?username=${encodeURIComponent(username)}` : "";
+      return `${protocol}//${url.host}/ws${query}`;
+    } catch {
+      // fallback to window.location
+    }
+  }
   const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
   const host = window.location.host;
   const query = username ? `?username=${encodeURIComponent(username)}` : "";

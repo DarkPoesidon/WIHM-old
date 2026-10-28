@@ -1,4 +1,4 @@
-import path from "node:path";
+﻿import path from "node:path";
 import fs from "node:fs";
 import crypto from "node:crypto";
 import { fileURLToPath } from "node:url";
@@ -18,7 +18,7 @@ const projectRootDir = path.resolve(serverDir, "..");
 dotenv.config({ path: path.join(projectRootDir, ".env"), quiet: true });
 dotenv.config({ path: path.join(serverDir, ".env"), quiet: true });
 const dataDir = path.resolve(process.env.DATA_DIR || path.resolve(serverDir, "..", "data"));
-const dbPath = path.join(dataDir, "songbird.db");
+const dbPath = path.join(dataDir, "wihm.db");
 const backupDir = path.join(dataDir, "backups");
 if (!fs.existsSync(dataDir)) {
   fs.mkdirSync(dataDir, { recursive: true });
@@ -98,7 +98,7 @@ function cleanupWalFiles() {
 }
 
 // Reload the in-memory database from the file on disk. Used after a restore
-// replaces songbird.db underneath the running process. Cancels any pending
+// replaces wihm.db underneath the running process. Cancels any pending
 // debounced save first so we never overwrite the freshly restored file.
 async function reloadDatabaseFromDisk() {
   if (pendingSaveTimer) {
@@ -196,7 +196,7 @@ function createPreMigrationBackup(fromVersion, toVersion) {
     const stamp = new Date().toISOString().replace(/[:.]/g, "-");
     const backupPath = path.join(
       backupDir,
-      `songbird-pre-migration-v${fromVersion}-to-v${toVersion}-${stamp}.db`,
+      `WIHM-pre-migration-v${fromVersion}-to-v${toVersion}-${stamp}.db`,
     );
     fs.copyFileSync(dbPath, backupPath);
     return backupPath;

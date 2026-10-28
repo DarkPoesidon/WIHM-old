@@ -1,4 +1,4 @@
-import fs from "node:fs";
+﻿import fs from "node:fs";
 import path from "node:path";
 import { execFile } from "node:child_process";
 import { fileURLToPath } from "node:url";
@@ -6,13 +6,13 @@ import { fileURLToPath } from "node:url";
 const serverDir = path.dirname(fileURLToPath(import.meta.url));
 const projectRootDir = path.resolve(serverDir, "..", "..");
 
-const SERVICE_NAME = process.env.SONGBIRD_SERVICE_NAME || "songbird.service";
-const WORKER_SERVICE_NAME = process.env.SONGBIRD_WORKER_SERVICE_NAME || "songbird-worker.service";
+const SERVICE_NAME = process.env.WIHM_SERVICE_NAME || "WIHM.service";
+const WORKER_SERVICE_NAME = process.env.WIHM_WORKER_SERVICE_NAME || "WIHM-worker.service";
 
 // Candidate paths for each log source. The first readable one wins.
 const INSTALLER_LOG_CANDIDATES = [
   path.join(projectRootDir, "logs", "install.log"),
-  "/opt/songbird/logs/install.log",
+  "/opt/WIHM/logs/install.log",
 ];
 
 const NGINX_LOG_CANDIDATES = [
@@ -22,7 +22,7 @@ const NGINX_LOG_CANDIDATES = [
 
 // Hint shown when a log is unavailable due to OS-level permission restrictions.
 const PERMISSION_HINT =
-  "To fix: add the songbird user to the adm and systemd-journal groups, " +
+  "To fix: add the WIHM user to the adm and systemd-journal groups, " +
   "and add a sudoers drop-in for service control. " +
   "Re-run the installer or see the README for manual steps.";
 

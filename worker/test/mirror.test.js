@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+﻿import { describe, it, expect, vi } from "vitest";
 import http from "node:http";
 import request from "supertest";
 import { createWorkerServer, processMirrorJob } from "../index.js";
@@ -81,7 +81,7 @@ describe("mirror-media endpoint", () => {
     });
     const res = await request(server)
       .post("/mirror-media")
-      .set("x-songbird-webhook-secret", "valid-secret")
+      .set("x-WIHM-webhook-secret", "valid-secret")
       .send({
         jobId: "job-1",
         storageKey: "uploads/messages/a.jpg",

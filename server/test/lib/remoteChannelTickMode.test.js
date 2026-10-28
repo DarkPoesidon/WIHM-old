@@ -1,4 +1,4 @@
-import { describe, test, expect, vi } from "vitest";
+﻿import { describe, test, expect, vi } from "vitest";
 
 import { createRemoteChannelManager } from "../../lib/remoteChannels.js";
 
@@ -38,18 +38,18 @@ describe("remote channel tick mode", () => {
     manager.stop();
   });
 
-  test("tickOnce polls songbird sources, drains queue, and disconnects", async () => {
-    const pollSongbird = vi.fn(async () => []);
+  test("tickOnce polls WIHM sources, drains queue, and disconnects", async () => {
+    const pollWIHM = vi.fn(async () => []);
     const manager = makeManager(
       { tickMode: true },
       {
-        listEnabledRemoteChannelSources: pollSongbird,
+        listEnabledRemoteChannelSources: pollWIHM,
       },
     );
     manager.start();
     const summary = await manager.tickOnce({ drainBatches: 1 });
-    expect(pollSongbird).toHaveBeenCalled();
-    expect(summary.songbird).toBe("polled");
+    expect(pollWIHM).toHaveBeenCalled();
+    expect(summary.WIHM).toBe("polled");
     expect(summary.telegram).toBe("not-configured");
     expect(summary.queueBatches).toBe(1);
     manager.stop();

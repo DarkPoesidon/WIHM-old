@@ -1,4 +1,4 @@
-import {
+﻿import {
   normalizeChatType,
   normalizeGroupUsername,
   normalizeHexColor,
@@ -105,7 +105,7 @@ function registerAdminRoutes(app, deps) {
     // (see lib/adminApiToken.js), so this should always be set. Still guard
     // against a missing value rather than silently skipping the check.
     const expectedToken = String(process.env.ADMIN_API_TOKEN || "");
-    const provided = String(req.headers["x-songbird-admin-token"] || "");
+    const provided = String(req.headers["x-wihm-admin-token"] || "");
     const expectedBuf = Buffer.from(expectedToken);
     const providedBuf = Buffer.from(provided);
     const tokenMatches =
@@ -1504,7 +1504,7 @@ function registerAdminRoutes(app, deps) {
         if (!chatId) {
           const row = adminGetRow(
             `SELECT id FROM chats WHERE name = ? ORDER BY id ASC LIMIT 1`,
-            ["Songbird Demo"],
+            ["WIHM Demo"],
           );
           chatId = row?.id || null;
         }
@@ -1514,11 +1514,11 @@ function registerAdminRoutes(app, deps) {
           adminRun(
             `INSERT INTO chats (id, name, type, created_at)
              VALUES (?, ?, ?, datetime('now'))`,
-            [newChatId, "Songbird Demo", "group"],
+            [newChatId, "WIHM Demo", "group"],
           );
 
           chatId = adminGetRow("SELECT id FROM chats WHERE name = ?", [
-              "Songbird Demo",
+              "WIHM Demo",
             ])?.id || null;
         }
 

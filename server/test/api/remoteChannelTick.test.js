@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeEach, afterEach } from "vitest";
+﻿import { describe, test, expect, beforeEach, afterEach } from "vitest";
 import request from "supertest";
 
 import { makeApp } from "../helpers/makeApp.js";
@@ -42,17 +42,17 @@ describe("POST /api/internal/remote-channel/tick", () => {
     const { app } = makeTickApp();
     const res = await request(app)
       .post("/api/internal/remote-channel/tick")
-      .set("x-songbird-cron-secret", "wrong");
+      .set("x-wihm-cron-secret", "wrong");
     expect(res.status).toBe(401);
   });
 
   test("runs a tick with the correct secret", async () => {
     const { app } = makeTickApp({
-      tickOnce: async () => ({ telegram: "polled", songbird: "polled" }),
+      tickOnce: async () => ({ telegram: "polled", WIHM: "polled" }),
     });
     const res = await request(app)
       .post("/api/internal/remote-channel/tick")
-      .set("x-songbird-cron-secret", SECRET);
+      .set("x-wihm-cron-secret", SECRET);
     expect(res.status).toBe(200);
     expect(res.body.ok).toBe(true);
     expect(res.body.telegram).toBe("polled");
@@ -68,7 +68,7 @@ describe("POST /api/internal/remote-channel/tick", () => {
     });
     const res = await request(app)
       .post("/api/internal/remote-channel/tick")
-      .set("x-songbird-cron-secret", SECRET);
+      .set("x-wihm-cron-secret", SECRET);
     expect(res.status).toBe(409);
   });
 
@@ -85,7 +85,7 @@ describe("POST /api/internal/remote-channel/tick", () => {
     });
     const res = await request(app)
       .post("/api/internal/remote-channel/tick")
-      .set("x-songbird-cron-secret", "boot-generated-secret");
+      .set("x-wihm-cron-secret", "boot-generated-secret");
     expect(res.status).toBe(200);
     expect(res.body.ok).toBe(true);
   });
@@ -99,7 +99,7 @@ describe("POST /api/internal/remote-channel/tick", () => {
     });
     const res = await request(app)
       .post("/api/internal/remote-channel/tick")
-      .set("x-songbird-cron-secret", "anything");
+      .set("x-wihm-cron-secret", "anything");
     expect(res.status).toBe(403);
   });
 });

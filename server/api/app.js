@@ -1,4 +1,4 @@
-import { readAppMeta } from "../lib/appMeta.js";
+﻿import { readAppMeta } from "../lib/appMeta.js";
 
 function registerAppRoutes(app, deps) {
   const { REMOTE_CHANNELS, getSetting, fs, path, projectRootDir } = deps;
@@ -49,7 +49,7 @@ function registerAppRoutes(app, deps) {
         uiEnabled: Boolean(getSetting("REMOTE_CHANNEL_UI")),
         mediaStreamEnabled: Boolean(getSetting("REMOTE_CHANNEL_MEDIA_STREAM")),
         telegramConfigured: Boolean(REMOTE_CHANNELS?.telegramConfigured),
-        songbirdConfigured: Boolean(REMOTE_CHANNELS?.enabled),
+        WIHMConfigured: Boolean(REMOTE_CHANNELS?.enabled),
         proxyConfigured: Boolean(REMOTE_CHANNELS?.proxyConfigured),
       },
     });

@@ -1,4 +1,4 @@
-import { describe, it, expect, afterEach, vi } from "vitest";
+﻿import { describe, it, expect, afterEach, vi } from "vitest";
 import { isCallSupported } from "../../src/utils/callCapabilities.js";
 
 describe("isCallSupported", () => {
@@ -41,7 +41,7 @@ describe("isCallSupported", () => {
   it("returns true on HTTPS with mediaDevices", () => {
     vi.stubGlobal("window", {
       isSecureContext: true,
-      location: { protocol: "https:", hostname: "songbird.example.com" },
+      location: { protocol: "https:", hostname: "wihm.example.com" },
     });
     vi.stubGlobal("navigator", {
       mediaDevices: { getUserMedia: () => Promise.resolve() },

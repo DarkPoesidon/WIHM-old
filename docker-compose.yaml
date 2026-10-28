@@ -1,12 +1,12 @@
 services:
-  songbird:
+  wihm:
     # Use the pre-built image from Docker Hub (recommended):
-    image: ${SONGBIRD_IMAGE:-bllackbull/songbird:latest}
+    image: ${wihm_IMAGE:-bllackbull/wihm:latest}
     # Or build locally from source (uncomment and remove the image line above):
     # build:
     #   context: .
     #   dockerfile: Dockerfile
-    container_name: songbird
+    container_name: wihm
     restart: unless-stopped
     expose:
       - "${SERVER_PORT:-5174}"
@@ -20,12 +20,12 @@ services:
       DB_CLIENT: ${DB_CLIENT:-sqlite3}
       POSTGRES_HOST: ${POSTGRES_HOST:-postgres}
       POSTGRES_PORT: ${POSTGRES_PORT:-5432}
-      POSTGRES_DB: ${POSTGRES_DB:-songbird}
+      POSTGRES_DB: ${POSTGRES_DB:-wihm}
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       # Tell the admin panel which container to use via the Docker API.
-      # Defaults to "songbird" which matches the container_name above.
-      SONGBIRD_CONTAINER_NAME: ${SONGBIRD_CONTAINER_NAME:-songbird}
+      # Defaults to "wihm" which matches the container_name above.
+      wihm_CONTAINER_NAME: ${wihm_CONTAINER_NAME:-wihm}
       VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
       VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}
       VAPID_SUBJECT: ${VAPID_SUBJECT:-}
@@ -35,7 +35,7 @@ services:
       WEBHOOK_URL: ${WEBHOOK_URL:-}
       WEBHOOK_SECRET: ${WEBHOOK_SECRET:-}
     volumes:
-      - songbird-data:/app/data
+      - wihm-data:/app/data
       # Required for the admin panel's services.
       # The container uses the Docker Engine API (via this socket) to control itself.
       # Remove this mount if you do not need service control from the admin panel.
@@ -55,18 +55,18 @@ services:
     # Wait for the app to pass its healthcheck before nginx starts accepting traffic.
     # This avoids 502s during the brief startup window (migrations, WASM init).
     depends_on:
-      songbird:
+      wihm:
         condition: service_healthy
 
 volumes:
-  songbird-data:
+  wihm-data:
   # Optional volume for PostgreSQL database:
   # postgres-data:
 
 # Optional Standalone Media Worker container service (uncomment to run worker in a separate container):
 #  media-worker:
-#    image: ${SONGBIRD_WORKER_IMAGE:-bllackbull/songbird-worker:latest}
-#    container_name: songbird-media-worker
+#    image: ${wihm_WORKER_IMAGE:-bllackbull/wihm-worker:latest}
+#    container_name: wihm-media-worker
 #    restart: unless-stopped
 #    environment:
 #      APP_ENV: ${APP_ENV:-production}
@@ -83,17 +83,17 @@ volumes:
 #      STORAGE_ENCRYPTION_KEY: ${STORAGE_ENCRYPTION_KEY:-}
 #      DATA_DIR: /app/data
 #    volumes:
-#      - songbird-data:/app/data
+#      - wihm-data:/app/data
 #    expose:
 #      - "${WORKER_PORT:-8080}"
 
 # Optional PostgreSQL container service (uncomment to run PostgreSQL via Docker):
 #  postgres:
 #    image: postgres:16-alpine
-#    container_name: songbird-postgres
+#    container_name: wihm-postgres
 #    restart: unless-stopped
 #    environment:
-#      POSTGRES_DB: ${POSTGRES_DB:-songbird}
+#      POSTGRES_DB: ${POSTGRES_DB:-wihm}
 #      POSTGRES_USER: ${POSTGRES_USER:-postgres}
 #      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
 #    volumes:

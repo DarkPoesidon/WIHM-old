@@ -1,14 +1,14 @@
-# Database Commands
+﻿# Database Commands
 
-Songbird supports both SQLite (default) and PostgreSQL database engines, and ships a set of `npm` scripts for managing the database, users, chats, files, and backups from the command line. Run them from the `server/` directory:
+WIHM supports both SQLite (default) and PostgreSQL database engines, and ships a set of `npm` scripts for managing the database, users, chats, files, and backups from the command line. Run them from the `server/` directory:
 
 ```bash
-cd /opt/songbird/server
+cd /opt/WIHM/server
 ```
 
 :::tip
 
-You can also run every database command interactively via the [Deployment Script](./Deployment-Script.md) (`songbird-deploy`).
+You can also run every database command interactively via the [Deployment Script](./Deployment-Script.md) (`WIHM-deploy`).
 
 :::
 
@@ -26,15 +26,15 @@ A few rules apply across all commands:
 
 ### Data directory ownership
 
-Supported database commands use a pre-Node launcher and follow Songbird's runtime account:
+Supported database commands use a pre-Node launcher and follow WIHM's runtime account:
 
-- **Docker:** The command runs as the container's current UID/GID. Docker does not use `songbird.service`.
-- **systemd:** The command follows the effective `User=` and `Group=` of `songbird.service`, including systemd overrides. A missing `Group=` uses the service user's primary group. When root invokes a command for a non-root service account, the launcher repairs only this installation's `data/` directory and then switches to that configured account.
+- **Docker:** The command runs as the container's current UID/GID. Docker does not use `WIHM.service`.
+- **systemd:** The command follows the effective `User=` and `Group=` of `WIHM.service`, including systemd overrides. A missing `Group=` uses the service user's primary group. When root invokes a command for a non-root service account, the launcher repairs only this installation's `data/` directory and then switches to that configured account.
 - **Manual/no-systemd:** The command uses the caller's current account. It does not create an account or attempt ownership repair.
 
-If `User=` is missing or `User=root`, the systemd command remains root: it does not run `chown` or change users. An explicit `Group=` is still preserved, so `User=root` and `Group=appgroup` executes as `root:appgroup`. For safety, the root/non-root-systemd repair path accepts only the deployed instance's own `data/` directory next to the launcher (`/opt/songbird/data` in the standard installation); it rejects an overridden `DATA_DIR` rather than recursively changing an arbitrary path.
+If `User=` is missing or `User=root`, the systemd command remains root: it does not run `chown` or change users. An explicit `Group=` is still preserved, so `User=root` and `Group=appgroup` executes as `root:appgroup`. For safety, the root/non-root-systemd repair path accepts only the deployed instance's own `data/` directory next to the launcher (`/opt/WIHM/data` in the standard installation); it rejects an overridden `DATA_DIR` rather than recursively changing an arbitrary path.
 
-`DATA_DIR` contains Songbird-managed SQLite data, uploads, and backups. PostgreSQL server data is managed externally by PostgreSQL and is not stored in, or changed by, this directory.
+`DATA_DIR` contains WIHM-managed SQLite data, uploads, and backups. PostgreSQL server data is managed externally by PostgreSQL and is not stored in, or changed by, this directory.
 
 :::warning
 
@@ -80,8 +80,8 @@ Do not run individual scripts with `sudo node` or `sudo npm`. Those direct invoc
 
 Creates a timestamped, engine-native backup in `data/backups/`:
 
-- **SQLite:** copies `songbird.db` to `songbird-backup-<timestamp>.db`.
-- **PostgreSQL:** creates `songbird-backup-<timestamp>.dump` with `pg_dump --format=custom`.
+- **SQLite:** copies `WIHM.db` to `WIHM-backup-<timestamp>.db`.
+- **PostgreSQL:** creates `WIHM-backup-<timestamp>.dump` with `pg_dump --format=custom`.
 
 ```bash
 # SQLite or PostgreSQL; the extension is selected from DB_CLIENT
@@ -106,13 +106,13 @@ Restores the newest matching backup or an explicitly selected file. SQLite accep
 | `-y`, `--yes` | No | Skip the confirmation prompt. |
 
 ```bash
-npm run db:restore -- -y --file /path/to/songbird-backup.db
-npm run db:restore -- -y --file /path/to/songbird-backup.dump
+npm run db:restore -- -y --file /path/to/WIHM-backup.db
+npm run db:restore -- -y --file /path/to/WIHM-backup.dump
 ```
 
 :::warning PostgreSQL must be offline
 
-Stop Songbird before running PostgreSQL `db:restore`. Native `pg_restore --clean` replaces database objects and cannot safely run through the live Songbird process. Start or restart Songbird only after the command succeeds.
+Stop WIHM before running PostgreSQL `db:restore`. Native `pg_restore --clean` replaces database objects and cannot safely run through the live WIHM process. Start or restart WIHM only after the command succeeds.
 
 :::
 
@@ -154,15 +154,15 @@ sudo apt-get install -y pgloader
 #### 3. Run migration with pgloader
 
 ```bash
-pgloader ./data/songbird.db postgresql://songbird:password@localhost:5432/songbird
+pgloader ./data/WIHM.db postgresql://WIHM:password@localhost:5432/WIHM
 ```
 
-Or using a `songbird.load` configuration file for fine-grained control:
+Or using a `WIHM.load` configuration file for fine-grained control:
 
 ```lisp
 LOAD DATABASE
-     FROM sqlite://./data/songbird.db
-     INTO postgresql://songbird:password@localhost:5432/songbird
+     FROM sqlite://./data/WIHM.db
+     INTO postgresql://WIHM:password@localhost:5432/WIHM
 
  WITH include drop, create tables, create indexes, reset sequences
 
@@ -170,7 +170,7 @@ LOAD DATABASE
 ```
 
 ```bash
-pgloader songbird.load
+pgloader WIHM.load
 ```
 
 ### `db:migrate`
@@ -198,7 +198,7 @@ npm run db:reset -- -y --no-recreate
 
 :::info Online vs. Offline behavior
 
-When Songbird is running, the command delegates to the authenticated local server and performs an schema-preserving reset. When Songbird is stopped, SQLite removes its database file and PostgreSQL drops the database; either engine can then be recreated and migrated.
+When WIHM is running, the command delegates to the authenticated local server and performs an schema-preserving reset. When WIHM is stopped, SQLite removes its database file and PostgreSQL drops the database; either engine can then be recreated and migrated.
 
 :::
 
@@ -216,7 +216,7 @@ npm run db:delete -- -y
 
 :::warning PostgreSQL must be offline
 
-Stop Songbird before PostgreSQL `db:delete`; `dropdb --force` terminates active PostgreSQL connections. Local message uploads are also removed, but remote object storage must be cleaned separately if configured.
+Stop WIHM before PostgreSQL `db:delete`; `dropdb --force` terminates active PostgreSQL connections. Local message uploads are also removed, but remote object storage must be cleaned separately if configured.
 
 :::
 
@@ -254,10 +254,10 @@ Creates a single user. Accepts named flags or three positional arguments (`nickn
 | `--role <owner\|admin\|user>` | 4th | No | User role. |
 
 ```bash
-npm run db:user:create -- --nickname "Songbird Sage" --username songbird.sage --password "12345678"
+npm run db:user:create -- --nickname "WIHM Sage" --username WIHM.sage --password "12345678"
 
 # positional form:
-npm run db:user:create -- "Songbird Sage" songbird.sage "12345678"
+npm run db:user:create -- "WIHM Sage" WIHM.sage "12345678"
 ```
 
 ### `db:user:generate`
@@ -291,8 +291,8 @@ Edits a user profile. The first positional argument is the user selector (id or 
 | `--role <owner\|admin\|user>` | No | User role. |
 
 ```bash
-npm run db:user:edit -- songbird.sage --nickname "Songbird Sage" --color "#ff6b6b"
-npm run db:user:edit -- 1 --username songbird.admin --status invisible
+npm run db:user:edit -- WIHM.sage --nickname "WIHM Sage" --color "#ff6b6b"
+npm run db:user:edit -- 1 --username WIHM.admin --status invisible
 ```
 
 ### `db:user:ban`
@@ -305,9 +305,9 @@ Toggles a user's ban state. Running it again unbans. Banning also expires all of
 | `-y`, `--yes` | No | Skip the confirmation prompt. |
 
 ```bash
-npm run db:user:ban -- songbird.sage
+npm run db:user:ban -- WIHM.sage
 # run again to unban:
-npm run db:user:ban -- songbird.sage
+npm run db:user:ban -- WIHM.sage
 ```
 
 ### `db:user:verify`
@@ -319,9 +319,9 @@ Toggles a user's verified status. Run the command again for the same user to rem
 | `<user-id-or-username>` | Yes | The user to verify or unverify. |
 
 ```bash
-npm run db:user:verify -- songbird.sage
+npm run db:user:verify -- WIHM.sage
 # run again to unverify:
-npm run db:user:verify -- songbird.sage
+npm run db:user:verify -- WIHM.sage
 ```
 
 ### `db:user:delete`
@@ -335,7 +335,7 @@ Deletes one, many, or all users along with their sessions and messages. Owned ch
 | `-y`, `--yes` | No | Skip the confirmation prompt. |
 
 ```bash
-npm run db:user:delete -- songbird.sage -y
+npm run db:user:delete -- WIHM.sage -y
 npm run db:user:delete -- --all -y
 ```
 
@@ -356,12 +356,12 @@ Creates a group or channel. Channels can optionally be configured as a Remote Ch
 | `--users <a,b,c>` | No | Comma-separated initial members. |
 | `--remote-channel <source>` | No | Telegram source (`@name`, `t.me` link, or numeric id). Channels only; requires `REMOTE_CHANNEL=true`. |
 | `--sync-metadata` | No | Copy the source's title/avatar into the channel. |
-| `--stream-media` | No | Download source media into Songbird uploads. |
+| `--stream-media` | No | Download source media into WIHM uploads. |
 
 ```bash
-npm run db:chat:create -- --type group --name "Core Team" --owner songbird.sage --username core.team --visibility private --users songbird.sage2,songbird.sage3
+npm run db:chat:create -- --type group --name "Core Team" --owner WIHM.sage --username core.team --visibility private --users WIHM.sage2,WIHM.sage3
 
-npm run db:chat:create -- --type channel --name "Announcements" --owner songbird.sage --username announcements
+npm run db:chat:create -- --type channel --name "Announcements" --owner WIHM.sage --username announcements
 
 # Channel with a Remote Channel source:
 npm run db:chat:create -- --type channel --name "My Channel" --owner alice --username my_channel --remote-channel @telegram_source --sync-metadata --stream-media
@@ -379,7 +379,7 @@ Adds members to a group or channel. The first positional argument is the chat se
 | `--force` | No | Re-add users who previously left the chat. |
 
 ```bash
-npm run db:chat:add -- core.team songbird.sage2 songbird.sage3
+npm run db:chat:add -- core.team WIHM.sage2 WIHM.sage3
 npm run db:chat:add -- 1 --all
 npm run db:chat:add -- 1 --all --force
 ```
@@ -418,7 +418,7 @@ Edits a chat profile, transfers ownership, or manages its Remote Channel. The fi
 
 ```bash
 npm run db:chat:edit -- core.team --name "Core Team HQ" --visibility public --color "#14b8a6"
-npm run db:chat:edit -- 1 --owner songbird.sage2
+npm run db:chat:edit -- 1 --owner WIHM.sage2
 
 # Remote Channel:
 npm run db:chat:edit -- my_channel --remote-channel @new_telegram_source
@@ -493,8 +493,8 @@ Generates random messages in one chat between two users. Accepts positional argu
 | `--days <n>` | 5th | No | `7` | Spread messages across the last N days (`1`-`365`). |
 
 ```bash
-npm run db:message:generate -- 1 songbird.sage songbird.sage2 300 7
-npm run db:message:generate -- --chatId 1 --userA songbird.sage --userB songbird.sage2 --count 300 --days 7
+npm run db:message:generate -- 1 WIHM.sage WIHM.sage2 300 7
+npm run db:message:generate -- --chatId 1 --userA WIHM.sage --userB WIHM.sage2 --count 300 --days 7
 ```
 
 
@@ -527,7 +527,7 @@ npm run storage:migrate
 ```
 
 :::warning Concurrency Guard
-`storage:migrate` refuses to run if the Songbird server process is actively running, preventing race conditions with live uploads. Stop the server before executing.
+`storage:migrate` refuses to run if the WIHM server process is actively running, preventing race conditions with live uploads. Stop the server before executing.
 :::
 
 ## Running commands via Docker
@@ -535,8 +535,8 @@ npm run storage:migrate
 To run database and maintenance commands inside a Docker container:
 
 ```bash
-docker compose exec songbird npm --prefix /app/server run db:backup
-docker compose exec songbird npm --prefix /app/server run db:migrate
-docker compose exec songbird npm --prefix /app/server run db:inspect
-docker compose exec songbird npm --prefix /app/server run storage:migrate -- -y
+docker compose exec WIHM npm --prefix /app/server run db:backup
+docker compose exec WIHM npm --prefix /app/server run db:migrate
+docker compose exec WIHM npm --prefix /app/server run db:inspect
+docker compose exec WIHM npm --prefix /app/server run storage:migrate -- -y
 ```

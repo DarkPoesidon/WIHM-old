@@ -1,4 +1,4 @@
-import express from "express";
+﻿import express from "express";
 import path from "node:path";
 import fs from "node:fs";
 import http from "node:http";
@@ -181,7 +181,7 @@ import {
   SETTING_DEFS,
 } from "./lib/appSettings.js";
 
-process.title = "songbird-server";
+process.title = "wihm-server";
 
 const app = express();
 const serverDir = path.dirname(fileURLToPath(import.meta.url));
@@ -271,10 +271,40 @@ app.use(
   }),
 );
 app.use((req, res, next) => {
+  const allowedOrigins = resolveAppOrigins(process.env);
+  const requestOrigin = req.headers.origin;
+  const isAllowedOrigin =
+    requestOrigin &&
+    (allowedOrigins.includes(requestOrigin) ||
+      allowedOrigins.includes("*") ||
+      (process.env.APP_ENV !== "production" &&
+        /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(requestOrigin)));
+
+  if (isAllowedOrigin) {
+    res.setHeader("Access-Control-Allow-Origin", requestOrigin);
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+    res.setHeader(
+      "Access-Control-Allow-Methods",
+      "GET, POST, PUT, DELETE, PATCH, OPTIONS",
+    );
+    res.setHeader(
+      "Access-Control-Allow-Headers",
+      "Content-Type, Authorization, X-WIHM-Client-Request-Id, X-Requested-With",
+    );
+    res.setHeader("Access-Control-Expose-Headers", "ETag, Content-Disposition");
+    res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+  } else {
+    res.setHeader("Cross-Origin-Resource-Policy", "same-origin");
+  }
+
   res.setHeader("X-Content-Type-Options", "nosniff");
   res.setHeader("X-Frame-Options", "DENY");
   res.setHeader("Referrer-Policy", "no-referrer");
-  res.setHeader("Cross-Origin-Resource-Policy", "same-origin");
+
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(204);
+  }
+
   next();
 });
 
@@ -380,8 +410,8 @@ const REMOTE_CHANNEL_TELEGRAM_SESSION_STRING = REMOTE_CHANNEL_SECRETS.sessionStr
 const REMOTE_CHANNEL_PROXY_URL = String(
   getSetting("REMOTE_CHANNEL_TELEGRAM_PROXY_URL") || "",
 ).trim();
-const REMOTE_CHANNEL_SONGBIRD_PROXY_URL = String(
-  getSetting("REMOTE_CHANNEL_SONGBIRD_PROXY_URL") || "",
+const REMOTE_CHANNEL_WIHM_PROXY_URL = String(
+  getSetting("REMOTE_CHANNEL_WIHM_PROXY_URL") || "",
 ).trim();
 const REMOTE_CHANNEL_TELEGRAM_CONFIGURED = Boolean(
   REMOTE_CHANNEL_TELEGRAM_API_ID &&
@@ -394,7 +424,7 @@ const REMOTE_CHANNEL_CONFIG = {
   mediaStreamEnabled: REMOTE_CHANNEL_MEDIA_STREAM,
   telegramConfigured: REMOTE_CHANNEL_TELEGRAM_CONFIGURED,
   proxyConfigured: Boolean(REMOTE_CHANNEL_PROXY_URL),
-  songbirdProxyUrl: REMOTE_CHANNEL_SONGBIRD_PROXY_URL,
+  WIHMProxyUrl: REMOTE_CHANNEL_WIHM_PROXY_URL,
   telegramApiId: REMOTE_CHANNEL_TELEGRAM_API_ID,
   telegramApiHash: REMOTE_CHANNEL_TELEGRAM_API_HASH,
   telegramSessionString: REMOTE_CHANNEL_TELEGRAM_SESSION_STRING,
@@ -846,7 +876,7 @@ const apiDeps = {
     uiEnabled: REMOTE_CHANNEL_CONFIG.uiEnabled,
     mediaStreamEnabled: REMOTE_CHANNEL_CONFIG.mediaStreamEnabled,
     telegramConfigured: REMOTE_CHANNEL_CONFIG.telegramConfigured,
-    songbirdConfigured: REMOTE_CHANNEL_CONFIG.enabled,
+    WIHMConfigured: REMOTE_CHANNEL_CONFIG.enabled,
     proxyConfigured: REMOTE_CHANNEL_CONFIG.proxyConfigured,
   },
   USERNAME_REGEX,
@@ -1455,7 +1485,7 @@ if (REMOTE_CHANNEL) {
 }
 
 const server = app.listen(port, bindAddress, () => {
-  console.log(`Songbird server running on http://${bindAddress}:${port}`);
+  console.log(`WIHM server running on http://${bindAddress}:${port}`);
   console.log(
     `[server] Media worker webhook callback URL: ${apiDeps.webhookCallbackUrl}`,
   );

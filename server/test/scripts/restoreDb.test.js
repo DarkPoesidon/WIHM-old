@@ -1,4 +1,4 @@
-import { describe, expect, test, vi, beforeEach, afterEach } from "vitest";
+﻿import { describe, expect, test, vi, beforeEach, afterEach } from "vitest";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -37,21 +37,21 @@ describe("restore-db.js", () => {
 
   test("resolves backup file when given a relative path to backup in data/backups", () => {
     const tempRoot = fs.mkdtempSync(
-      path.join(os.tmpdir(), "songbird-restore-"),
+      path.join(os.tmpdir(), "WIHM-restore-"),
     );
     const dataDir = path.join(tempRoot, "data");
     const backupDir = path.join(dataDir, "backups");
     fs.mkdirSync(backupDir, { recursive: true });
 
-    const backupFile = path.join(backupDir, "songbird-backup-test.db");
+    const backupFile = path.join(backupDir, "wihm-backup-test.db");
     fs.writeFileSync(backupFile, "SQLITE_MOCK_DATA");
 
-    const targetDb = path.join(dataDir, "songbird.db");
+    const targetDb = path.join(dataDir, "wihm.db");
     fs.writeFileSync(targetDb, "OLD_DATA");
 
     execFileSync(
       process.execPath,
-      [restoreScriptPath, "-y", "--file", "songbird-backup-test.db"],
+      [restoreScriptPath, "-y", "--file", "wihm-backup-test.db"],
       {
         encoding: "utf8",
         cwd: serverDir,
@@ -69,16 +69,16 @@ describe("restore-db.js", () => {
 
   test("resolves backup file when given a relative path from project root", () => {
     const tempRoot = fs.mkdtempSync(
-      path.join(os.tmpdir(), "songbird-restore-"),
+      path.join(os.tmpdir(), "WIHM-restore-"),
     );
     const dataDir = path.join(tempRoot, "data");
     const backupDir = path.join(dataDir, "backups");
     fs.mkdirSync(backupDir, { recursive: true });
 
-    const backupFile = path.join(backupDir, "songbird-backup-from-root.db");
+    const backupFile = path.join(backupDir, "wihm-backup-from-root.db");
     fs.writeFileSync(backupFile, "SQLITE_ROOT_DATA");
 
-    const targetDb = path.join(dataDir, "songbird.db");
+    const targetDb = path.join(dataDir, "wihm.db");
     fs.writeFileSync(targetDb, "OLD_DATA");
 
     execFileSync(
@@ -87,7 +87,7 @@ describe("restore-db.js", () => {
         restoreScriptPath,
         "-y",
         "--file",
-        "data/backups/songbird-backup-from-root.db",
+        "data/backups/wihm-backup-from-root.db",
       ],
       {
         encoding: "utf8",
@@ -107,16 +107,16 @@ describe("restore-db.js", () => {
 
   test("resolves backup file when given an absolute path", () => {
     const tempRoot = fs.mkdtempSync(
-      path.join(os.tmpdir(), "songbird-restore-"),
+      path.join(os.tmpdir(), "WIHM-restore-"),
     );
     const dataDir = path.join(tempRoot, "data");
     const backupDir = path.join(dataDir, "backups");
     fs.mkdirSync(backupDir, { recursive: true });
 
-    const backupFile = path.join(backupDir, "songbird-backup-abs.db");
+    const backupFile = path.join(backupDir, "wihm-backup-abs.db");
     fs.writeFileSync(backupFile, "SQLITE_ABS_DATA");
 
-    const targetDb = path.join(dataDir, "songbird.db");
+    const targetDb = path.join(dataDir, "wihm.db");
     fs.writeFileSync(targetDb, "OLD_DATA");
 
     execFileSync(
@@ -139,7 +139,7 @@ describe("restore-db.js", () => {
 
   test("rejects a .dump file in SQLite mode with clear error", () => {
     const tempRoot = fs.mkdtempSync(
-      path.join(os.tmpdir(), "songbird-restore-"),
+      path.join(os.tmpdir(), "WIHM-restore-"),
     );
     const backupFile = path.join(tempRoot, "backup.dump");
     fs.writeFileSync(backupFile, "DUMP_CONTENT");
@@ -168,7 +168,7 @@ describe("restore-db.js", () => {
 
   test("rejects a .db file in PostgreSQL mode with clear error", () => {
     const tempRoot = fs.mkdtempSync(
-      path.join(os.tmpdir(), "songbird-restore-"),
+      path.join(os.tmpdir(), "WIHM-restore-"),
     );
     const backupFile = path.join(tempRoot, "backup.db");
     fs.writeFileSync(backupFile, "DB_CONTENT");
@@ -197,7 +197,7 @@ describe("restore-db.js", () => {
 
   test("reports permission denied instead of file not found when file is not readable in SQLite mode", () => {
     const tempRoot = fs.mkdtempSync(
-      path.join(os.tmpdir(), "songbird-restore-"),
+      path.join(os.tmpdir(), "WIHM-restore-"),
     );
     const backupFile = path.join(tempRoot, "unreadable.db");
     fs.writeFileSync(backupFile, "SECRET_DATA");
@@ -230,7 +230,7 @@ describe("restore-db.js", () => {
 
   test("reports permission denied instead of file not found when file is not readable in PostgreSQL mode", () => {
     const tempRoot = fs.mkdtempSync(
-      path.join(os.tmpdir(), "songbird-restore-"),
+      path.join(os.tmpdir(), "WIHM-restore-"),
     );
     const backupFile = path.join(tempRoot, "unreadable.dump");
     fs.writeFileSync(backupFile, "SECRET_DUMP");
@@ -263,7 +263,7 @@ describe("restore-db.js", () => {
 
   test("reports permission denied when parent directory is not accessible", () => {
     const tempRoot = fs.mkdtempSync(
-      path.join(os.tmpdir(), "songbird-restore-"),
+      path.join(os.tmpdir(), "WIHM-restore-"),
     );
     const restrictedDir = path.join(tempRoot, "restricted");
     fs.mkdirSync(restrictedDir, { recursive: true });

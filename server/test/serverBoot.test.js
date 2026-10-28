@@ -1,4 +1,4 @@
-import { describe, test, expect } from "vitest";
+﻿import { describe, test, expect } from "vitest";
 import { spawn } from "node:child_process";
 import path from "node:path";
 import os from "node:os";
@@ -10,7 +10,7 @@ const serverDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..
 const BOOT_TIMEOUT_MS = 20_000;
 
 function bootServer(timeoutMs = BOOT_TIMEOUT_MS) {
-  const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), "songbird-boot-"));
+  const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), "WIHM-boot-"));
 
   const child = spawn(process.execPath, ["index.js"], {
     cwd: serverDir,
@@ -55,7 +55,7 @@ describe("Server boot", () => {
         result.ok,
         `server exited early (code=${result.code}, signal=${result.signal}) stderr:\n${result.stderr}`,
       ).toBe(true);
-      expect(result.stdout).toContain("Songbird server running");
+      expect(result.stdout).toContain("WIHM server running");
       expect(result.stderr).not.toMatch(/ReferenceError/);
     } finally {
       fs.rmSync(result.dataDir, { recursive: true, force: true });

@@ -1,4 +1,4 @@
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
+﻿import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
 import {
   AlertCircle,
   AtSign,
@@ -39,7 +39,7 @@ import {
   Video,
 } from "../../icons/lucide.js";
 import { copyTextToClipboard } from "../../utils/clipboard.js";
-import { TelegramIcon, SongbirdIcon } from "../../icons/BrandIcons.jsx";
+import { TelegramIcon, WIHMIcon } from "../../icons/BrandIcons.jsx";
 import { api, cardCls, btnPrimary, btnSecondary } from "./adminShared.js";
 import { SectionHeading } from "./AdminCommon.jsx";
 import ConfirmModal from "../modals/ConfirmModal.jsx";
@@ -98,7 +98,7 @@ const SETTING_ICONS = {
   REMOTE_CHANNEL_QUEUE_CONCURRENCY: SquareStack,
   REMOTE_CHANNEL_QUEUE_STALE_LOCK_MS: Lock,
   REMOTE_CHANNEL_TELEGRAM_PROXY_URL: TelegramIcon,
-  REMOTE_CHANNEL_SONGBIRD_PROXY_URL: SongbirdIcon,
+  REMOTE_CHANNEL_WIHM_PROXY_URL: WIHMIcon,
   PUSH_PROXY_URL: Bell,
   STORAGE_EXPIRES_IN: Clock12,
   STORAGE_PROXY_URL: PackageOpen,
@@ -149,7 +149,7 @@ const SETTING_ICON_ANIM = {
   REMOTE_CHANNEL_QUEUE_CONCURRENCY: "icon-anim-lift",
   REMOTE_CHANNEL_QUEUE_STALE_LOCK_MS: "icon-anim-bob",
   REMOTE_CHANNEL_TELEGRAM_PROXY_URL: "icon-anim-swing",
-  REMOTE_CHANNEL_SONGBIRD_PROXY_URL: "icon-anim-swing",
+  REMOTE_CHANNEL_WIHM_PROXY_URL: "icon-anim-swing",
   PUSH_PROXY_URL: "icon-anim-swing",
   STORAGE_EXPIRES_IN: "icon-anim-swing",
   STORAGE_PROXY_URL: "icon-anim-swing",
@@ -587,14 +587,14 @@ const SECRET_ROWS = [
     icon: KeyRound,
     iconAnim: "icon-anim-sway",
     label: "Remote channel tick secret",
-    description: "Header x-songbird-cron-secret for POST /api/internal/remote-channel/tick.",
+    description: "Header x-wihm-cron-secret for POST /api/internal/remote-channel/tick.",
   },
   {
     id: "webhookSecret",
     icon: KeyRound,
     iconAnim: "icon-anim-sway",
     label: "Worker webhook secret",
-    description: "Authenticates the media worker callbacks (x-songbird-webhook-secret).",
+    description: "Authenticates the media worker callbacks (x-wihm-webhook-secret).",
   },
   {
     id: "adminApiToken",

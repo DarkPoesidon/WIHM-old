@@ -1,5 +1,5 @@
-const CACHE_VERSION = "0.13.2";
-const CACHE_NAME = `songbird-${CACHE_VERSION}`;
+﻿const CACHE_VERSION = "0.13.2";
+const CACHE_NAME = `WIHM-${CACHE_VERSION}`;
 const APP_SHELL = [
   "/manifest.webmanifest",
   "/icons/icon-192.png",
@@ -41,7 +41,7 @@ self.addEventListener("activate", (event) => {
       const keys = await caches.keys();
       await Promise.all(
         keys
-          .filter((key) => key.startsWith("songbird-") && key !== CACHE_NAME)
+          .filter((key) => key.startsWith("WIHM-") && key !== CACHE_NAME)
           .map((key) => caches.delete(key)),
       );
       await self.clients.claim();
@@ -107,7 +107,7 @@ self.addEventListener("push", (event) => {
   try {
     payload = event.data ? event.data.json() : {};
   } catch {
-    payload = { title: "Songbird", body: event.data?.text?.() || "" };
+    payload = { title: "WIHM", body: event.data?.text?.() || "" };
   }
   const data = payload.data || {};
 
@@ -140,10 +140,10 @@ self.addEventListener("push", (event) => {
             : false,
         );
         if (appFocused) {
-          // A focused Songbird window rings in-app via realtime.
+          // A focused WIHM window rings in-app via realtime.
           return;
         }
-        await self.registration.showNotification(payload.title || "Songbird", {
+        await self.registration.showNotification(payload.title || "WIHM", {
           body: payload.body || "",
           data,
           tag: callTag,
@@ -157,10 +157,10 @@ self.addEventListener("push", (event) => {
     return;
   }
 
-  const title = payload.title || "Songbird";
+  const title = payload.title || "WIHM";
   const body = payload.body || "New message";
   const badgeCount = Number(payload.badge || 0);
-  const tag = data.chatId ? `chat-${data.chatId}` : "songbird";
+  const tag = data.chatId ? `chat-${data.chatId}` : "WIHM";
   const options = {
     body,
     data,
@@ -181,7 +181,7 @@ self.addEventListener("push", (event) => {
           : false,
       );
       if (appFocused) {
-        // A focused Songbird window handles unread state in-app.
+        // A focused WIHM window handles unread state in-app.
         return;
       }
       try {

@@ -6,23 +6,23 @@ export const ABOUT_CONTENT = {
   socials: [
     {
       icon: "docker",
-      href: "https://hub.docker.com/r/bllackbull/songbird",
+      href: "https://hub.docker.com/r/DarkPoesidon/WIHM",
     },
     {
       icon: "railway",
-      href: "https://railway.app/template/songbird",
+      href: "https://railway.app/template/WIHM",
     },
     {
       icon: "github",
-      href: "https://github.com/bllackbull/Songbird",
+      href: "https://github.com/DarkPoesidon/WIHM",
     },
     {
       icon: "telegram",
-      href: "https://t.me/songbirdapp",
+      href: "https://t.me/WIHMapp",
     },
     {
-      icon: "songbird",
-      href: "https://chat.songbird.website/invite/songbird",
+      icon: "WIHM",
+      href: "https://chat.WIHM.website/invite/WIHM",
     },
     {
       icon: "linkedin",
@@ -30,7 +30,7 @@ export const ABOUT_CONTENT = {
     },
   ],
   supportIntro:
-    "If Songbird is useful to you, you can support ongoing development with these wallets:",
+    "If WIHM is useful to you, you can support ongoing development with these wallets:",
   donationLink: {
     href: "https://nowpayments.io/donation/blackbull",
     title: "NOWPAYMENTS",

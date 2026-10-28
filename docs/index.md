@@ -1,20 +1,20 @@
----
+﻿---
 layout: home
 
 hero:
-  name: Songbird
+  name: WIHM
   text: Self-hosted chat
   tagline: A secure, lightweight chat platform designed to empower digital freedom worldwide.
   image:
-    src: /songbird-hero.svg
-    alt: Songbird
+    src: /WIHM-hero.svg
+    alt: WIHM
   actions:
     - theme: brand
       text: Get Started
       link: /Deployment-Script
     - theme: alt
       text: View on GitHub
-      link: https://github.com/bllackbull/Songbird
+      link: https://github.com/DarkPoesidon/WIHM
 
 features:
   - icon: 🚀
@@ -39,7 +39,7 @@ features:
     link: /Object-Storage
   - icon: 📡
     title: Remote Channels
-    details: Mirror Telegram channels or other Songbird channels into your own channels.
+    details: Mirror Telegram channels or other WIHM channels into your own channels.
     link: /Remote-Channel-Setup
   - icon: 📞
     title: Voice & Video Calls

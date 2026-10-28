@@ -1,8 +1,8 @@
-import path from "node:path";
+﻿import path from "node:path";
 import { createInviteToken } from "../lib/inviteTokens.js";
 import { createMembershipService } from "../lib/services/membershipService.js";
 import { createDeletionService } from "../lib/services/deletionService.js";
-import { normalizeSongbirdSource, normalizeTelegramSource, resolveSongbirdSource } from "../lib/remoteChannels.js";
+import { normalizeWIHMSource, normalizeTelegramSource, resolveWIHMSource } from "../lib/remoteChannels.js";
 import { resolveThumbUrl } from "../lib/thumbUrl.js";
 import { validateUuidParams, validateUuidBody } from "../lib/uuidMiddleware.js";
 
@@ -200,7 +200,7 @@ function registerChatRoutes(app, deps) {
     }
 
     const provider = String(remoteChannel.provider || "telegram").toLowerCase();
-    if (provider !== "telegram" && provider !== "songbird") {
+    if (provider !== "telegram" && provider !== "WIHM") {
       return {
         shouldSave: true,
         error: "Remote Channel source is invalid.",
@@ -242,14 +242,14 @@ function registerChatRoutes(app, deps) {
         };
       }
     } else {
-      // provider === "songbird"
+      // provider === "WIHM"
       if (enabled) {
-        normalized = normalizeSongbirdSource(rawSource);
+        normalized = normalizeWIHMSource(rawSource);
         if (!normalized.ok) {
           return { shouldSave: true, error: normalized.error, status: 400 };
         }
         // Resolve the actual channel username from the target server.
-        const resolved = await resolveSongbirdSource(
+        const resolved = await resolveWIHMSource(
           normalized.sourceUrl,
           normalized.inviteTarget,
         );
@@ -258,13 +258,13 @@ function registerChatRoutes(app, deps) {
         }
         normalized = { ...normalized, sourceUsername: resolved.sourceUsername };
       } else if (rawSource) {
-        const optionalNormalized = normalizeSongbirdSource(rawSource);
+        const optionalNormalized = normalizeWIHMSource(rawSource);
         if (optionalNormalized.ok) normalized = optionalNormalized;
       }
       if (enabled && !normalized.sourceUrl) {
         return {
           shouldSave: true,
-          error: "Songbird source URL is required.",
+          error: "WIHM source URL is required.",
           status: 400,
         };
       }
@@ -855,7 +855,7 @@ function registerChatRoutes(app, deps) {
     });
   });
 
-  // Public unauthenticated metadata endpoint used by remote Songbird servers
+  // Public unauthenticated metadata endpoint used by remote WIHM servers
   // to sync channel name and avatar when "Sync Channel Metadata" is enabled.
   // Only works for public channels on servers with SIGN_UP enabled.
   app.get("/api/channels/:username/meta", async (req, res) => {
@@ -889,7 +889,7 @@ function registerChatRoutes(app, deps) {
     });
   });
 
-  // Public unauthenticated messages endpoint used by remote Songbird servers
+  // Public unauthenticated messages endpoint used by remote WIHM servers
   app.get("/api/channels/:username/messages", async (req, res) => {
     if (!getSetting("SIGN_UP")) {
       return res.status(403).json({ error: "This server is private." });

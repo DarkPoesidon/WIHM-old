@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, test } from "vitest";
+﻿import { afterEach, describe, expect, test } from "vitest";
 import {
   createStorageEncryption,
   ensureStorageEncryptionKey,
@@ -71,12 +71,12 @@ describe("storage text encryption", () => {
 
   test("decrypts file byte ranges correctly for media streaming", () => {
     const encryption = createEncryption();
-    const fullContent = Buffer.from("Hello Songbird encrypted media streaming world!");
+    const fullContent = Buffer.from("Hello WIHM encrypted media streaming world!");
     const encryptedBuffer = encryption.encryptBuffer(fullContent);
 
     // Mock filesystem methods to test in-memory
     const decryptedRange = encryption.decryptBuffer(encryptedBuffer).subarray(6, 14);
-    expect(decryptedRange.toString()).toBe("Songbird");
+    expect(decryptedRange.toString()).toBe("WIHM");
   });
 
   test("ensureStorageEncryptionKey returns existing env key or generates a new one", () => {

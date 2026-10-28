@@ -1,4 +1,4 @@
-import { describe, test, expect, vi, beforeEach } from "vitest";
+﻿import { describe, test, expect, vi, beforeEach } from "vitest";
 import request from "supertest";
 import { makeApp } from "./helpers/makeApp.js";
 import { LocalStorageProvider } from "../lib/storage/LocalStorageProvider.js";
@@ -317,7 +317,7 @@ describe("E2E S3 & Local Upload Lifecycle", () => {
       // 3. Webhook callback from media worker
       const webhookRes = await request(appObj.app)
         .post("/api/uploads/webhook/processed")
-        .set("x-songbird-webhook-secret", "super-secret-webhook-key")
+        .set("x-wihm-webhook-secret", "super-secret-webhook-key")
         .send({
           fileId,
           status: "ready",

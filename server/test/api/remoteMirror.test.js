@@ -1,4 +1,4 @@
-import { describe, test, expect, vi, beforeEach, afterEach } from "vitest";
+﻿import { describe, test, expect, vi, beforeEach, afterEach } from "vitest";
 import request from "supertest";
 import fs from "node:fs";
 import os from "node:os";
@@ -49,7 +49,7 @@ describe("remote mirror blob + webhook", () => {
     const { app } = setupMirrorApp();
     const res = await request(app)
       .get(`/api/remote-channel/blob/${entry.jobId}`)
-      .set("x-songbird-mirror-secret", entry.secret);
+      .set("x-wihm-mirror-secret", entry.secret);
     expect(res.status).toBe(200);
     expect(Buffer.from(res.body).toString()).toBe("mirror-bytes");
   });
@@ -61,11 +61,11 @@ describe("remote mirror blob + webhook", () => {
     const { app } = setupMirrorApp();
     const bad = await request(app)
       .get(`/api/remote-channel/blob/${entry.jobId}`)
-      .set("x-songbird-mirror-secret", "wrong");
+      .set("x-wihm-mirror-secret", "wrong");
     expect(bad.status).toBe(401);
     const missing = await request(app)
       .get("/api/remote-channel/blob/does-not-exist")
-      .set("x-songbird-mirror-secret", "x");
+      .set("x-wihm-mirror-secret", "x");
     expect(missing.status).toBe(404);
   });
 
@@ -182,7 +182,7 @@ describe("remote mirror blob + webhook", () => {
     const { app } = setupMirrorApp({ webhookSecret: "shh" });
     const res = await request(app)
       .post("/api/remote-channel/webhook/mirror-done")
-      .set("x-songbird-webhook-secret", "wrong")
+      .set("x-wihm-webhook-secret", "wrong")
       .send({ jobId: "x", status: "ready" });
     expect(res.status).toBe(401);
   });

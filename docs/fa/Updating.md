@@ -1,10 +1,10 @@
-# به‌روزرسانی
+﻿# به‌روزرسانی
 
-نحوه به‌روزرسانی یا دانگرید (بازگشت به نسخه قبل) به این بستگی دارد که Songbird را چگونه نصب کرده اید.
+نحوه به‌روزرسانی یا دانگرید (بازگشت به نسخه قبل) به این بستگی دارد که WIHM را چگونه نصب کرده اید.
 
 | روش نصب | مسیر به‌روزرسانی / دانگرید |
 |---|---|
-| اسکریپت نصب | `songbird-deploy` را اجرا کنید و **Update Songbird** را انتخاب کنید (پشتیبان گیری از پایگاه داده، pull یا checkout در Git، بازسازی، مهاجرت ها و راه اندازی مجدد سرویس). |
+| اسکریپت نصب | `WIHM-deploy` را اجرا کنید و **Update WIHM** را انتخاب کنید (پشتیبان گیری از پایگاه داده، pull یا checkout در Git، بازسازی، مهاجرت ها و راه اندازی مجدد سرویس). |
 | Docker | دریافت یا checkout تگ یا کامیت مورد نظر در Git و اجرای `docker compose up -d --build`. |
 | دستی (systemd) | دریافت یا checkout تگ یا کامیت مورد نظر در Git، بازسازی کلاینت/سرور و راه اندازی مجدد سرویس. |
 
@@ -13,10 +13,10 @@
 همیشه پیش از به‌روزرسانی یا دانگرید از پایگاه داده خود پشتیبان بگیرید:
 
 ```bash
-cd /opt/songbird/server
+cd /opt/WIHM/server
 npm run db:backup
 # Or use this for Docker:
-docker compose exec songbird npm --prefix /app/server run db:backup
+docker compose exec WIHM npm --prefix /app/server run db:backup
 ```
 
 :::
@@ -27,17 +27,17 @@ docker compose exec songbird npm --prefix /app/server run db:backup
 
 :::
 
-## اسکریپت نصب (songbird-deploy)
+## اسکریپت نصب (WIHM-deploy)
 
-اسکریپت تعاملی نصب، ساده ترین راه برای به‌روزرسانی یا دانگرید نمونه Songbird شما است.
+اسکریپت تعاملی نصب، ساده ترین راه برای به‌روزرسانی یا دانگرید نمونه WIHM شما است.
 
 ابزار را اجرا کنید:
 
 ```bash
-songbird-deploy
+WIHM-deploy
 ```
 
-گزینه **2** (**Update Songbird**) را انتخاب کنید.
+گزینه **2** (**Update WIHM**) را انتخاب کنید.
 
 ### ۱. پشتیبان گیری پیش از به‌روزرسانی
 
@@ -63,14 +63,14 @@ Create a database backup before updating? [y/N]
 
 ۵. دسترسی های فایل ها و فایل های سرویس systemd را تنظیم میکند.
 
-۶. سرویس `songbird.service` (و `songbird-worker.service` در صورت وجود) را مجدداً راه اندازی کرده و Nginx را reload میکند.
+۶. سرویس `WIHM.service` (و `WIHM-worker.service` در صورت وجود) را مجدداً راه اندازی کرده و Nginx را reload میکند.
 
 ### ۳. دانگرید (حالت GitHub)
 
 اگر نمونه محلی شما از قبل با `origin/main` به روز باشد، اسکریپت به شما اطلاع میدهد:
 
 ```txt
-Songbird is already up to date.
+WIHM is already up to date.
 Do you want to downgrade? [y/N]
 ```
 
@@ -90,7 +90,7 @@ Do you want to downgrade? [y/N]
 
 هنگام انتخاب حالت **Offline** با استفاده از فایل فشرده zip محلی سورس کد:
 
-- **به‌روزرسانی**: اگر مقدار `VERSION` درون فایل فشرده جدیدتر از `/opt/songbird/VERSION` باشد، اسکریپت اقدام به به‌روزرسانی میکند.
+- **به‌روزرسانی**: اگر مقدار `VERSION` درون فایل فشرده جدیدتر از `/opt/WIHM/VERSION` باشد، اسکریپت اقدام به به‌روزرسانی میکند.
 - **دانگرید**: اگر مقدار `VERSION` درون فایل فشرده قدیمی تر از نسخه نصب شده باشد، اسکریپت پیام زیر را نمایش میدهد:
 
   ```txt
@@ -101,9 +101,9 @@ Do you want to downgrade? [y/N]
 
 ### ۵. به‌روزرسانی منوی اسکریپت نصب
 
-برای به‌روزرسانی خودِ دستور سراسری `songbird-deploy`:
+برای به‌روزرسانی خودِ دستور سراسری `WIHM-deploy`:
 
-۱. دستور `songbird-deploy` را اجرا کنید.
+۱. دستور `WIHM-deploy` را اجرا کنید.
 
 ۲. گزینه **7** (**Update menu**) را انتخاب کنید.
 
@@ -114,7 +114,7 @@ Do you want to downgrade? [y/N]
 ### به‌روزرسانی به آخرین نسخه
 
 ```bash
-cd /opt/songbird
+cd /opt/WIHM
 git pull origin main
 docker compose -f docker-compose.yaml up -d --build
 sudo systemctl reload nginx
@@ -123,7 +123,7 @@ sudo systemctl reload nginx
 ### دانگرید به یک نسخه مشخص
 
 ```bash
-cd /opt/songbird
+cd /opt/WIHM
 git fetch --all --tags
 git checkout v0.11.4 # با تگ یا هش کامیت مورد نظر جایگزین کنید
 docker compose -f docker-compose.yaml up -d --build
@@ -135,7 +135,7 @@ sudo systemctl reload nginx
 ### به‌روزرسانی به آخرین نسخه
 
 ```bash
-cd /opt/songbird
+cd /opt/WIHM
 git pull origin main
 cd client
 npm install
@@ -143,14 +143,14 @@ npm run build
 cd ../server
 npm install
 npm run db:migrate
-sudo systemctl restart songbird
+sudo systemctl restart WIHM
 sudo systemctl reload nginx
 ```
 
 ### دانگرید به یک نسخه مشخص
 
 ```bash
-cd /opt/songbird
+cd /opt/WIHM
 git fetch --all --tags
 git checkout v0.11.4 # با تگ یا هش کامیت مورد نظر جایگزین کنید
 cd client
@@ -159,7 +159,7 @@ npm run build
 cd ../server
 npm install
 npm run db:migrate
-sudo systemctl restart songbird
+sudo systemctl restart WIHM
 sudo systemctl reload nginx
 ```
 

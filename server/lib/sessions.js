@@ -36,15 +36,19 @@ export function createSessionHelpers({
   };
 
   const setSessionCookie = (req, res, token) => {
+    const configuredSameSite = String(process.env.COOKIE_SAME_SITE || "Lax").trim();
+    const isSameSiteNone = configuredSameSite.toLowerCase() === "none";
+    const sameSiteValue = isSameSiteNone ? "None" : configuredSameSite;
+
     const parts = [
       `sid=${encodeURIComponent(token)}`,
       "Path=/",
       "HttpOnly",
-      "SameSite=Lax",
+      `SameSite=${sameSiteValue}`,
       "Max-Age=1209600",
     ];
 
-    if (shouldUseSecureCookie(req)) {
+    if (isSameSiteNone || shouldUseSecureCookie(req)) {
       parts.push("Secure");
     }
 
@@ -52,9 +56,13 @@ export function createSessionHelpers({
   };
 
   const clearSessionCookie = (req, res) => {
-    const parts = ["sid=", "Path=/", "HttpOnly", "SameSite=Lax", "Max-Age=0"];
+    const configuredSameSite = String(process.env.COOKIE_SAME_SITE || "Lax").trim();
+    const isSameSiteNone = configuredSameSite.toLowerCase() === "none";
+    const sameSiteValue = isSameSiteNone ? "None" : configuredSameSite;
 
-    if (shouldUseSecureCookie(req)) {
+    const parts = [`sid=`, "Path=/", "HttpOnly", `SameSite=${sameSiteValue}`, "Max-Age=0"];
+
+    if (isSameSiteNone || shouldUseSecureCookie(req)) {
       parts.push("Secure");
     }
 

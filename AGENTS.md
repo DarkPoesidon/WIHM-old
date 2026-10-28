@@ -1,6 +1,6 @@
-# Repository Guidelines: Songbird
+﻿# Repository Guidelines: WIHM
 
-Songbird is a self-hosted real-time communication platform built as a Node.js/React monorepo.
+WIHM is a self-hosted real-time communication platform built as a Node.js/React monorepo.
 
 ## Workspace Architecture
 

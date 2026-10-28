@@ -174,6 +174,21 @@ describe("setSessionCookie", () => {
     setSessionCookie(makeReq({ secure: true }), res, "token");
     expect(res._cookie()).toContain("Secure");
   });
+
+  test("supports COOKIE_SAME_SITE=None and automatically adds Secure", () => {
+    const orig = process.env.COOKIE_SAME_SITE;
+    process.env.COOKIE_SAME_SITE = "None";
+    try {
+      const { setSessionCookie } = makeHelpers({ isProduction: false });
+      const res = makeRes();
+      setSessionCookie(makeReq(), res, "token");
+      expect(res._cookie()).toContain("SameSite=None");
+      expect(res._cookie()).toContain("Secure");
+    } finally {
+      if (orig === undefined) delete process.env.COOKIE_SAME_SITE;
+      else process.env.COOKIE_SAME_SITE = orig;
+    }
+  });
 });
 
 // ─── clearSessionCookie ───────────────────────────────────────────────────────

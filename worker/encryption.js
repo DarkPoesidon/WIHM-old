@@ -1,4 +1,4 @@
-import crypto from "node:crypto";
+﻿import crypto from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -42,7 +42,7 @@ export const decryptFileToTempPath = (filePath, originalName = "") => {
     decipher.final(),
   ]);
 
-  const tempDir = path.join(os.tmpdir(), "songbird-secure");
+  const tempDir = path.join(os.tmpdir(), "WIHM-secure");
   fs.mkdirSync(tempDir, { recursive: true });
   const ext = path.extname(String(originalName || filePath)).toLowerCase();
   const tempPath = path.join(

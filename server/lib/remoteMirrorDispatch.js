@@ -1,4 +1,4 @@
-/**
+﻿/**
  * remoteMirrorDispatch.js
  *
  * Dispatches Remote Channel mirror jobs to the media worker (Option A).
@@ -39,8 +39,8 @@ function resolveWebhookBase(explicit) {
     explicit ||
     process.env.WEBHOOK_URL ||
     process.env.WEBHOOK_CALLBACK_URL ||
-    process.env.SONGBIRD_WEBHOOK_URL ||
-    process.env.SONGBIRD_WEBHOOK_CALLBACK_URL ||
+    process.env.WIHM_WEBHOOK_URL ||
+    process.env.WIHM_WEBHOOK_CALLBACK_URL ||
     null;
   if (!raw) return null;
   // Reduce any absolute URL to its origin — otherwise the worker gets 404s on both endpoints.
@@ -144,7 +144,7 @@ export async function dispatchMirrorJob({
       headers: {
         "Content-Type": "application/json",
         ...(webhookSecret
-          ? { "x-songbird-webhook-secret": webhookSecret }
+          ? { "x-wihm-webhook-secret": webhookSecret }
           : {}),
       },
       body: JSON.stringify(payload),

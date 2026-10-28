@@ -1,4 +1,4 @@
-import {defineConfig} from 'vitepress';
+﻿import {defineConfig} from 'vitepress';
 
 const enSidebar = [
   {
@@ -80,8 +80,8 @@ const faSidebar = [
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
-  title: 'Songbird Docs',
-  description: 'Documentation of Songbird, a secure, lightweight, self-hosted chat platform.',
+  title: 'WIHM Docs',
+  description: 'Documentation of WIHM, a secure, lightweight, self-hosted chat platform.',
 
   // Served from a custom domain at the site root.
   base: '/',
@@ -96,13 +96,13 @@ export default defineConfig({
 
   themeConfig: {
     // Shared across locales
-    logo: '/songbird-logo.svg',
+    logo: '/WIHM-logo.svg',
 
     socialLinks: [
-      {icon: 'docker', link: 'https://hub.docker.com/r/bllackbull/songbird'},
-      {icon: 'railway', link: 'https://railway.app/template/songbird'},
-      {icon: 'github', link: 'https://github.com/bllackbull/Songbird'},
-      {icon: 'telegram', link: 'https://t.me/songbirdapp'},
+      {icon: 'docker', link: 'https://hub.docker.com/r/DarkPoesidon/WIHM'},
+      {icon: 'railway', link: 'https://railway.app/template/WIHM'},
+      {icon: 'github', link: 'https://github.com/DarkPoesidon/WIHM'},
+      {icon: 'telegram', link: 'https://t.me/WIHMapp'},
       {icon: 'linkedin', link: 'https://www.linkedin.com/in/pouyakhalilii/'},
 
     ],
@@ -120,16 +120,16 @@ export default defineConfig({
         nav: [
           {text: 'Home', link: '/'},
           {text: 'Guide', link: '/Deployment-Script'},
-          {text: 'Releases', link: 'https://github.com/bllackbull/Songbird/releases'},
+          {text: 'Releases', link: 'https://github.com/DarkPoesidon/WIHM/releases'},
         ],
         sidebar: enSidebar,
         editLink: {
-          pattern: 'https://github.com/bllackbull/Songbird/edit/main/docs/:path',
+          pattern: 'https://github.com/DarkPoesidon/WIHM/edit/main/docs/:path',
           text: 'Edit this page on GitHub',
         },
         footer: {
           message: 'Released under the MIT License.',
-          copyright: 'Copyright © 2026 Songbird',
+          copyright: 'Copyright © 2026 WIHM',
         },
       },
     },
@@ -142,16 +142,16 @@ export default defineConfig({
         nav: [
           {text: 'خانه', link: '/fa/'},
           {text: 'راهنما', link: '/fa/Deployment-Script'},
-          {text: 'نسخه‌ها', link: 'https://github.com/bllackbull/Songbird/releases'},
+          {text: 'نسخه‌ها', link: 'https://github.com/DarkPoesidon/WIHM/releases'},
         ],
         sidebar: faSidebar,
         editLink: {
-          pattern: 'https://github.com/bllackbull/Songbird/edit/main/docs/:path',
+          pattern: 'https://github.com/DarkPoesidon/WIHM/edit/main/docs/:path',
           text: 'ویرایش این صفحه در GitHub',
         },
         footer: {
           message: 'تحت لایسنس MIT منتشر شده است.',
-          copyright: 'کپی‌رایت © ۲۰۲۶ Songbird',
+          copyright: 'کپی‌رایت © ۲۰۲۶ WIHM',
         },
         docFooter: {
           prev: 'صفحه قبل',

@@ -1,0 +1,7 @@
+﻿name = "WIHM-proxy"
+main = "worker-proxy.js"
+compatibility_date = "2026-01-01"
+
+[vars]
+BACKEND_URL = "https://your-backend.onrender.com"
+PAGES_URL = "https://your-app.pages.dev"

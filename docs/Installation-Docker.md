@@ -1,4 +1,4 @@
-# Install via Docker
+﻿# Install via Docker
 
 :::tip Infrastructure Note
 This guide uses Docker Compose and is designed for **IaaS** (Infrastructure as a Service — self-hosted VPS or dedicated virtual machines running Docker Engine). If you are deploying to managed cloud platforms (PaaS / CaaS) like Render, Railway, AWS ECS, Google Cloud Run, or Kubernetes, see the [Cloud Deployment](./Cloud-Deployment.md) guide.
@@ -57,9 +57,9 @@ docker run hello-world
 ## 2. Clone repository
 
 ```bash
-sudo mkdir -p /opt/songbird
-cd /opt/songbird
-git clone https://github.com/bllackbull/Songbird.git .
+sudo mkdir -p /opt/WIHM
+cd /opt/WIHM
+git clone https://github.com/DarkPoesidon/WIHM.git .
 ```
 
 ## 3. Configure environment
@@ -72,11 +72,11 @@ nano .env
 ```
 
 :::info Using PostgreSQL with Docker
-Songbird defaults to SQLite (`DB_CLIENT=sqlite3`). To use PostgreSQL instead, edit `.env` to set `DB_CLIENT=postgres` along with your `POSTGRES_*` environment variables, or uncomment the optional `postgres` service and `postgres-data` volume block in `docker-compose.yaml`.
+WIHM defaults to SQLite (`DB_CLIENT=sqlite3`). To use PostgreSQL instead, edit `.env` to set `DB_CLIENT=postgres` along with your `POSTGRES_*` environment variables, or uncomment the optional `postgres` service and `postgres-data` volume block in `docker-compose.yaml`.
 :::
 
 :::info Media Worker Container
-Songbird automatically spawns and manages a local Media Worker child process inside the all-in-one container (`bllackbull/songbird:latest`) by default. For distributed or high-load setups, you can offload media processing to the dedicated standalone image (`bllackbull/songbird-worker:latest`) or uncomment the optional `media-worker` service in `docker-compose.yaml`. See [Media Worker](./Media-Worker.md) for details.
+WIHM automatically spawns and manages a local Media Worker child process inside the all-in-one container (`DarkPoesidon/WIHM:latest`) by default. For distributed or high-load setups, you can offload media processing to the dedicated standalone image (`DarkPoesidon/WIHM-worker:latest`) or uncomment the optional `media-worker` service in `docker-compose.yaml`. See [Media Worker](./Media-Worker.md) for details.
 :::
 
 ## 4. Set up TLS certificates
@@ -93,7 +93,7 @@ See [SSL Certificates](./SSL-Certificates.md) for the available options.
 Pull the pre-built image and start the containers:
 
 ```bash
-cd /opt/songbird
+cd /opt/WIHM
 docker compose up -d
 ```
 
@@ -120,43 +120,43 @@ docker compose restart nginx
 
 ## Runtime User and Persistent Data
 
-Docker deployments do not use `songbird.service`. Songbird runs as the user configured for the container (root in the current image unless Compose `user:` overrides it), and database commands run as that same container UID/GID:
+Docker deployments do not use `WIHM.service`. WIHM runs as the user configured for the container (root in the current image unless Compose `user:` overrides it), and database commands run as that same container UID/GID:
 
 ```bash
-docker compose exec songbird npm --prefix /app/server run db:inspect
+docker compose exec WIHM npm --prefix /app/server run db:inspect
 ```
 
 To run the container as a specific non-root UID/GID, configure `user:` in your Compose service:
 
 ```yaml
 services:
-  songbird:
-    user: "songbird:songbird"
+  WIHM:
+    user: "WIHM:WIHM"
 ```
 
-When using a bind mount instead of the default named volume, make the host directory writable by that same UID:GID before starting Songbird. Songbird does not change host bind-mount ownership automatically:
+When using a bind mount instead of the default named volume, make the host directory writable by that same UID:GID before starting WIHM. WIHM does not change host bind-mount ownership automatically:
 
 ```bash
 mkdir -p ./data
-sudo chown -R songbird:songbird ./data
+sudo chown -R WIHM:WIHM ./data
 ```
 
 ## Admin panel service control
 
-The admin panel's **Restart service** and **Stop service** actions work in Docker deployments by calling the Docker Engine API through the mounted socket (`/var/run/docker.sock`). The compose file sets `SONGBIRD_CONTAINER_NAME=songbird` so the app knows which container to target.
+The admin panel's **Restart service** and **Stop service** actions work in Docker deployments by calling the Docker Engine API through the mounted socket (`/var/run/docker.sock`). The compose file sets `WIHM_CONTAINER_NAME=WIHM` so the app knows which container to target.
 
 If you rename the container or use a custom name, set the env var to match:
 
 ```yaml
 # docker-compose.yaml
 environment:
-  SONGBIRD_CONTAINER_NAME: my-custom-name
+  WIHM_CONTAINER_NAME: my-custom-name
 ```
 
 If you do not need service control from the admin panel, you can remove the socket mount from `docker-compose.yaml`:
 
 ```yaml
-# Remove or comment out this line under songbird volumes:
+# Remove or comment out this line under WIHM volumes:
 # - /var/run/docker.sock:/var/run/docker.sock
 ```
 
@@ -165,7 +165,7 @@ If you do not need service control from the admin panel, you can remove the sock
 Pull the latest image and restart:
 
 ```bash
-cd /opt/songbird
+cd /opt/WIHM
 docker compose pull
 docker compose up -d
 ```

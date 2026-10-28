@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, Activity } from "react";
+﻿import { useCallback, useEffect, useRef, useState, Activity } from "react";
 import {
   ArrowLeft,
   ArrowLeftFromLine,
@@ -36,7 +36,7 @@ const TABS = [
 // Auto-exit the panel after this much inactivity (no mouse/keyboard/touch).
 const IDLE_TIMEOUT_MS = 15 * 60 * 1000;
 
-const ADMIN_SIDEBAR_OPEN_STORAGE_KEY = "songbird.admin.sidebar-open";
+const ADMIN_SIDEBAR_OPEN_STORAGE_KEY = "wihm.admin.sidebar-open";
 
 function getInitialSidebarOpen() {
   if (typeof window === "undefined") return true;
@@ -177,9 +177,9 @@ export default function AdminPanel({ user, onBack }) {
       }, 300);
     };
 
-    window.addEventListener("songbird:realtime-event", handleRealtimeEvent);
+    window.addEventListener("wihm:realtime-event", handleRealtimeEvent);
     return () => {
-      window.removeEventListener("songbird:realtime-event", handleRealtimeEvent);
+      window.removeEventListener("wihm:realtime-event", handleRealtimeEvent);
       if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
     };
   }, [tab, refreshKey]);

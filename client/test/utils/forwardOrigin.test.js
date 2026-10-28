@@ -1,4 +1,4 @@
-import { describe, test, expect } from "vitest";
+﻿import { describe, test, expect } from "vitest";
 import { resolveForwardedTarget } from "../../src/utils/forwardOrigin.js";
 
 const UUID = "f058c254-bd7f-4fd2-9cdc-bc1c9a413de3";
@@ -11,16 +11,16 @@ describe("resolveForwardedTarget", () => {
     const target = resolveForwardedTarget({
       forwardedFromChatId: null,
       forwardedFromUserId: null,
-      forwardedFromLabel: "songbirdtest",
+      forwardedFromLabel: "WIHMtest",
       remoteForwardedChatId: UUID,
-      storedForwardedLabel: "songbirdtest",
+      storedForwardedLabel: "WIHMtest",
       chatName: "Mirror",
       chatColor: "#10b981",
     });
     expect(target).toMatchObject({ kind: "chat", chatId: UUID });
   });
 
-  test("remote songbird message with a UUID channel id opens the channel", () => {
+  test("remote WIHM message with a UUID channel id opens the channel", () => {
     const target = resolveForwardedTarget({
       forwardedFromChatId: null,
       forwardedFromUserId: null,

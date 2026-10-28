@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+﻿import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { ArrowLeft, ArrowRight, Close } from "../../icons/lucide.js";
 import { copyTextToClipboard } from "../../utils/clipboard.js";
@@ -244,7 +244,7 @@ export default function WhatsNewModal({
               What's New
             </p>
             <h3 id="whats-new-modal-title" className="mt-2 text-2xl font-bold text-emerald-700 dark:text-emerald-200">
-              Songbird {activeSection?.heading || version || ""}
+              WIHM {activeSection?.heading || version || ""}
             </h3>
           </div>
           <button

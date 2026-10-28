@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+﻿import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -25,7 +25,7 @@ describe("worker encryption", () => {
   });
 
   it("encrypts and detects magic header in encrypted buffer", () => {
-    const rawData = Buffer.from("Hello Songbird secure media content!");
+    const rawData = Buffer.from("Hello WIHM secure media content!");
     const encrypted = encryptBuffer(rawData);
 
     expect(encrypted).toBeInstanceOf(Buffer);

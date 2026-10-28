@@ -1,6 +1,6 @@
 import { Suspense, lazy, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import logo from './assets/songbird-logo.svg'
+import logo from './assets/wihm-logo.svg'
 import { APP_CONFIG, setMessageMaxChars } from './settings/appConfig.js'
 import { fetchAppInfo } from './api/appMetaApi.js'
 import { setNameLimits } from './utils/nameLimits.js'
@@ -14,13 +14,13 @@ import {
   fetchSessionUser,
 } from './utils/sessionStorage.js'
 
-const API_BASE = ''
-const AUTH_REDIRECT_KEY = 'songbird-auth-redirect'
-const OPEN_CHAT_ID_KEY = 'songbird-open-chat-id'
-const PWA_INSTALL_DISMISS_KEY = 'songbird-pwa-install-dismissed'
-const PWA_PERMISSIONS_PROMPT_KEY = 'songbird-pwa-permissions-prompt'
-const ROUTE_CHUNK_TELEMETRY_KEY = 'songbird-route-chunk-telemetry-v1'
-const CHUNK_RECOVERY_ATTEMPT_KEY = 'songbird-chunk-recovery-attempted'
+import { API_BASE } from './api/chatApi.js'
+const AUTH_REDIRECT_KEY = 'wihm-auth-redirect'
+const OPEN_CHAT_ID_KEY = 'wihm-open-chat-id'
+const PWA_INSTALL_DISMISS_KEY = 'wihm-pwa-install-dismissed'
+const PWA_PERMISSIONS_PROMPT_KEY = 'wihm-pwa-permissions-prompt'
+const ROUTE_CHUNK_TELEMETRY_KEY = 'wihm-route-chunk-telemetry-v1'
+const CHUNK_RECOVERY_ATTEMPT_KEY = 'wihm-chunk-recovery-attempted'
 const loadAuthPage = () => import('./pages/AuthPage.jsx')
 const loadChatPage = () => import('./pages/ChatPage.jsx')
 const loadInvitePage = () => import('./pages/InvitePage.jsx')
@@ -60,7 +60,7 @@ function RouteLoadingFallback({ themeColor, onVisibleChange = null }) {
       style={{ backgroundColor: themeColor }}
     >
       <div className="flex flex-col items-center gap-3 text-center text-emerald-700 dark:text-emerald-300">
-        <img src={logo} alt="Songbird logo" className="h-10 w-10 animate-pulse" />
+        <img src={logo} alt="WIHM logo" className="h-10 w-10 animate-pulse" />
         <p className="text-xs font-semibold tracking-wide">{`Loading${'.'.repeat(dots)}`}</p>
       </div>
     </div>
@@ -119,7 +119,7 @@ export default function App() {
         const keys = await window.caches.keys()
         await Promise.all(
           keys
-            .filter((key) => key.startsWith('songbird-'))
+            .filter((key) => key.startsWith('wihm-'))
             .map((key) => window.caches.delete(key)),
         )
       }
@@ -142,7 +142,7 @@ export default function App() {
   }
 
   const [isDark, setIsDark] = useState(() => {
-    const stored = localStorage.getItem('songbird-theme')
+    const stored = localStorage.getItem('wihm-theme')
     if (stored === 'light') return false
     if (stored === 'dark') return true
     return resolveAutoThemeIsDark()
@@ -294,10 +294,10 @@ export default function App() {
     root.classList.add('theme-switching')
     if (nextIsDark) {
       root.classList.add('dark')
-      localStorage.setItem('songbird-theme', 'dark')
+      localStorage.setItem('wihm-theme', 'dark')
     } else {
       root.classList.remove('dark')
-      localStorage.setItem('songbird-theme', 'light')
+      localStorage.setItem('wihm-theme', 'light')
     }
     root.style.colorScheme = nextIsDark ? 'dark' : 'light'
 
@@ -419,13 +419,13 @@ export default function App() {
     const handleShowInstall = () => setInstallForceHidden(false)
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
     window.addEventListener('appinstalled', handleInstalled)
-    window.addEventListener('songbird-hide-install-bar', handleHideInstall)
-    window.addEventListener('songbird-show-install-bar', handleShowInstall)
+    window.addEventListener('wihm-hide-install-bar', handleHideInstall)
+    window.addEventListener('wihm-show-install-bar', handleShowInstall)
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
       window.removeEventListener('appinstalled', handleInstalled)
-      window.removeEventListener('songbird-hide-install-bar', handleHideInstall)
-      window.removeEventListener('songbird-show-install-bar', handleShowInstall)
+      window.removeEventListener('wihm-hide-install-bar', handleHideInstall)
+      window.removeEventListener('wihm-show-install-bar', handleShowInstall)
     }
   }, [isStandaloneDisplay])
 
@@ -996,10 +996,10 @@ export default function App() {
             <header className="flex flex-wrap items-center justify-center gap-3 text-center sm:gap-4">
               <div className="flex items-center gap-1 text-black dark:text-white">
                 <div className="flex h-8 w-8 items-center justify-center sm:h-9 sm:w-9">
-                  <img src={logo} alt="Songbird logo" className="h-8 w-8" />
+                  <img src={logo} alt="WIHM logo" className="h-8 w-8" />
                 </div>
                 <div>
-                  <p className="text-xl font-bold tracking-tight sm:text-2xl">Songbird</p>
+                  <p className="text-xl font-bold tracking-tight sm:text-2xl">WIHM</p>
                 </div>
               </div>
             </header>

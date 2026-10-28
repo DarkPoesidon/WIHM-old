@@ -1,8 +1,8 @@
-import { normalizeHexColor, normalizeGroupUsername, normalizeVisibility, normalizeChatType } from "../lib/dbToolHelpers.js";
+﻿import { normalizeHexColor, normalizeGroupUsername, normalizeVisibility, normalizeChatType } from "../lib/dbToolHelpers.js";
 import { createInviteToken } from "../lib/inviteTokens.js";
 import { validateUuidParams } from "../lib/uuidMiddleware.js";
 import { isValidUuid, generateUuid } from "../lib/uuidUtils.js";
-import { normalizeSongbirdSource, normalizeTelegramSource, resolveSongbirdSource } from "../lib/remoteChannels.js";
+import { normalizeWIHMSource, normalizeTelegramSource, resolveWIHMSource } from "../lib/remoteChannels.js";
 import { readInstallerLog, readNginxLog, readServiceLog, readWorkerLog, probeLogSources } from "../lib/systemLogs.js";
 import { userEvents } from "../lib/workers/autoAddWorker.js";
 import { dbKnex } from "../db/knex.js";
@@ -167,7 +167,7 @@ function registerAdminPanelRoutes(app, deps) {
       return { shouldSave: true, error: "Remote Channel can only be enabled for public channels.", status: 400 };
     }
     const provider = String(remoteChannel.provider || "telegram").toLowerCase();
-    if (provider !== "telegram" && provider !== "songbird") {
+    if (provider !== "telegram" && provider !== "WIHM") {
       return { shouldSave: true, error: "Remote Channel source is invalid.", status: 400 };
     }
     if (provider === "telegram" && !isTelegramAvailable()) {
@@ -187,17 +187,17 @@ function registerAdminPanelRoutes(app, deps) {
       }
     } else {
       if (enabled) {
-        normalized = normalizeSongbirdSource(rawSource);
+        normalized = normalizeWIHMSource(rawSource);
         if (!normalized.ok) return { shouldSave: true, error: normalized.error, status: 400 };
-        const resolved = await resolveSongbirdSource(normalized.sourceUrl, normalized.inviteTarget);
+        const resolved = await resolveWIHMSource(normalized.sourceUrl, normalized.inviteTarget);
         if (!resolved.ok) return { shouldSave: true, error: resolved.error, status: 400 };
         normalized = { ...normalized, sourceUsername: resolved.sourceUsername };
       } else if (rawSource) {
-        const opt = normalizeSongbirdSource(rawSource);
+        const opt = normalizeWIHMSource(rawSource);
         if (opt.ok) normalized = opt;
       }
       if (enabled && !normalized.sourceUrl) {
-        return { shouldSave: true, error: "Songbird source URL is required.", status: 400 };
+        return { shouldSave: true, error: "WIHM source URL is required.", status: 400 };
       }
     }
     return {
@@ -441,7 +441,7 @@ function registerAdminPanelRoutes(app, deps) {
     let dbSizeBytes = 0;
     try {
       if (nodePath && fs) {
-        const dbPath = nodePath.join(effectiveDataDir, "songbird.db");
+        const dbPath = nodePath.join(effectiveDataDir, "wihm.db");
         if (fs.existsSync(dbPath)) dbSizeBytes = fs.statSync(dbPath).size;
       }
     } catch {}
@@ -1246,7 +1246,7 @@ function registerAdminPanelRoutes(app, deps) {
       uiEnabled: Boolean(getSetting("REMOTE_CHANNEL_UI")),
       mediaStreamEnabled: Boolean(getSetting("REMOTE_CHANNEL_MEDIA_STREAM")),
       telegramConfigured: Boolean(deps.REMOTE_CHANNELS?.telegramConfigured),
-      songbirdConfigured: isRemoteChannelAvailable(),
+      WIHMConfigured: isRemoteChannelAvailable(),
       proxyConfigured: Boolean(deps.REMOTE_CHANNELS?.proxyConfigured),
       source: await serializeAdminRemoteSource(source),
     });
@@ -1711,20 +1711,20 @@ function registerAdminPanelRoutes(app, deps) {
     // dropdb --force terminates this server's own pool. Run it only after the
     // process has stopped, using the CLI command that enforces that condition.
     return res.status(409).json({
-      error: "Stop Songbird, then run npm run db:delete -- -y to delete a PostgreSQL database.",
+      error: "Stop WIHM, then run npm run db:delete -- -y to delete a PostgreSQL database.",
     });
   });
 
   // ─── Service control ─────────────────────────────────────────────────────────
 
-  const SERVICE_NAME = process.env.SONGBIRD_SERVICE_NAME || "songbird";
+  const SERVICE_NAME = process.env.WIHM_SERVICE_NAME || "WIHM";
 
   // Sends a POST request to the Docker Engine API via the Unix socket to
   // restart or stop this container. The container name / ID is read from the
   // HOSTNAME env var, which Docker sets to the container ID by default, and
-  // can be overridden with SONGBIRD_CONTAINER_NAME for named containers.
+  // can be overridden with WIHM_CONTAINER_NAME for named containers.
   const runDockerAction = (action) => new Promise((resolve) => {
-    const container = process.env.SONGBIRD_CONTAINER_NAME || process.env.HOSTNAME || "songbird";
+    const container = process.env.WIHM_CONTAINER_NAME || process.env.HOSTNAME || "WIHM";
     const socketPath = "/var/run/docker.sock";
     // action is "restart" or "stop" — both are POST endpoints in the Docker API.
     const path = `/containers/${container}/${action}`;
@@ -1828,9 +1828,9 @@ function registerAdminPanelRoutes(app, deps) {
   // Docker deployments must update nginx/nginx.conf and restart nginx manually.
 
   const NGINX_CONFIG_CANDIDATES = [
-    "/etc/nginx/sites-available/songbird",
-    "/etc/nginx/sites-enabled/songbird",
-    "/etc/nginx/conf.d/songbird.conf",
+    "/etc/nginx/sites-available/WIHM",
+    "/etc/nginx/sites-enabled/WIHM",
+    "/etc/nginx/conf.d/WIHM.conf",
     "/etc/nginx/conf.d/default.conf",
   ];
 
@@ -1944,7 +1944,7 @@ function registerAdminPanelRoutes(app, deps) {
     if (dbConfig?.client === "postgres") {
       const effectiveDataDir = adminDataDir || nodePath.join(projectRootDir, "data");
       const backupDir = nodePath.join(effectiveDataDir, "backups");
-      const backupPath = nodePath.join(backupDir, `songbird-backup-${stamp}.dump`);
+      const backupPath = nodePath.join(backupDir, `wihm-backup-${stamp}.dump`);
       try {
         if (!fs.existsSync(backupDir)) fs.mkdirSync(backupDir, { recursive: true });
         await postgresMaintenance.backup(backupPath);
@@ -1961,12 +1961,12 @@ function registerAdminPanelRoutes(app, deps) {
     }
 
     const effectiveDataDir = adminDataDir || nodePath.join(projectRootDir, "data");
-    const dbPath = nodePath.join(effectiveDataDir, "songbird.db");
+    const dbPath = nodePath.join(effectiveDataDir, "wihm.db");
     if (!fs.existsSync(dbPath)) {
       return res.status(404).json({ error: "Database file not found." });
     }
     try { await resolveMaybePromise(vacuumDatabase()); } catch {}
-    const downloadName = `songbird-backup-${stamp}.db`;
+    const downloadName = `wihm-backup-${stamp}.db`;
     log(session, "db.backup", { targetType: "system", targetLabel: downloadName });
     res.download(dbPath, downloadName, (err) => {
       if (err && !res.headersSent) res.status(500).end();
@@ -1989,7 +1989,7 @@ function registerAdminPanelRoutes(app, deps) {
       // database connections. The offline CLI detects a running server first.
       if (dbConfig?.client === "postgres") {
         return res.status(409).json({
-          error: "Stop Songbird, then run npm run db:restore -- -y --file <backup.dump>.",
+          error: "Stop WIHM, then run npm run db:restore -- -y --file <backup.dump>.",
         });
       }
       next();
@@ -2011,7 +2011,7 @@ function registerAdminPanelRoutes(app, deps) {
     }
 
     const dataDir = adminDataDir || nodePath.join(projectRootDir, "data");
-    const dbPath  = nodePath.join(dataDir, "songbird.db");
+    const dbPath  = nodePath.join(dataDir, "wihm.db");
 
     try {
       if (typeof deps.restoreDatabase === "function") {

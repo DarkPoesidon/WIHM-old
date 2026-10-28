@@ -1,16 +1,16 @@
-# استقرار ابری
+﻿# استقرار ابری
 
-این راهنما شامل نحوه استقرار Songbird روی زیرساخت های مدیریت شده ابری از جمله **پلتفرم به عنوان سرویس (PaaS)**، **کانتینر به عنوان سرویس (CaaS)** و پلتفرم های ارکستراسیون کانتینر است.
+این راهنما شامل نحوه استقرار WIHM روی زیرساخت های مدیریت شده ابری از جمله **پلتفرم به عنوان سرویس (PaaS)**، **کانتینر به عنوان سرویس (CaaS)** و پلتفرم های ارکستراسیون کانتینر است.
 
 :::tip به دنبال استقرار روی VPS سلف هاست هستید؟
-اگر قصد دارید Songbird را روی یک سرور مجازی (VPS) با استفاده از Docker Compose یا systemd استقرار دهید، به راهنماهای [نصب از طریق Docker](./Installation-Docker.md) یا [اسکریپت نصب](./Deployment-Script.md) مراجعه کنید.
+اگر قصد دارید WIHM را روی یک سرور مجازی (VPS) با استفاده از Docker Compose یا systemd استقرار دهید، به راهنماهای [نصب از طریق Docker](./Installation-Docker.md) یا [اسکریپت نصب](./Deployment-Script.md) مراجعه کنید.
 :::
 
 ## بررسی اجمالی معماری
 
-بر اساس نیازهای عملیاتی و مقیاس پذیری خود میتوانید Songbird را روی مدل های مختلف ابری استقرار دهید:
+بر اساس نیازهای عملیاتی و مقیاس پذیری خود میتوانید WIHM را روی مدل های مختلف ابری استقرار دهید:
 
-| مدل معماری | توضیحات | پلتفرم های مناسب | پشتیبانی در Songbird |
+| مدل معماری | توضیحات | پلتفرم های مناسب | پشتیبانی در WIHM |
 |---|---|---|---|
 | **IaaS** *(زیرساخت به عنوان سرویس)* | ماشین های مجازی مدیریت کننده Docker یا systemd توسط کاربر | AWS EC2, DigitalOcean Droplets, Hetzner | پشتیبانی کامل |
 | **PaaS** *(پلتفرم به عنوان سرویس)* | استقرار مستقیم از روی سورس کد مخزن Git | Render, Railway, Heroku, Fly.io | پشتیبانی کامل |
@@ -18,7 +18,7 @@
 
 ## ۱. استقرار روی PaaS
 
-ارائه دهندگان PaaS به شما اجازه میدهند Songbird را مستقیماً از مخزن Git خود بدون نیاز به مدیریت زیرساخت سرور استقرار دهید.
+ارائه دهندگان PaaS به شما اجازه میدهند WIHM را مستقیماً از مخزن Git خود بدون نیاز به مدیریت زیرساخت سرور استقرار دهید.
 
 ### تنظیمات ساخت و اجرا
 
@@ -38,7 +38,7 @@
 
 محیط های PaaS به صورت پیشفرض **موقت (Ephemeral)** هستند — یعنی هر فایلی که روی دیسک محلی ذخیره شود (مانند پایگاه داده SQLite یا فایل های آپلود شده) با هر بار ریستارت یا استقرار مجدد برنامه پاک خواهد شد.
 
-برای اجرای Songbird روی PaaS، یکی از دو استراتژی ذخیره سازی زیر را انتخاب کنید:
+برای اجرای WIHM روی PaaS، یکی از دو استراتژی ذخیره سازی زیر را انتخاب کنید:
 
 #### استراتژی اول: تک نمونه با دیسک پایدار (Persistent Volume)
 اگر برنامه را به صورت تک نمونه روی پلتفرم هایی که از volume پشتیبانی میکنند (مانند Railway یا Fly.io) استقرار میدهید:
@@ -53,7 +53,7 @@
 1. یک پایگاه داده مدیریت شده **PostgreSQL** راه اندازی کرده و مشخصات اتصال آن را تنظیم کنید:
    ```txt
    DB_CLIENT=postgres
-   POSTGRES_URL=postgres://user:password@host:5432/songbird
+   POSTGRES_URL=postgres://user:password@host:5432/WIHM
    ```
 
    :::tip پایگاه داده مدیریت شده با SSL و CA سفارشی (Aiven, AWS RDS و غیره)
@@ -81,7 +81,7 @@
    ```txt
    STORAGE_DRIVER=remote
    STORAGE_ENDPOINT=https://<account-id>.r2.cloudflarestorage.com
-   STORAGE_BUCKET=songbird-uploads
+   STORAGE_BUCKET=WIHM-uploads
    STORAGE_ACCESS_KEY_ID=your_access_key
    STORAGE_SECRET_ACCESS_KEY=your_secret_key
    STORAGE_REGION=auto
@@ -89,20 +89,20 @@
 
 ### استقرار خودکار با Railway (زیرساخت به عنوان کد - IaC)
 
-پروژه Songbird دارای فایل پیکربندی رسمی **زیرساخت به عنوان کد (Infrastructure as Code - IaC)** در مسیر `.railway/railway.ts` است که امکان استقرار خودکار، قابل تکرار و چندسرویسی کامل را روی پلتفرم [Railway](https://railway.com) فراهم میسازد.
+پروژه WIHM دارای فایل پیکربندی رسمی **زیرساخت به عنوان کد (Infrastructure as Code - IaC)** در مسیر `.railway/railway.ts` است که امکان استقرار خودکار، قابل تکرار و چندسرویسی کامل را روی پلتفرم [Railway](https://railway.com) فراهم میسازد.
 
 #### معماری و منابع ایجاد شده
 
-پیکربندی IaC در Railway به صورت برنامه ریزی شده تمام اجزای کامل Songbird را در قالب یک گروه با نام `"songbird"` ایجاد و به یکدیگر متصل میکند:
+پیکربندی IaC در Railway به صورت برنامه ریزی شده تمام اجزای کامل WIHM را در قالب یک گروه با نام `"WIHM"` ایجاد و به یکدیگر متصل میکند:
 
 ```txt
 ┌────────────────────────────────────────────────────────────────────────┐
 │                        Railway Project Canvas                          │
 │                                                                        │
-│   ┌─────────────────────────── "songbird" Group ──────────────────┐    │
+│   ┌─────────────────────────── "WIHM" Group ──────────────────┐    │
 │   │                                                               │    │
 │   │   ┌──────────────────┐               ┌────────────────────┐   │    │
-│   │   │  PostgreSQL      │◀──────────────│  Songbird App      │   │    │
+│   │   │  PostgreSQL      │◀──────────────│  WIHM App      │   │    │
 │   │   │  (Managed DB)    │  DATABASE_URL │  (Web & API)       │   │    │
 │   │   └──────────────────┘               └────────┬───────────┘   │    │
 │   │                                               │               │    │
@@ -110,7 +110,7 @@
 │   │                                       Network │ Worker URL    │    │
 │   │                                               │               │    │
 │   │   ┌──────────────────┐               ┌────────▼───────────┐   │    │
-│   │   │  Uploads Bucket  │◀──────────────│  Songbird Worker   │   │    │
+│   │   │  Uploads Bucket  │◀──────────────│  WIHM Worker   │   │    │
 │   │   │  (S3 Storage)    │  S3 Driver    │  (Media Transcoder)│   │    │
 │   │   └────────▲─────────┘               └────────────────────┘   │    │
 │   │            │                                  │               │    │
@@ -126,7 +126,7 @@
 
 #### راهنمای گام به گام استقرار با Railway CLI
 
-برای استقرار Songbird روی Railway با استفاده از ابزار Railway CLI مراحل زیر را دنبال کنید:
+برای استقرار WIHM روی Railway با استفاده از ابزار Railway CLI مراحل زیر را دنبال کنید:
 
 ##### مرحله ۱: نصب Railway CLI
 
@@ -144,7 +144,7 @@ railway login
 
 ##### مرحله ۳: راه اندازی یا اتصال به پروژه
 
-در ترمینال به دایرکتوری مخزن Songbird رفته و یک پروژه جدید ایجاد یا به پروژه موجود متصل شوید:
+در ترمینال به دایرکتوری مخزن WIHM رفته و یک پروژه جدید ایجاد یا به پروژه موجود متصل شوید:
 
 ```bash
 railway init
@@ -160,11 +160,11 @@ railway link
 railway up
 ```
 
-##### مرحله ۵: اختصاص دامنه عمومی برای برنامه Songbird
+##### مرحله ۵: اختصاص دامنه عمومی برای برنامه WIHM
 
-به صورت پیشفرض، سرویس های Railway روی شبکه خصوصی اجرا میشوند. برای دسترسی کاربران به رابط کاربری وب Songbird:
+به صورت پیشفرض، سرویس های Railway روی شبکه خصوصی اجرا میشوند. برای دسترسی کاربران به رابط کاربری وب WIHM:
 
-۱. در [داشبورد Railway](https://railway.com/dashboard) روی سرویس **songbird-server** کلیک کنید.
+۱. در [داشبورد Railway](https://railway.com/dashboard) روی سرویس **WIHM-server** کلیک کنید.
 
 ۲. به بخش **Settings** > **Networking** > **Public Networking** بروید.
 
@@ -173,16 +173,16 @@ railway up
 همچنین میتوانید از طریق CLI دامنه عمومی ایجاد کنید:
 
 ```bash
-railway domain --service songbird-server
+railway domain --service WIHM-server
 ```
 
 ### استقرار روی Render (Blueprint)
 
-پروژه Songbird شامل [Blueprint آماده Render](https://render.com/docs/blueprints) در فایل `render.yaml` است: یک وب سرویس Docker (`songbird`) به همراه PostgreSQL مدیریت شده. بر خلاف معماری Railway در اینجا سرویس ورکر جداگانه وجود ندارد — نقطه ورود کانتینر به صورت خودکار یک Media Worker داخلی (`WORKER_PORT=8080`) را در کنار برنامه اجرا میکند و خود برنامه روی `PORT` اختصاص یافته توسط Render گوش میدهد، پس این دو هرگز با هم تداخل ندارند.
+پروژه WIHM شامل [Blueprint آماده Render](https://render.com/docs/blueprints) در فایل `render.yaml` است: یک وب سرویس Docker (`WIHM`) به همراه PostgreSQL مدیریت شده. بر خلاف معماری Railway در اینجا سرویس ورکر جداگانه وجود ندارد — نقطه ورود کانتینر به صورت خودکار یک Media Worker داخلی (`WORKER_PORT=8080`) را در کنار برنامه اجرا میکند و خود برنامه روی `PORT` اختصاص یافته توسط Render گوش میدهد، پس این دو هرگز با هم تداخل ندارند.
 
 #### چه چیزهایی ساخته میشود
 
-- **وب سرویس `songbird`** — ساخته شده از `Dockerfile` اصلی (فرانت اند Vite و بک اند Express) با بررسی سلامت در مسیر `/api/health`.
+- **وب سرویس `WIHM`** — ساخته شده از `Dockerfile` اصلی (فرانت اند Vite و بک اند Express) با بررسی سلامت در مسیر `/api/health`.
 - **PostgreSQL مدیریت شده** — با `POSTGRES_URL` متصل کنید (از connection string *داخلی* دیتابیس استفاده کنید) و `POSTGRES_SSL=true` باشد.
 
 #### مراحل راه اندازی
@@ -210,10 +210,10 @@ railway domain --service songbird-server
 
 ## ۲. استقرار روی CaaS و Kubernetes
 
-میتوانید Songbird را در محیط های کانتینری با استفاده از ایمیج های رسمی و از پیش ساخته شده از Docker Hub اجرا کنید:
+میتوانید WIHM را در محیط های کانتینری با استفاده از ایمیج های رسمی و از پیش ساخته شده از Docker Hub اجرا کنید:
 
-- **برنامه اصلی (فرانت اند + بک اند):** `bllackbull/songbird:latest`
-- **ورکر مدیا مجزا (تبدیل ویدیو و FFmpeg):** `bllackbull/songbird-worker:latest`
+- **برنامه اصلی (فرانت اند + بک اند):** `DarkPoesidon/WIHM:latest`
+- **ورکر مدیا مجزا (تبدیل ویدیو و FFmpeg):** `DarkPoesidon/WIHM-worker:latest`
 
 ### پیکربندی کانتینر
 
@@ -232,7 +232,7 @@ railway domain --service songbird-server
 └──────────────┬──────────────────────────────┬───────────────┘
                │                              │
         ┌──────▼──────┐                ┌──────▼──────┐
-        │  Songbird   │                │  Songbird   │
+        │  WIHM   │                │  WIHM   │
         │ Instance 1  │                │ Instance 2  │
         └──────┬──────┘                └──────┬──────┘
                │                              │
@@ -250,9 +250,9 @@ railway domain --service songbird-server
 DB_CLIENT=postgres
 POSTGRES_HOST=postgres.internal
 POSTGRES_PORT=5432
-POSTGRES_USER=songbird
+POSTGRES_USER=WIHM
 POSTGRES_PASSWORD=secure_password
-POSTGRES_DB=songbird
+POSTGRES_DB=WIHM
 ```
 
 #### ۲. فضای ذخیره سازی فایل مشترک
@@ -260,18 +260,18 @@ POSTGRES_DB=songbird
 ```txt
 STORAGE_DRIVER=remote
 STORAGE_ENDPOINT=https://s3.us-east-1.amazonaws.com
-STORAGE_BUCKET=my-songbird-bucket
+STORAGE_BUCKET=my-WIHM-bucket
 STORAGE_ACCESS_KEY_ID=AWS_ACCESS_KEY
 STORAGE_SECRET_ACCESS_KEY=AWS_SECRET_KEY
 STORAGE_REGION=us-east-1
 ```
 
 :::tip ترنسکد رسانه در ذخیره سازی ابری
-Songbird ترنسکد ویدیو و استخراج thumbnail را به **Media Worker** مستقل (`worker/`) محول میکند که میتواند به عنوان یک سرویس کانتینری مجزا یا در کنار گره های سرور مستقر شود. برای جزئیات معماری و استقرار، مستندات [ورکر مدیا](./Media-Worker.md) و [ذخیره سازی ابری](./Object-Storage.md) را ببینید.
+WIHM ترنسکد ویدیو و استخراج thumbnail را به **Media Worker** مستقل (`worker/`) محول میکند که میتواند به عنوان یک سرویس کانتینری مجزا یا در کنار گره های سرور مستقر شود. برای جزئیات معماری و استقرار، مستندات [ورکر مدیا](./Media-Worker.md) و [ذخیره سازی ابری](./Object-Storage.md) را ببینید.
 :::
 
 #### ۳. همگام سازی رویدادها با Redis (Pub/Sub)
-متغیر `REDIS_URL` یا `REDIS_HOST` را تنظیم کنید. با فعال شدن Redis، سرویس Songbird به طور خودکار از قابلیت Redis Pub/Sub (کانال `songbird:events`) برای همگام سازی همزمان رویدادهای WebSocket و SSE بین تمامی کانتینرها استفاده میکند:
+متغیر `REDIS_URL` یا `REDIS_HOST` را تنظیم کنید. با فعال شدن Redis، سرویس WIHM به طور خودکار از قابلیت Redis Pub/Sub (کانال `WIHM:events`) برای همگام سازی همزمان رویدادهای WebSocket و SSE بین تمامی کانتینرها استفاده میکند:
 ```txt
 REDIS_URL=redis://:password@redis.internal:6379
 ```
@@ -282,14 +282,14 @@ REDIS_URL=redis://:password@redis.internal:6379
 
 ## ۳. سازگاری با Serverless
 
-درک نحوه تعامل Songbird با مدل های اجرای Serverless پیش از استقرار بسیار حائز اهمیت است.
+درک نحوه تعامل WIHM با مدل های اجرای Serverless پیش از استقرار بسیار حائز اهمیت است.
 
 ### توابع به عنوان سرویس (FaaS) — ضد الگو (Anti-Pattern)
 
 پلتفرم هایی مانند **AWS Lambda**، **Vercel Serverless Functions** یا **Netlify Functions** کد را در پاسخ به درخواست های مجزای HTTP اجرا کرده و بلافاصله پس از آن محیط اجرا را متوقف میکنند.
 
 :::danger محیط های FaaS پشتیبانی نمیشوند
-استقرار Songbird به عنوان یک برنامه FaaS (مثلاً روی Vercel Functions یا AWS Lambda) **پشتیبانی نمیشود**. FaaS یک ضد الگو (Anti-pattern) معماری برای پلتفرم های چت همزمان مانند Songbird است.
+استقرار WIHM به عنوان یک برنامه FaaS (مثلاً روی Vercel Functions یا AWS Lambda) **پشتیبانی نمیشود**. FaaS یک ضد الگو (Anti-pattern) معماری برای پلتفرم های چت همزمان مانند WIHM است.
 :::
 
 ### کانتینرهای Serverless — پشتیبانی کامل
@@ -298,4 +298,4 @@ REDIS_URL=redis://:password@redis.internal:6379
 
 - **کانتینرهای Serverless** (مانند **Google Cloud Run**، **AWS Fargate** یا **Azure Container Apps**) کانتینرهای کامل Docker را بدون نیاز به مدیریت ماشین های مجازی اجرا میکنند.
 - بر خلاف FaaS، کانتینرهای Serverless اجرای مداوم، پشتیبانی کامل از WebSocket/SSE، فرآیندهای طولانی مدت و کارگران پس زمینه را ارائه میدهند.
-- سرویس Songbird **به طور کامل** با پلتفرم های کانتینری Serverless سازگار است.
+- سرویس WIHM **به طور کامل** با پلتفرم های کانتینری Serverless سازگار است.

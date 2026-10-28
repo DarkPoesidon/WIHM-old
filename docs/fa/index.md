@@ -1,20 +1,20 @@
----
+﻿---
 layout: home
 
 hero:
-  name: Songbird
+  name: WIHM
   text: پیام‌رسان شخصی
   tagline: یک پلتفرم پیام‌رسان سبک و امن که با هدف حمایت از آزادی دیجیتال در سراسر جهان ساخته شده است.
   image:
-    src: /songbird-hero.svg
-    alt: Songbird
+    src: /WIHM-hero.svg
+    alt: WIHM
   actions:
     - theme: brand
       text: شروع کنید
       link: /fa/Deployment-Script
     - theme: alt
       text: مشاهده در GitHub
-      link: https://github.com/bllackbull/Songbird
+      link: https://github.com/DarkPoesidon/WIHM
 
 features:
   - icon: 🚀
@@ -39,7 +39,7 @@ features:
     link: /fa/Object-Storage
   - icon: 📡
     title: Remote Channel
-    details: کانال‌های Telegram یا کانال‌های Songbird دیگر را داخل کانال‌های خودتان mirror کنید.
+    details: کانال‌های Telegram یا کانال‌های WIHM دیگر را داخل کانال‌های خودتان mirror کنید.
     link: /fa/Remote-Channel-Setup
   - icon: 📞
     title: تماس صوتی و تصویری

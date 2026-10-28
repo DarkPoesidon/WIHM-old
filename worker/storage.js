@@ -1,4 +1,4 @@
-import {
+﻿import {
   S3Client,
   GetObjectCommand,
   PutObjectCommand,
@@ -27,7 +27,7 @@ const toBool = (v) => {
 export function resolveDataDir(customDataDir) {
   const cleaned = cleanString(customDataDir || process.env.DATA_DIR);
   if (cleaned) return path.resolve(cleaned);
-  if (fs.existsSync("/opt/songbird/data")) return "/opt/songbird/data";
+  if (fs.existsSync("/opt/WIHM/data")) return "/opt/WIHM/data";
   if (fs.existsSync("/app/data")) return "/app/data";
   if (fs.existsSync(path.join(projectRootDir, "data"))) {
     return path.join(projectRootDir, "data");

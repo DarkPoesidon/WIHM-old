@@ -1,4 +1,4 @@
-import { Queue, Worker } from "bullmq";
+﻿import { Queue, Worker } from "bullmq";
 import { dbKnex } from "../db/knex.js";
 import { readEnvBool } from "../settings/env.js";
 
@@ -85,7 +85,7 @@ export function createMediaQueueManager({
 
         // Broadcast SSE notification
         if (typeof emitChatEvent === "function") {
-          emitChatEvent("songbird:realtime-event", {
+          emitChatEvent("wihm:realtime-event", {
             type: "video:ready",
             fileId,
             storageKey: row.storage_key || storageKey,

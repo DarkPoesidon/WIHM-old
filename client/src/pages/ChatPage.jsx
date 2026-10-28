@@ -1,4 +1,4 @@
-import { Suspense, lazy, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+﻿import { Suspense, lazy, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import MobileTabMenu from "../components/navigation/MobileTabMenu.jsx";
 import ChatWindowPanel from "../components/chat/ChatWindowPanel.jsx";
 import { CallScreen } from "../components/call/CallScreen.jsx";
@@ -613,16 +613,16 @@ export default function ChatPage({ user, setUser, isDark, setIsDark, toggleTheme
   useEffect(() => {
     if (!isMobileViewport) return;
     if (activeChatId) {
-      window.dispatchEvent(new Event("songbird-hide-install-bar"));
+      window.dispatchEvent(new Event("wihm-hide-install-bar"));
     } else {
-      window.dispatchEvent(new Event("songbird-show-install-bar"));
+      window.dispatchEvent(new Event("wihm-show-install-bar"));
     }
   }, [activeChatId, isMobileViewport]);
   const [microphonePermission, setMicrophonePermission] = useState("unknown");
   const [microphonePermissionSupported, setMicrophonePermissionSupported] =
     useState(false);
   const [permissionPromptDelayUntil, setPermissionPromptDelayUntil] = useState(0);
-  const PERMISSION_DISMISS_PREFIX = "songbird-permission-dismiss-";
+  const PERMISSION_DISMISS_PREFIX = "wihm-permission-dismiss-";
   const PERMISSION_DISMISS_MS = 3 * 24 * 60 * 60 * 1000;
   const PERMISSION_PROMPT_DELAY_MS = 1000;
   const readPermissionDismissed = (kind) => {
@@ -1690,8 +1690,8 @@ export default function ChatPage({ user, setUser, isDark, setIsDark, toggleTheme
 
     document.title =
       totalUnreadCount > 0
-        ? `Songbird | ${totalUnread} new message${totalUnreadCount === 1 ? "" : "s"}`
-        : "Songbird";
+        ? `WIHM | ${totalUnread} new message${totalUnreadCount === 1 ? "" : "s"}`
+        : "WIHM";
     if (navigator?.setAppBadge) {
       if (totalUnreadCount > 0) {
         navigator.setAppBadge(totalUnreadCount).catch(() => null);
@@ -5933,7 +5933,7 @@ export default function ChatPage({ user, setUser, isDark, setIsDark, toggleTheme
       visibility: "public",
       allowMemberInvites: true,
       remoteChannelEnabled: false,
-      remoteChannelProvider: appInfo?.remoteChannels?.telegramConfigured ? "telegram" : "songbird",
+      remoteChannelProvider: appInfo?.remoteChannels?.telegramConfigured ? "telegram" : "WIHM",
       remoteChannelSource: "",
       remoteChannelSyncMetadata: false,
       remoteChannelStreamMedia: false,
@@ -6153,7 +6153,7 @@ export default function ChatPage({ user, setUser, isDark, setIsDark, toggleTheme
       visibility: activeChat.group_visibility || "public",
       allowMemberInvites: Boolean(Number(activeChat.allow_member_invites || 0)),
       remoteChannelEnabled: false,
-      remoteChannelProvider: appInfo?.remoteChannels?.telegramConfigured ? "telegram" : "songbird",
+      remoteChannelProvider: appInfo?.remoteChannels?.telegramConfigured ? "telegram" : "WIHM",
       remoteChannelSource: "",
       remoteChannelSyncMetadata: false,
       remoteChannelStreamMedia: false,
@@ -6193,7 +6193,7 @@ export default function ChatPage({ user, setUser, isDark, setIsDark, toggleTheme
           setNewGroupForm((prev) => ({
             ...prev,
             remoteChannelEnabled: Boolean(source?.enabled),
-            remoteChannelProvider: source?.provider || "songbird",
+            remoteChannelProvider: source?.provider || "WIHM",
             remoteChannelSource:
               source?.sourceRaw ||
               (source?.sourceUsername ? `@${source.sourceUsername}` : "") ||
@@ -6332,7 +6332,7 @@ export default function ChatPage({ user, setUser, isDark, setIsDark, toggleTheme
       newGroupForm.visibility !== "private" &&
       Boolean(newGroupForm.remoteChannelEnabled);
     const remoteChannelProvider = String(
-      newGroupForm.remoteChannelProvider || "songbird",
+      newGroupForm.remoteChannelProvider || "WIHM",
     ).toLowerCase();
     const remoteChannelSyncMetadata =
       remoteChannelEnabled && Boolean(newGroupForm.remoteChannelSyncMetadata);
@@ -7321,8 +7321,8 @@ export default function ChatPage({ user, setUser, isDark, setIsDark, toggleTheme
             remoteChannelTelegramAvailable={Boolean(
               appInfo?.remoteChannels?.telegramConfigured
             )}
-            remoteChannelSongbirdAvailable={Boolean(
-              appInfo?.remoteChannels?.songbirdConfigured
+            remoteChannelWIHMAvailable={Boolean(
+              appInfo?.remoteChannels?.WIHMConfigured
             )}
             remoteChannelMediaStreamAllowed={Boolean(
               appInfo?.remoteChannels?.mediaStreamEnabled

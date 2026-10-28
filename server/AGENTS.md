@@ -1,4 +1,4 @@
-# Agent Guidance: Songbird Server
+﻿# Agent Guidance: WIHM Server
 
 Node.js Express 5 backend (SSE realtime updates, in-memory SQLite via `sql.js`, Vitest + Supertest).
 

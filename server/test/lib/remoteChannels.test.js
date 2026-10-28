@@ -1,4 +1,4 @@
-import { describe, test, expect, vi, afterEach } from "vitest";
+﻿import { describe, test, expect, vi, afterEach } from "vitest";
 import { createRemoteChannelManager } from "../../lib/remoteChannels.js";
 
 describe("remote channel async database dependencies", () => {
@@ -19,7 +19,7 @@ describe("remote channel async database dependencies", () => {
       config: { enabled: true, fileUploadEnabled: false },
       getRemoteChannelSourceById: async () => ({
         id: 5,
-        provider: "songbird",
+        provider: "WIHM",
         enabled: 1,
         source_url: "https://remote.example",
         source_username: "remote",
@@ -31,7 +31,7 @@ describe("remote channel async database dependencies", () => {
     });
 
     await expect(manager.syncSourceMetadata(5)).rejects.toThrow(
-      "Songbird metadata sync failed",
+      "WIHM metadata sync failed",
     );
     expect(events).toEqual(["source-error"]);
   });

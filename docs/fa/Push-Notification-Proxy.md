@@ -1,4 +1,4 @@
-# پراکسی Push notification
+﻿# پراکسی Push notification
 
 اگر سرور شما به‌دلیل محدودیت‌های فایروال یا سیاست‌های شبکه نمی‌تواند به نقاط پایانی سرویس‌های push (Google FCM، Mozilla Push Service، Apple Push) دسترسی پیدا کند، یک پراکسی پیکربندی کنید:
 
@@ -25,13 +25,13 @@ PUSH_PROXY_URL="http://your-proxy-server:3128"
 **۲. راه‌اندازی مجدد سرویس**
 
 ```bash
-sudo systemctl restart songbird
+sudo systemctl restart WIHM
 ```
 
 **۳. تأیید در لاگ‌ها**
 
 ```bash
-journalctl -u songbird -f | grep push
+journalctl -u WIHM -f | grep push
 # Should show: [push] Using proxy: http://your-proxy-server:3128
 ```
 

@@ -1,4 +1,4 @@
-# نصب از طریق Docker
+﻿# نصب از طریق Docker
 
 :::tip نکته زیرساخت
 این راهنما از Docker Compose استفاده میکند و برای **IaaS** (زیرساخت به عنوان سرویس — سرورها یا ماشین های مجازی اختصاصی که Docker Engine را اجرا میکنند) طراحی شده است. اگر قصد استقرار روی پلتفرم های ابری مدیریت شده (PaaS / CaaS) مانند Render، Railway، AWS ECS، Google Cloud Run یا Kubernetes را دارید، به راهنمای [استقرار ابری](./Cloud-Deployment.md) مراجعه کنید.
@@ -57,9 +57,9 @@ docker run hello-world
 ## ۲. کلون‌کردن مخزن
 
 ```bash
-sudo mkdir -p /opt/songbird
-cd /opt/songbird
-git clone https://github.com/bllackbull/Songbird.git .
+sudo mkdir -p /opt/WIHM
+cd /opt/WIHM
+git clone https://github.com/DarkPoesidon/WIHM.git .
 ```
 
 ## ۳. پیکربندی محیط
@@ -72,11 +72,11 @@ nano .env
 ```
 
 :::info استفاده از PostgreSQL در Docker
-پایگاه داده پیشفرض Songbird بر پایه SQLite است (`DB_CLIENT=sqlite3`). برای استفاده از PostgreSQL، فایل `.env` را ویرایش کرده و `DB_CLIENT=postgres` را به همراه متغیرهای `POSTGRES_*` تنظیم کنید، یا سرویس و volume اختیاری `postgres` را در `docker-compose.yaml` از حالت کامنت خارج کنید.
+پایگاه داده پیشفرض WIHM بر پایه SQLite است (`DB_CLIENT=sqlite3`). برای استفاده از PostgreSQL، فایل `.env` را ویرایش کرده و `DB_CLIENT=postgres` را به همراه متغیرهای `POSTGRES_*` تنظیم کنید، یا سرویس و volume اختیاری `postgres` را در `docker-compose.yaml` از حالت کامنت خارج کنید.
 :::
 
 :::info کانتینر Media Worker
-کانتینر یکپارچه (`bllackbull/songbird:latest`) به صورت پیشفرض شامل پروسه ورکر محلی است و آن را خودکار اجرا و مدیریت میکند. برای محیط های با بار کاری سنگین یا توزیع شده، میتوانید پردازش ویدیوها را به کانتینر مجزای (`bllackbull/songbird-worker:latest`) بسپارید یا سرویس اختیاری `media-worker` را در `docker-compose.yaml` از کامنت خارج نمایید. برای جزییات بیشتر به مستندات [ورکر مدیا](./Media-Worker.md) مراجعه کنید.
+کانتینر یکپارچه (`DarkPoesidon/WIHM:latest`) به صورت پیشفرض شامل پروسه ورکر محلی است و آن را خودکار اجرا و مدیریت میکند. برای محیط های با بار کاری سنگین یا توزیع شده، میتوانید پردازش ویدیوها را به کانتینر مجزای (`DarkPoesidon/WIHM-worker:latest`) بسپارید یا سرویس اختیاری `media-worker` را در `docker-compose.yaml` از کامنت خارج نمایید. برای جزییات بیشتر به مستندات [ورکر مدیا](./Media-Worker.md) مراجعه کنید.
 :::
 
 ## ۴. راه‌اندازی گواهی‌نامه TLS
@@ -93,7 +93,7 @@ nano .env
 ایمیج از پیش ساخته‌شده را دریافت و کانتینرها را اجرا کنید:
 
 ```bash
-cd /opt/songbird
+cd /opt/WIHM
 docker compose up -d
 ```
 
@@ -120,43 +120,43 @@ docker compose restart nginx
 
 ## کاربر runtime و داده پایدار
 
-استقرارهای Docker از `songbird.service` استفاده نمیکنند. Songbird با کاربر پیکربندی شده برای container اجرا میشود (در image فعلی root است، مگر آنکه `user:` در Compose آن را override کند) و دستورهای پایگاه داده با همان UID/GID ‏container اجرا میشوند:
+استقرارهای Docker از `WIHM.service` استفاده نمیکنند. WIHM با کاربر پیکربندی شده برای container اجرا میشود (در image فعلی root است، مگر آنکه `user:` در Compose آن را override کند) و دستورهای پایگاه داده با همان UID/GID ‏container اجرا میشوند:
 
 ```bash
-docker compose exec songbird npm --prefix /app/server run db:inspect
+docker compose exec WIHM npm --prefix /app/server run db:inspect
 ```
 
 برای اجرای container با یک UID/GID غیر root مشخص، `user:` را در service ‏Compose پیکربندی کنید:
 
 ```yaml
 services:
-  songbird:
-    user: "songbird:songbird"
+  WIHM:
+    user: "WIHM:WIHM"
 ```
 
-اگر به جای named volume پیشفرض از bind mount استفاده میکنید، پیش از راه اندازی Songbird، پوشه host را برای همان UID:GID قابل نوشتن کنید. Songbird مالکیت bind mount روی host را به صورت خودکار تغییر نمیدهد:
+اگر به جای named volume پیشفرض از bind mount استفاده میکنید، پیش از راه اندازی WIHM، پوشه host را برای همان UID:GID قابل نوشتن کنید. WIHM مالکیت bind mount روی host را به صورت خودکار تغییر نمیدهد:
 
 ```bash
 mkdir -p ./data
-sudo chown -R songbird:songbird ./data
+sudo chown -R WIHM:WIHM ./data
 ```
 
 ## کنترل سرویس در پنل مدیریت
 
-اقدامات **ریستارت سرویس** و **توقف سرویس** در پنل مدیریت برای استقرار Docker با فراخوانی Docker Engine API از طریق سوکت mount‌شده (`/var/run/docker.sock`) کار می‌کنند. فایل compose متغیر `SONGBIRD_CONTAINER_NAME=songbird` را تنظیم می‌کند تا اپلیکیشن بداند کدام کانتینر را هدف قرار دهد.
+اقدامات **ریستارت سرویس** و **توقف سرویس** در پنل مدیریت برای استقرار Docker با فراخوانی Docker Engine API از طریق سوکت mount‌شده (`/var/run/docker.sock`) کار می‌کنند. فایل compose متغیر `WIHM_CONTAINER_NAME=WIHM` را تنظیم می‌کند تا اپلیکیشن بداند کدام کانتینر را هدف قرار دهد.
 
 اگر نام کانتینر را تغییر دادید یا از نام سفارشی استفاده می‌کنید، متغیر env را به‌روز کنید:
 
 ```yaml
 # docker-compose.yaml
 environment:
-  SONGBIRD_CONTAINER_NAME: my-custom-name
+  WIHM_CONTAINER_NAME: my-custom-name
 ```
 
 اگر به کنترل سرویس از پنل مدیریت نیاز ندارید، می‌توانید mount سوکت را از `docker-compose.yaml` حذف کنید:
 
 ```yaml
-# این خط را در بخش volumes مربوط به songbird حذف یا کامنت کنید:
+# این خط را در بخش volumes مربوط به WIHM حذف یا کامنت کنید:
 # - /var/run/docker.sock:/var/run/docker.sock
 ```
 
@@ -165,7 +165,7 @@ environment:
 ایمیج جدید را دریافت و مجدداً راه‌اندازی کنید:
 
 ```bash
-cd /opt/songbird
+cd /opt/WIHM
 docker compose pull
 docker compose up -d
 ```

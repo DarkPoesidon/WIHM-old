@@ -1,4 +1,4 @@
-import fs from "node:fs";
+﻿import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
@@ -21,11 +21,11 @@ const projectRootDir = path.resolve(serverDir, "..");
 dotenv.config({ path: path.join(projectRootDir, ".env"), quiet: true });
 dotenv.config({ path: path.join(serverDir, ".env"), override: true, quiet: true });
 
-const dbPath = path.join(dataDir, "songbird.db");
+const dbPath = path.join(dataDir, "wihm.db");
 const backupDir = path.join(dataDir, "backups");
-const serviceName = process.env.SONGBIRD_SERVICE_NAME || "songbird.service";
-const serviceUser = process.env.SONGBIRD_SERVICE_USER || "songbird";
-const serviceGroup = process.env.SONGBIRD_SERVICE_GROUP || serviceUser;
+const serviceName = process.env.WIHM_SERVICE_NAME || "WIHM.service";
+const serviceUser = process.env.WIHM_SERVICE_USER || "WIHM";
+const serviceGroup = process.env.WIHM_SERVICE_GROUP || serviceUser;
 
 function listDbBackups(extension) {
   const dirs = [backupDir];
@@ -39,7 +39,7 @@ function listDbBackups(extension) {
       const entries = fs
         .readdirSync(dir, { withFileTypes: true })
         .filter((entry) => entry.isFile() && entry.name.toLowerCase().endsWith(extension))
-        .filter((entry) => dir !== "/root" || entry.name.startsWith("songbird-backup-"))
+        .filter((entry) => dir !== "/root" || entry.name.startsWith("wihm-backup-"))
         .map((entry) => path.join(dir, entry.name));
       files.push(...entries);
     } catch (_) {}
@@ -176,7 +176,7 @@ async function main() {
   if (dbConfig.client === "postgres") {
     const { running, port } = await detectRunningServer();
     if (running) {
-      console.error(`Stop Songbird on port ${port} before restoring a PostgreSQL archive.`);
+      console.error(`Stop WIHM on port ${port} before restoring a PostgreSQL archive.`);
       process.exit(1);
     }
     console.log(`PostgreSQL active — restoring native archive "${path.basename(sourcePath)}"...`);

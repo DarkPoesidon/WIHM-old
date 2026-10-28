@@ -1,4 +1,4 @@
-import fs from "node:fs";
+﻿import fs from "node:fs";
 import path from "node:path";
 import http from "node:http";
 import https from "node:https";
@@ -286,7 +286,7 @@ export class RemoteStorageProvider extends StorageProvider {
    * @returns {Promise<boolean>}
    */
   async checkHealth() {
-    await this.exists("songbird-storage-health-probe");
+    await this.exists("WIHM-storage-health-probe");
     return true;
   }
 

@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+﻿import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   AlertCircle,
   Check,
@@ -15,7 +15,7 @@ import {
   Reply,
   Video,
 } from "../../../icons/lucide.js";
-import { SongbirdIcon, TelegramIcon } from "../../../icons/BrandIcons.jsx";
+import { WIHMIcon, TelegramIcon } from "../../../icons/BrandIcons.jsx";
 import { hasPersian } from "../../../utils/fontUtils.js";
 import { getAvatarInitials } from "../../../utils/avatarInitials.js";
 import { formatCompactCount, formatDayLabel } from "../../../utils/chatFormat.js";
@@ -204,7 +204,7 @@ export const MessageItem = memo(function MessageItem({
     ? /^remote:tg:/i.test(clientRequestId)
       ? "telegram"
       : /^remote:sb:/i.test(clientRequestId)
-        ? "songbird"
+        ? "wihm"
         : "unknown"
     : null;
   const forwardedFromUsername = String(msg?.forwarded_from_username || "").trim();
@@ -765,8 +765,8 @@ export const MessageItem = memo(function MessageItem({
           />
           {remoteForwardedProvider === "telegram" ? (
             <TelegramIcon size={13} className="shrink-0" />
-          ) : remoteForwardedProvider === "songbird" ? (
-            <SongbirdIcon size={13} />
+          ) : remoteForwardedProvider === "wihm" ? (
+            <WIHMIcon size={13} />
           ) : null}
           <span className="inline-flex min-w-0 items-center gap-0.5">
             <Tooltip label={forwardedFromLabel} asChild>
@@ -779,8 +779,8 @@ export const MessageItem = memo(function MessageItem({
               >
                 {remoteForwardedProvider === "telegram"
                   ? forwardedFromLabel.replace(/^telegram:\s*/i, "")
-                  : remoteForwardedProvider === "songbird"
-                    ? forwardedFromLabel.replace(/^songbird:\s*/i, "")
+                  : remoteForwardedProvider === "wihm"
+                    ? forwardedFromLabel.replace(/^wihm:\s*/i, "")
                     : forwardedFromLabel}
               </span>
             </Tooltip>

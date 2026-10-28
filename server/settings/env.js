@@ -1,4 +1,4 @@
-function readEnvInt(keys, fallback, options = {}) {
+﻿function readEnvInt(keys, fallback, options = {}) {
   const names = Array.isArray(keys) ? keys : [keys];
 
   const raw = names
@@ -47,7 +47,7 @@ function readDbConfig() {
       port: readEnvInt("POSTGRES_PORT", 5432, { min: 1, max: 65535 }),
       user: process.env.POSTGRES_USER || "postgres",
       password: process.env.POSTGRES_PASSWORD || "postgres",
-      database: process.env.POSTGRES_DB || "songbird",
+      database: process.env.POSTGRES_DB || "WIHM",
       url: process.env.POSTGRES_URL || process.env.DATABASE_URL || null,
       ssl: readEnvBool("POSTGRES_SSL", false),
     },

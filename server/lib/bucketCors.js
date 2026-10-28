@@ -1,5 +1,5 @@
-const REQUIRED_METHODS = ["GET", "PUT", "HEAD", "POST"];
-// Coverage only demands the methods Songbird actually uses (presigned PUT
+﻿const REQUIRED_METHODS = ["GET", "PUT", "HEAD", "POST"];
+// Coverage only demands the methods WIHM actually uses (presigned PUT
 // uploads, GET/HEAD downloads). POST is still written for completeness.
 const COVERAGE_METHODS = ["GET", "PUT", "HEAD"];
 
@@ -30,7 +30,11 @@ function splitOrigins(value) {
  */
 export function resolveAppOrigins(env = process.env) {
   const source = env || {};
-  const explicit = splitOrigins(source.APP_PUBLIC_URL);
+  const explicit = splitOrigins(
+    source.APP_PUBLIC_URL && source.CORS_ORIGIN
+      ? `${source.APP_PUBLIC_URL},${source.CORS_ORIGIN}`
+      : source.APP_PUBLIC_URL || source.CORS_ORIGIN,
+  );
   if (explicit.length > 0) return [...new Set(explicit)];
 
   const platform =

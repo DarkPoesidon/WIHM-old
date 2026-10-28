@@ -1,4 +1,4 @@
-const CALLBACK_PATH = "/api/uploads/webhook/processed";
+﻿const CALLBACK_PATH = "/api/uploads/webhook/processed";
 
 function clean(value) {
   if (value === undefined || value === null) return "";
@@ -33,8 +33,8 @@ export function resolveWebhookCallbackUrl(env = process.env) {
   const explicit = [
     source.WEBHOOK_URL,
     source.WEBHOOK_CALLBACK_URL,
-    source.SONGBIRD_WEBHOOK_URL,
-    source.SONGBIRD_WEBHOOK_CALLBACK_URL,
+    source.WIHM_WEBHOOK_URL,
+    source.WIHM_WEBHOOK_CALLBACK_URL,
   ]
     .map(clean)
     .find(Boolean);

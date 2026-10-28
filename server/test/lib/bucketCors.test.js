@@ -1,4 +1,4 @@
-import { describe, test, expect, vi, beforeEach } from "vitest";
+﻿import { describe, test, expect, vi, beforeEach } from "vitest";
 import {
   normalizeOrigin,
   resolveAppOrigins,
@@ -37,7 +37,7 @@ describe("resolveAppOrigins", () => {
     expect(
       resolveAppOrigins({
         APP_PUBLIC_URL: "https://app.example.com, https://admin.example.com/",
-        RAILWAY_PUBLIC_DOMAIN: "songbird.up.railway.app",
+        RAILWAY_PUBLIC_DOMAIN: "WIHM.up.railway.app",
       }),
     ).toEqual(["https://app.example.com", "https://admin.example.com"]);
   });
@@ -51,17 +51,17 @@ describe("resolveAppOrigins", () => {
   test("falls back to RAILWAY_PUBLIC_DOMAIN", () => {
     expect(
       resolveAppOrigins({
-        RAILWAY_PUBLIC_DOMAIN: "songbird.up.railway.app",
+        RAILWAY_PUBLIC_DOMAIN: "WIHM.up.railway.app",
       }),
-    ).toEqual(["https://songbird.up.railway.app"]);
+    ).toEqual(["https://WIHM.up.railway.app"]);
   });
 
   test("falls back to RENDER_EXTERNAL_URL", () => {
     expect(
       resolveAppOrigins({
-        RENDER_EXTERNAL_URL: "https://songbird.onrender.com",
+        RENDER_EXTERNAL_URL: "https://WIHM.onrender.com",
       }),
-    ).toEqual(["https://songbird.onrender.com"]);
+    ).toEqual(["https://WIHM.onrender.com"]);
   });
 
   test("returns empty array when nothing is known", () => {

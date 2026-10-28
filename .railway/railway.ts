@@ -1,4 +1,4 @@
-import {
+﻿import {
   bucket,
   defineRailway,
   group,
@@ -15,7 +15,7 @@ export default defineRailway(() => {
     region: "ams",
   });
 
-  const worker = service("songbird-worker", {
+  const worker = service("WIHM-worker", {
     rootDirectory: "worker",
     region: "ams",
     build: {
@@ -39,7 +39,7 @@ export default defineRailway(() => {
     },
   });
 
-  const app = service("songbird-server", {
+  const app = service("WIHM-server", {
     region: "ams",
     build: {
       builder: "DOCKERFILE",
@@ -55,7 +55,7 @@ export default defineRailway(() => {
       POSTGRES_URL: db.env.DATABASE_URL,
       POSTGRES_SSL: "false",
       STORAGE_PROCESSING_MODE: "remote",
-      WORKER_URL: "http://${{songbird-worker.RAILWAY_PRIVATE_DOMAIN}}:8080",
+      WORKER_URL: "http://${{WIHM-worker.RAILWAY_PRIVATE_DOMAIN}}:8080",
       WEBHOOK_SECRET: preserve(),
       STORAGE_DRIVER: "remote",
       STORAGE_AUTO_CORS: "true",
@@ -68,9 +68,9 @@ export default defineRailway(() => {
     },
   });
 
-  const songbirdGroup = group("songbird", [app, worker, db, uploads]);
+  const WIHMGroup = group("WIHM", [app, worker, db, uploads]);
 
-  return project("songbird", {
-    resources: [songbirdGroup],
+  return project("WIHM", {
+    resources: [WIHMGroup],
   });
 });

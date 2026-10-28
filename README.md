@@ -2,111 +2,52 @@
 
 <div align="center">
 
-# <img src="./client/public/songbird-logo.svg" alt="Songbird"> Songbird
+# <img src="./client/public/wihm-logo.svg" alt="WIHM" width="48" height="48"> WIHM
 
-[![Version](https://img.shields.io/github/v/release/bllackbull/Songbird?label=version&color=blue)](https://github.com/bllackbull/Songbird/releases)
-![Build](https://img.shields.io/github/actions/workflow/status/bllackbull/Songbird/build.yml)
-[![Last commit](https://img.shields.io/github/last-commit/bllackbull/Songbird)](https://github.com/bllackbull/Songbird/commits/main/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-red.svg)](https://opensource.org/licenses/MIT)
+[![Deploy on Cloudflare](https://img.shields.io/badge/Deploy%20on-Cloudflare-F38020?logo=cloudflare&logoColor=white)](/CLOUDFLARE_TUTORIAL.md)
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/DarkPoesidon/WIHM)
 
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/bllackbull/Songbird)
-[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/songbird)
-
-**Secure, lightweight and self-hosted chat platform**
+**Secure, modern, and lightweight real-time communication platform with 100% free Cloudflare deployment**
 
 </div>
 
+---
+
+## ⚡ Step-by-Step Cloudflare Deployment Tutorial
+
+> 🚀 **[Click here to read the Step-by-Step Cloudflare Deployment Guide (100% Free Forever)](/CLOUDFLARE_TUTORIAL.md)**  
+> Anyone can follow this guide and launch their self-hosted messenger in less than 10 minutes with zero coding required.
+
+---
+
 ## Key Features
 
-- 💬 **Chat Types**: Direct messages, groups, and channels
-- 📁 **Media Support**: File uploads, voice messages, video transcoding
-- 🔔 **Push Notifications**: Web push with VAPID
-- 📞 **Voice & Video Calls**: Real-time peer-to-peer and secure voice and video calling
-- 📡 **Remote Channels**: Mirror Telegram or Songbird channels (v0.10.3+)
-- 🛡️ **Admin Panel**: Full management interface with owner role (v0.11.0+)
-- 🔒 **Security**: Encryption at rest, bcrypt hashing, rate limiting
-- 📱 **PWA**: Installable progressive web app
-- ☁️ **Cloud Deployment**: PaaS and CaaS deployment with object storage support
-- 🌍 **i18n**: English and Persian/Farsi support
+- 💬 **Rich Messaging**: Direct Messages (DMs), Groups, and Channels
+- 📁 **Cloudflare R2 Media**: Direct browser-to-bucket uploads with Presigned URLs and zero egress bandwidth fees
+- 📞 **Voice & Video Calls**: Native peer-to-peer WebRTC calling with Cloudflare Calls (TURN) support
+- 🔔 **Push Notifications**: Standard Web Push via VAPID keys
+- 🛡️ **Full Admin Dashboard**: Comprehensive controls for user roles, channel moderation, and maintenance
+- 🔒 **Hardened Security**: Session encryption, bcrypt password hashing, and adaptive rate limiting
+- 📱 **Installable PWA**: Install directly to home screen on iOS, Android, macOS, and Windows
+- 🌍 **Native Multilingual UI**: Built-in support for English and Persian (RTL)
 
-## Quick Start
+---
 
-The easiest way to install Songbird is the deployment script. On an Ubuntu server (22.04+) with sudo access, run:
+## Local Development
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/bllackbull/Songbird/main/scripts/install.sh | bash
+# Install dependencies
+npm install
+npm --prefix client install
+npm --prefix server install
+
+# Run frontend and backend concurrently
+npm run dev
 ```
 
-The script handles dependencies, builds the app, configures Nginx, and can set up SSL for you. After installation, access it again anytime with:
-
-```bash
-songbird-deploy
-```
-
-> [!TIP]
-> A domain name pointing to your server's public IP is recommended, and HTTPS is required for push notifications (except on `localhost`).
-
-## Documentation
-
-Full documentation lives at [docs.songbird.website](https://docs.songbird.website):
-
-- [Deployment Script](https://docs.songbird.website/Deployment-Script)
-- [Install via Docker](https://docs.songbird.website/Installation-Docker)
-- [Cloud Deployment](https://docs.songbird.website/Cloud-Deployment)
-- [Manual Installation](https://docs.songbird.website/Manual-Installation)
-- [Configure Nginx](https://docs.songbird.website/Nginx-Configuration)
-- [SSL Certificates](https://docs.songbird.website/SSL-Certificates)
-- [Running behind a CDN](https://docs.songbird.website/CDN-Setup)
-- [Running behind a domain + subpath](https://docs.songbird.website/Subpath-Hosting)
-- [Environment Variables](https://docs.songbird.website/Environment-Variables)
-- [Object Storage](https://docs.songbird.website/Object-Storage)
-- [Media Worker](https://docs.songbird.website/Media-Worker)
-- [Admin Panel](https://docs.songbird.website/Admin-Panel)
-- [Remote Channel Setup](https://docs.songbird.website/Remote-Channel-Setup)
-- [Push Notification Proxy](https://docs.songbird.website/Push-Notification-Proxy)
-- [Voice & Video Calls](https://docs.songbird.website/Voice-Video-Calls)
-- [Updating the deployed app](https://docs.songbird.website/Updating)
-- [Database Commands](https://docs.songbird.website/Database-Commands)
-- [Troubleshooting](https://docs.songbird.website/Troubleshooting)
-
-## Author
-
-- Maintainer: [@bllackbull](https://github.com/bllackbull)
-- Contributors: [@nkhalili](https://github.com/nkhalili), [@modos](https://github.com/modos), [@iPmartNetwork](https://github.com/iPmartNetwork)
-
-## Contributing
-
-- Contributions are welcome.
-- If you want to contribute, contact the maintainer first by opening an issue at: `https://github.com/bllackbull/Songbird/issues`
-- For direct coordination, reach out to [@bllackbull](https://github.com/bllackbull) on GitHub before opening a PR.
-- Checkout [Contributing](/CONTRIBUTING.md) guideline for more information.
-
-## Support
-
-If you like this project which I hope you do, consider supporting your favorite project:
-
-<a href="https://nowpayments.io/donation?api_key=0b61dd3e-6508-4849-ad92-1dde65442937" target="_blank" rel="noreferrer noopener">
-    <img src="https://nowpayments.io/images/embeds/donation-button-black.svg" alt="Crypto donation button by NOWPayments">
-</a>
-
-### TRX:
-
-```
-TPf1bEhipKpGkjo5N2Scj9nufNNh5TNrwX
-```
-
-### BTC:
-
-```
-bc1q9hupvcc39juhf0k7rgzn6phn8s8jez365kzmuj
-```
-
-### TON:
-
-```
-UQDzQ3xbWzKQvw8X8sWU82dksBeYqTHrT9sLzhBOyaESPjVy
-```
+---
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the [MIT License](/LICENSE).

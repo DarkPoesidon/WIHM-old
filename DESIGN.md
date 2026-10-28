@@ -1,6 +1,6 @@
-# Design Language & Style Guide: Songbird
+﻿# Design Language & Style Guide: WIHM
 
-This document defines the design language, UI patterns, color system, typography, and component conventions for **Songbird**. Any AI model or human contributor working on the frontend **must** strictly adhere to these rules to maintain visual consistency, accessibility, and architectural integrity.
+This document defines the design language, UI patterns, color system, typography, and component conventions for **WIHM**. Any AI model or human contributor working on the frontend **must** strictly adhere to these rules to maintain visual consistency, accessibility, and architectural integrity.
 
 ---
 

@@ -1,4 +1,4 @@
-# 📞 تماس صوتی و تصویری
+﻿# 📞 تماس صوتی و تصویری
 
 برنامه از تماس‌های نظیر‌به‌نظیر (P2P) صوتی و تصویری دو‌نفره در پیام‌های مستقیم (DM) با استفاده از فناوری WebRTC و سیگنالینگ کم‌تاخیر مبتنی بر وب‌سوکت پشتیبانی می‌کند.
 
@@ -137,7 +137,7 @@ lt-cred-mech
 
 # نام دامنه یا قلمرو (Realm) و اطلاعات کاربری ثابت
 realm=your-domain.com
-user=songbird:YourSecurePassword123
+user=WIHM:YourSecurePassword123
 
 # تنظیم IP عمومی سرور
 # اگر سرور شما مستقیماً دارای IP عمومی روی کارت شبکه است:
@@ -179,7 +179,7 @@ sudo ss -ulpn | grep 3478
 ```txt
 TURN_STUN_URL="stun:your-domain.com:3478"
 TURN_URL="turn:your-domain.com:3478"
-TURN_USERNAME="songbird"
+TURN_USERNAME="WIHM"
 TURN_CREDENTIAL="YourSecurePassword123"
 ```
 

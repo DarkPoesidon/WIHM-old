@@ -1,10 +1,10 @@
-# Updating
+﻿# Updating
 
-How you update or downgrade depends on how you installed Songbird.
+How you update or downgrade depends on how you installed WIHM.
 
 | Install method | Update / Downgrade path |
 |---|---|
-| Deployment script | Run `songbird-deploy` and choose **Update Songbird** (handles database backup, git pull or checkout, rebuild, migrations, and service restart). |
+| Deployment script | Run `WIHM-deploy` and choose **Update WIHM** (handles database backup, git pull or checkout, rebuild, migrations, and service restart). |
 | Docker | Git pull/checkout target tag or commit + `docker compose up -d --build`. |
 | Manual (systemd) | Git pull/checkout target tag or commit + rebuild client/server + restart service. |
 
@@ -13,10 +13,10 @@ How you update or downgrade depends on how you installed Songbird.
 Always backup your database before updating or downgrading:
 
 ```bash
-cd /opt/songbird/server
+cd /opt/WIHM/server
 npm run db:backup
 # Or use this for Docker:
-docker compose exec songbird npm --prefix /app/server run db:backup
+docker compose exec WIHM npm --prefix /app/server run db:backup
 ```
 
 :::
@@ -27,17 +27,17 @@ The [Deployment Script](./Deployment-Script.md) handles both updates and downgra
 
 :::
 
-## Deployment script (songbird-deploy)
+## Deployment script (WIHM-deploy)
 
-The interactive deployment script is the easiest way to update or downgrade your Songbird instance.
+The interactive deployment script is the easiest way to update or downgrade your WIHM instance.
 
 Run the tool:
 
 ```bash
-songbird-deploy
+WIHM-deploy
 ```
 
-Choose option **2** (**Update Songbird**).
+Choose option **2** (**Update WIHM**).
 
 ### 1. Pre-update database backup
 
@@ -58,14 +58,14 @@ When newer commits are available on the `main` branch, the script automatically:
 3. Ensures VAPID keys and security credentials remain configured.
 4. Executes database schema migrations (`npm run db:migrate`).
 5. Fixes file permissions and systemd service files.
-6. Restarts `songbird.service` (and `songbird-worker.service` if present) and reloads Nginx.
+6. Restarts `WIHM.service` (and `WIHM-worker.service` if present) and reloads Nginx.
 
 ### 3. Downgrading (GitHub mode)
 
 If your local instance is already up to date with `origin/main`, the script informs you:
 
 ```txt
-Songbird is already up to date.
+WIHM is already up to date.
 Do you want to downgrade? [y/N]
 ```
 
@@ -82,7 +82,7 @@ If you select `yes`:
 
 When choosing **Offline** mode with a local source zip archive:
 
-- **Update**: If the `VERSION` in the archive is higher than `/opt/songbird/VERSION`, the script updates the instance.
+- **Update**: If the `VERSION` in the archive is higher than `/opt/WIHM/VERSION`, the script updates the instance.
 - **Downgrade**: If the `VERSION` in the archive is lower than the installed version, the script asks:
 
   ```txt
@@ -93,9 +93,9 @@ When choosing **Offline** mode with a local source zip archive:
 
 ### 5. Updating the deployment menu
 
-To update the `songbird-deploy` CLI command itself:
+To update the `WIHM-deploy` CLI command itself:
 
-1. Run `songbird-deploy`.
+1. Run `WIHM-deploy`.
 2. Choose option **7** (**Update menu**).
 3. The script checks GitHub for newer installer releases and updates the global command automatically (or offers to reinstall if already current).
 
@@ -104,7 +104,7 @@ To update the `songbird-deploy` CLI command itself:
 ### Updating to latest
 
 ```bash
-cd /opt/songbird
+cd /opt/WIHM
 git pull origin main
 docker compose -f docker-compose.yaml up -d --build
 sudo systemctl reload nginx
@@ -113,7 +113,7 @@ sudo systemctl reload nginx
 ### Downgrading to a specific version
 
 ```bash
-cd /opt/songbird
+cd /opt/WIHM
 git fetch --all --tags
 git checkout v0.11.4 # Replace with your target tag or commit hash
 docker compose -f docker-compose.yaml up -d --build
@@ -125,7 +125,7 @@ sudo systemctl reload nginx
 ### Updating to latest
 
 ```bash
-cd /opt/songbird
+cd /opt/WIHM
 git pull origin main
 cd client
 npm install
@@ -133,14 +133,14 @@ npm run build
 cd ../server
 npm install
 npm run db:migrate
-sudo systemctl restart songbird
+sudo systemctl restart WIHM
 sudo systemctl reload nginx
 ```
 
 ### Downgrading to a specific version
 
 ```bash
-cd /opt/songbird
+cd /opt/WIHM
 git fetch --all --tags
 git checkout v0.11.4 # Replace with your target tag or commit hash
 cd client
@@ -149,7 +149,7 @@ npm run build
 cd ../server
 npm install
 npm run db:migrate
-sudo systemctl restart songbird
+sudo systemctl restart WIHM
 sudo systemctl reload nginx
 ```
 

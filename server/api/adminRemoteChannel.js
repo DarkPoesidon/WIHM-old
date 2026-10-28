@@ -1,4 +1,4 @@
-import rateLimit, { ipKeyGenerator } from "express-rate-limit";
+﻿import rateLimit, { ipKeyGenerator } from "express-rate-limit";
 import { Logger, TelegramClient } from "telegram";
 import { StringSession } from "telegram/sessions/index.js";
 import { getTelegramClientConnectionOptions } from "../lib/remoteChannels.js";
@@ -122,8 +122,8 @@ function registerAdminRemoteChannelRoutes(app, deps) {
       requestRetries: 1,
       autoReconnect: false,
       ...connectionOptions,
-      deviceModel: "Songbird",
-      systemVersion: "Songbird Server",
+      deviceModel: "WIHM",
+      systemVersion: "WIHM Server",
       appVersion: "1.0",
     });
   };
@@ -362,7 +362,7 @@ function registerAdminRemoteChannelRoutes(app, deps) {
           baseLogger: new Logger("none"),
           connectionRetries: 1,
           autoReconnect: false,
-          deviceModel: "Songbird",
+          deviceModel: "WIHM",
         },
       );
       try {

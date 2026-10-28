@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { Eye, EyeOff, LoaderCircle } from "../../icons/lucide.js";
 import { hasPersian } from "../../utils/fontUtils.js";
 import { USERNAME_INPUT_PATTERN, useNameLimits } from "../../utils/nameLimits.js";
@@ -41,7 +41,7 @@ export default function AuthFormFields({
               name="nickname"
               type="text"
               required
-              placeholder="Songbird Sage"
+              placeholder="WIHM User"
               maxLength={NICKNAME_MAX}
               onInput={(event) => {
                 const value = String(event.currentTarget.value || "");
@@ -80,7 +80,7 @@ export default function AuthFormFields({
             pattern={USERNAME_INPUT_PATTERN}
             title="Use english letters, numbers, dot (.), and underscore (_)."
             autoCapitalize="none"
-            placeholder="songbird.sage"
+            placeholder="wihm.sage"
             maxLength={USERNAME_MAX}
             onInput={(event) => {
               const value = String(event.currentTarget.value || "");

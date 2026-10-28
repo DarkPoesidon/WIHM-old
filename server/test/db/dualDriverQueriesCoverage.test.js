@@ -1,4 +1,4 @@
-import { describe, test, expect, vi, beforeEach, afterEach } from "vitest";
+﻿import { describe, test, expect, vi, beforeEach, afterEach } from "vitest";
 import { dbKnex } from "../../db/knex.js";
 import {
   getRemoteChannelSourceByChatId,
@@ -393,7 +393,7 @@ describe("Dual Driver Complete DB Functions Coverage", () => {
         return { rows: [], rowCount: 1 };
       });
 
-      await dbSetSetting("site_name", "Songbird");
+      await dbSetSetting("site_name", "WIHM");
       await dbDeleteSetting("site_name");
       const settings = await dbGetAllSettings();
       expect(Array.isArray(settings)).toBe(true);

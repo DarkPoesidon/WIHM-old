@@ -1,4 +1,4 @@
-import { describe, test, expect, vi } from "vitest";
+﻿import { describe, test, expect, vi } from "vitest";
 import { createMirrorJobRegistry } from "../../lib/remoteMirrorJobs.js";
 import { dispatchMirrorJob } from "../../lib/remoteMirrorDispatch.js";
 
@@ -44,7 +44,7 @@ describe("dispatchMirrorJob", () => {
     expect(body.callbackUrl).toContain(
       "/api/remote-channel/webhook/mirror-done",
     );
-    expect(opts.headers["x-songbird-webhook-secret"]).toBe("shh");
+    expect(opts.headers["x-wihm-webhook-secret"]).toBe("shh");
     registry.sweep();
   });
 

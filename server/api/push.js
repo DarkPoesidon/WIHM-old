@@ -1,4 +1,4 @@
-function registerPushRoutes(app, deps) {
+﻿function registerPushRoutes(app, deps) {
   const {
     requireSession,
     requireSessionUsernameMatch,
@@ -83,7 +83,7 @@ function registerPushRoutes(app, deps) {
     }
     try {
       await sendPushNotificationToUsers([user.id], {
-        title: "Songbird",
+        title: "WIHM",
         body: "Test notification",
         data: { url: "/" },
       });

@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeEach, afterEach } from "vitest";
+﻿import { describe, test, expect, beforeEach, afterEach } from "vitest";
 import { readDbConfig } from "../../settings/env.js";
 
 describe("readDbConfig", () => {
@@ -22,12 +22,12 @@ describe("readDbConfig", () => {
     process.env.DB_CLIENT = "postgres";
     process.env.POSTGRES_HOST = "db.example.com";
     process.env.POSTGRES_PORT = "5433";
-    process.env.POSTGRES_DB = "songbird_prod";
+    process.env.POSTGRES_DB = "WIHM_prod";
 
     const config = readDbConfig();
     expect(config.client).toBe("postgres");
     expect(config.postgres.host).toBe("db.example.com");
     expect(config.postgres.port).toBe(5433);
-    expect(config.postgres.database).toBe("songbird_prod");
+    expect(config.postgres.database).toBe("WIHM_prod");
   });
 });

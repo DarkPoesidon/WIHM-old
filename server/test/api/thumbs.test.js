@@ -1,4 +1,4 @@
-import { describe, test, expect, vi, beforeEach, afterEach } from "vitest";
+﻿import { describe, test, expect, vi, beforeEach, afterEach } from "vitest";
 import request from "supertest";
 import realFs from "node:fs";
 import realPath from "node:path";
@@ -220,7 +220,7 @@ describe("webhook thumbUrl wiring", () => {
 
     const res = await request(customApp.app)
       .post("/api/uploads/webhook/processed")
-      .set("x-songbird-webhook-secret", "secret-key-123")
+      .set("x-wihm-webhook-secret", "secret-key-123")
       .send({
         fileId: fileUuid,
         status: "ready",

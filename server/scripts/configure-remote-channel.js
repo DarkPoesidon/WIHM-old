@@ -1,4 +1,4 @@
-import fs from "node:fs";
+﻿import fs from "node:fs";
 import { execFileSync } from "node:child_process";
 import readline from "node:readline/promises";
 import { argv, stdin as defaultInput, stdout as defaultOutput } from "node:process";
@@ -100,13 +100,13 @@ Options:
   --password <password>   Telegram two-step password, if enabled
   --force-sms             Ask Telegram to send the login code by SMS
   --env-file <path>       .env file to update (default: project root .env)
-  --no-restart            Skip automatic songbird.service restart after saving
+  --no-restart            Skip automatic WIHM.service restart after saving
   --non-interactive       Fail instead of prompting for missing values
   -h, --help              Show this help
 
 The login code is usually only available after Telegram receives the phone
 number. If --phone-code is omitted, this helper asks for it after Telegram sends
-the code. After saving, this helper restarts songbird.service when the service
+the code. After saving, this helper restarts WIHM.service when the service
 is installed.`);
 }
 
@@ -260,13 +260,13 @@ function systemdServiceExists(serviceName) {
   }
 }
 
-function restartSongbirdService(options) {
+function restartWIHMService(options) {
   if (options.noRestart) {
-    console.log("Songbird restart skipped because --no-restart was passed.");
+    console.log("WIHM restart skipped because --no-restart was passed.");
     return;
   }
 
-  const serviceName = "songbird.service";
+  const serviceName = "WIHM.service";
   if (!systemdServiceExists(serviceName)) {
     console.warn(`${serviceName} not found; restart skipped.`);
     return;
@@ -286,7 +286,7 @@ function restartSongbirdService(options) {
       `Remote Channel configuration was saved, but restarting ${serviceName} failed. Run "sudo systemctl restart ${serviceName}" manually.`,
     );
   }
-  console.log("Songbird restarted successfully.");
+  console.log("WIHM restarted successfully.");
 }
 
 function formatExistingHint(value) {
@@ -447,7 +447,7 @@ try {
   dotenv.config({ path: envPath, override: true, quiet: true });
   dotenv.config({ path: path.join(serverDir, ".env"), override: true, quiet: true });
 
-  console.log("Songbird Remote Channel configuration");
+  console.log("WIHM Remote Channel configuration");
   console.log(
     "Create Telegram credentials at https://my.telegram.org/apps first.\n",
   );
@@ -469,8 +469,8 @@ try {
     retryDelay: 1000,
     autoReconnect: false,
     ...connectionOptions,
-    deviceModel: "Songbird",
-    systemVersion: "Songbird Server",
+    deviceModel: "WIHM",
+    systemVersion: "WIHM Server",
     appVersion: "1.0",
   });
 
@@ -502,9 +502,9 @@ try {
   const displayPath = path.relative(process.cwd(), envPath) || envPath;
   console.log(`\nRemote Channel configuration saved to ${displayPath}.`);
   console.log(
-    "Keep the Telegram session private. It authorizes Songbird to read channels visible to this Telegram account.",
+    "Keep the Telegram session private. It authorizes WIHM to read channels visible to this Telegram account.",
   );
-  restartSongbirdService(options);
+  restartWIHMService(options);
 } catch (error) {
   console.error(
     `\nRemote Channel configuration failed: ${String(error?.message || error)}`,

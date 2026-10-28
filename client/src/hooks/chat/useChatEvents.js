@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+﻿import { useEffect, useRef } from "react";
 import { getWebSocketUrl } from "../../api/chatApi.js";
 import {
   isMessageAuthoredByUser,
@@ -226,7 +226,7 @@ export function useChatEvents({
           return;
         }
         if (typeof window !== "undefined") {
-          window.dispatchEvent(new CustomEvent("songbird:realtime-event", { detail: payload }));
+          window.dispatchEvent(new CustomEvent("wihm:realtime-event", { detail: payload }));
         }
         if (payload.type === "session_revoked") {
           onSessionRevokedRef.current?.(payload);

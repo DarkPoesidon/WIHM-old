@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 
 export function useNewGroupModal({
   user,
@@ -19,7 +19,7 @@ export function useNewGroupModal({
     visibility: "public",
     allowMemberInvites: true,
     remoteChannelEnabled: false,
-    remoteChannelProvider: "songbird",
+    remoteChannelProvider: "wihm",
     remoteChannelSource: "",
     remoteChannelSyncMetadata: false,
     remoteChannelStreamMedia: false,

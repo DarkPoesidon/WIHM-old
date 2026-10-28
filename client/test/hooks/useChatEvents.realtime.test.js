@@ -1,4 +1,4 @@
-import { describe, expect, test, vi } from "vitest";
+﻿import { describe, expect, test, vi } from "vitest";
 import viteConfig from "../../vite.config.js";
 
 if (typeof window === "undefined") {
@@ -20,9 +20,9 @@ describe("useChatEvents — custom realtime event dispatch and dev proxy", () =>
     expect(config.server.proxy["/ws"].ws).toBe(true);
   });
 
-  test("dispatches songbird:realtime-event on window when a valid WebSocket event is received", () => {
+  test("dispatches wihm:realtime-event on window when a valid WebSocket event is received", () => {
     const listener = vi.fn();
-    window.addEventListener("songbird:realtime-event", listener);
+    window.addEventListener("wihm:realtime-event", listener);
 
     const payload = {
       type: "presence_update",
@@ -30,12 +30,12 @@ describe("useChatEvents — custom realtime event dispatch and dev proxy", () =>
       status: "online",
     };
     window.dispatchEvent(
-      new CustomEvent("songbird:realtime-event", { detail: payload }),
+      new CustomEvent("wihm:realtime-event", { detail: payload }),
     );
 
     expect(listener).toHaveBeenCalledTimes(1);
     expect(listener.mock.calls[0][0].detail).toEqual(payload);
 
-    window.removeEventListener("songbird:realtime-event", listener);
+    window.removeEventListener("wihm:realtime-event", listener);
   });
 });

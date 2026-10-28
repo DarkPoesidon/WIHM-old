@@ -1,16 +1,16 @@
-# Cloud Deployment
+﻿# Cloud Deployment
 
-This guide covers deploying Songbird on managed cloud infrastructure, including **Platform as a Service (PaaS)**, **Container as a Service (CaaS)**, and container orchestration platforms.
+This guide covers deploying WIHM on managed cloud infrastructure, including **Platform as a Service (PaaS)**, **Container as a Service (CaaS)**, and container orchestration platforms.
 
 :::tip Looking for Self-Hosted VPS Deployment?
-If you are deploying Songbird on a single Virtual Private Server (VPS) using Docker Compose or systemd, refer to the [Install via Docker](./Installation-Docker.md) or [Deployment Script](./Deployment-Script.md) guides.
+If you are deploying WIHM on a single Virtual Private Server (VPS) using Docker Compose or systemd, refer to the [Install via Docker](./Installation-Docker.md) or [Deployment Script](./Deployment-Script.md) guides.
 :::
 
 ## Architecture Overview
 
-Songbird can be deployed across various cloud paradigms depending on your operational and scaling requirements:
+WIHM can be deployed across various cloud paradigms depending on your operational and scaling requirements:
 
-| Paradigm | Description | Suitable Platforms | Songbird Support |
+| Paradigm | Description | Suitable Platforms | WIHM Support |
 |---|---|---|---|
 | **IaaS** *(Infrastructure as a Service)* | Self-managed Virtual Machines running Docker or systemd | AWS EC2, DigitalOcean Droplets, Hetzner | Fully Supported |
 | **PaaS** *(Platform as a Service)* | Deploy directly from source code repository | Render, Railway, Heroku, Fly.io | Fully Supported |
@@ -18,7 +18,7 @@ Songbird can be deployed across various cloud paradigms depending on your operat
 
 ## 1. Deploying on PaaS
 
-PaaS providers let you deploy Songbird directly from your Git repository without managing server infrastructure.
+PaaS providers let you deploy WIHM directly from your Git repository without managing server infrastructure.
 
 ### Build and Start Settings
 
@@ -38,7 +38,7 @@ Configure your PaaS deployment with the following runtime commands:
 
 PaaS instances are **ephemeral** by default — any files saved to local disk (such as SQLite databases or file uploads) will be erased whenever the application restarts or redeploys.
 
-To run Songbird on PaaS, choose one of two storage strategies:
+To run WIHM on PaaS, choose one of two storage strategies:
 
 #### Strategy A: Single-Instance with Persistent Volume
 If deploying a single app instance on platforms supporting volume mounts (e.g. Railway or Fly.io):
@@ -53,7 +53,7 @@ For stateless, zero-downtime PaaS deployments:
 1. Provision a managed **PostgreSQL** database and configure database credentials:
    ```txt
    DB_CLIENT=postgres
-   POSTGRES_URL=postgres://user:password@host:5432/songbird
+   POSTGRES_URL=postgres://user:password@host:5432/WIHM
    ```
 
    :::tip Managed PostgreSQL with SSL & Custom CA (Aiven, AWS RDS, etc.)
@@ -81,7 +81,7 @@ For stateless, zero-downtime PaaS deployments:
    ```txt
    STORAGE_DRIVER=remote
    STORAGE_ENDPOINT=https://<account-id>.r2.cloudflarestorage.com
-   STORAGE_BUCKET=songbird-uploads
+   STORAGE_BUCKET=WIHM-uploads
    STORAGE_ACCESS_KEY_ID=your_access_key
    STORAGE_SECRET_ACCESS_KEY=your_secret_key
    STORAGE_REGION=auto
@@ -89,20 +89,20 @@ For stateless, zero-downtime PaaS deployments:
 
 ### Railway (Infrastructure as Code)
 
-Songbird includes an automated **Infrastructure as Code (IaC)** configuration at `.railway/railway.ts` for one-click, reproducible multi-service deployment on [Railway](https://railway.com).
+WIHM includes an automated **Infrastructure as Code (IaC)** configuration at `.railway/railway.ts` for one-click, reproducible multi-service deployment on [Railway](https://railway.com).
 
 #### Architecture & Resources Provisioned
 
-The Railway IaC configuration programmatically creates and interconnects a full-stack Songbird topology under a single `"songbird"` project group:
+The Railway IaC configuration programmatically creates and interconnects a full-stack WIHM topology under a single `"WIHM"` project group:
 
 ```txt
 ┌────────────────────────────────────────────────────────────────────────┐
 │                        Railway Project Canvas                          │
 │                                                                        │
-│   ┌─────────────────────────── "songbird" Group ──────────────────┐    │
+│   ┌─────────────────────────── "WIHM" Group ──────────────────┐    │
 │   │                                                               │    │
 │   │   ┌──────────────────┐               ┌────────────────────┐   │    │
-│   │   │  PostgreSQL      │◀──────────────│  Songbird App      │   │    │
+│   │   │  PostgreSQL      │◀──────────────│  WIHM App      │   │    │
 │   │   │  (Managed DB)    │  DATABASE_URL │  (Web & API)       │   │    │
 │   │   └──────────────────┘               └────────┬───────────┘   │    │
 │   │                                               │               │    │
@@ -110,7 +110,7 @@ The Railway IaC configuration programmatically creates and interconnects a full-
 │   │                                       Network │ Worker URL    │    │
 │   │                                               │               │    │
 │   │   ┌──────────────────┐               ┌────────▼───────────┐   │    │
-│   │   │  Uploads Bucket  │◀──────────────│  Songbird Worker   │   │    │
+│   │   │  Uploads Bucket  │◀──────────────│  WIHM Worker   │   │    │
 │   │   │  (S3 Storage)    │  S3 Driver    │  (Media Transcoder)│   │    │
 │   │   └────────▲─────────┘               └────────────────────┘   │    │
 │   │            │                                  │               │    │
@@ -126,7 +126,7 @@ The Railway IaC configuration programmatically creates and interconnects a full-
 
 #### Step-by-Step Deployment Guide
 
-Follow these steps to deploy Songbird on Railway using the Railway CLI:
+Follow these steps to deploy WIHM on Railway using the Railway CLI:
 
 ##### Step 1: Install Railway CLI
 
@@ -144,7 +144,7 @@ railway login
 
 ##### Step 3: Initialize or Link the Project
 
-Navigate to your local clone of the Songbird repository and initialize a new project or link to an existing one:
+Navigate to your local clone of the WIHM repository and initialize a new project or link to an existing one:
 
 ```bash
 railway init
@@ -160,11 +160,11 @@ Deploy the code. Railway automatically recognizes `.railway/railway.ts` and prov
 railway up
 ```
 
-##### Step 5: Expose Public Domain for Songbird App
+##### Step 5: Expose Public Domain for WIHM App
 
-By default, Railway services run within private networking. To make Songbird accessible to users:
+By default, Railway services run within private networking. To make WIHM accessible to users:
 
-1. In the [Railway Dashboard](https://railway.com/dashboard), click on the **songbird-server** service.
+1. In the [Railway Dashboard](https://railway.com/dashboard), click on the **WIHM-server** service.
 
 2. Navigate to **Settings** > **Networking** > **Public Networking**.
 
@@ -173,16 +173,16 @@ By default, Railway services run within private networking. To make Songbird acc
 Alternatively, generate a domain using the CLI:
 
 ```bash
-railway domain --service songbird-server
+railway domain --service WIHM-server
 ```
 
 ### Render (Blueprint)
 
-Songbird ships a [Render Blueprint](https://render.com/docs/blueprints) at `render.yaml`: a single Docker web service (`songbird`) backed by managed PostgreSQL. Unlike the Railway topology there is no separate worker service — the container entrypoint auto-starts an in-container Media Worker (`WORKER_PORT=8080`) next to the app, which itself listens on Render's `PORT`, so the two never collide.
+WIHM ships a [Render Blueprint](https://render.com/docs/blueprints) at `render.yaml`: a single Docker web service (`WIHM`) backed by managed PostgreSQL. Unlike the Railway topology there is no separate worker service — the container entrypoint auto-starts an in-container Media Worker (`WORKER_PORT=8080`) next to the app, which itself listens on Render's `PORT`, so the two never collide.
 
 #### What Gets Provisioned
 
-- **`songbird` web service** — built from the root `Dockerfile` (Vite frontend + Express backend), health check at `/api/health`.
+- **`WIHM` web service** — built from the root `Dockerfile` (Vite frontend + Express backend), health check at `/api/health`.
 - **Managed PostgreSQL** — connect it via `POSTGRES_URL` (use the database's *internal* connection string) with `POSTGRES_SSL=true`.
 
 #### Setup
@@ -207,10 +207,10 @@ Remote Channel continuous polling prevents the app from sleeping and burns the m
 
 ## 2. Deploying on CaaS & Kubernetes
 
-You can run Songbird in containerized environments using the official pre-built Docker images from Docker Hub:
+You can run WIHM in containerized environments using the official pre-built Docker images from Docker Hub:
 
-- **Main Application (Frontend + Backend):** `bllackbull/songbird:latest`
-- **Standalone Media Worker (FFmpeg Transcoder):** `bllackbull/songbird-worker:latest`
+- **Main Application (Frontend + Backend):** `DarkPoesidon/WIHM:latest`
+- **Standalone Media Worker (FFmpeg Transcoder):** `DarkPoesidon/WIHM-worker:latest`
 
 ### Container Configuration
 
@@ -229,7 +229,7 @@ To enable **multi-instance horizontal scaling**, configure the following trio of
 └──────────────┬──────────────────────────────┬───────────────┘
                │                              │
         ┌──────▼──────┐                ┌──────▼──────┐
-        │  Songbird   │                │  Songbird   │
+        │  WIHM   │                │  WIHM   │
         │ Instance 1  │                │ Instance 2  │
         └──────┬──────┘                └──────┬──────┘
                │                              │
@@ -247,9 +247,9 @@ Set `DB_CLIENT=postgres` pointing to a managed PostgreSQL cluster (such as AWS R
 DB_CLIENT=postgres
 POSTGRES_HOST=postgres.internal
 POSTGRES_PORT=5432
-POSTGRES_USER=songbird
+POSTGRES_USER=WIHM
 POSTGRES_PASSWORD=secure_password
-POSTGRES_DB=songbird
+POSTGRES_DB=WIHM
 ```
 
 #### 2. Shared File Storage
@@ -257,18 +257,18 @@ Set `STORAGE_DRIVER=remote` pointing to S3-compatible object storage so media up
 ```txt
 STORAGE_DRIVER=remote
 STORAGE_ENDPOINT=https://s3.us-east-1.amazonaws.com
-STORAGE_BUCKET=my-songbird-bucket
+STORAGE_BUCKET=my-WIHM-bucket
 STORAGE_ACCESS_KEY_ID=AWS_ACCESS_KEY
 STORAGE_SECRET_ACCESS_KEY=AWS_SECRET_KEY
 STORAGE_REGION=us-east-1
 ```
 
 :::tip Media Transcoding with Remote Storage
-Songbird offloads video transcoding and thumbnail extraction to the standalone HTTP push **Media Worker** (`worker/`), which can be deployed as an independent container service or alongside backend nodes. See [Media Worker](./Media-Worker.md) and [Object Storage](./Object-Storage.md) for architecture and deployment details.
+WIHM offloads video transcoding and thumbnail extraction to the standalone HTTP push **Media Worker** (`worker/`), which can be deployed as an independent container service or alongside backend nodes. See [Media Worker](./Media-Worker.md) and [Object Storage](./Object-Storage.md) for architecture and deployment details.
 :::
 
 #### 3. Redis Event Synchronization (Pub/Sub)
-Configure `REDIS_URL` or `REDIS_HOST`. When Redis is enabled, Songbird automatically uses Redis Pub/Sub (channel `songbird:events`) to synchronize real-time WebSocket and SSE events across all container nodes:
+Configure `REDIS_URL` or `REDIS_HOST`. When Redis is enabled, WIHM automatically uses Redis Pub/Sub (channel `WIHM:events`) to synchronize real-time WebSocket and SSE events across all container nodes:
 ```txt
 REDIS_URL=redis://:password@redis.internal:6379
 ```
@@ -279,14 +279,14 @@ For optimal WebSocket connectivity through load balancers, enable **Sticky Sessi
 
 ## 3. Serverless Compatibility
 
-Understanding how Songbird interacts with serverless execution models is critical before deploying to serverless platforms.
+Understanding how WIHM interacts with serverless execution models is critical before deploying to serverless platforms.
 
 ### Function as a Service (FaaS) — Anti-Pattern
 
 Platforms like **AWS Lambda**, **Vercel Serverless Functions**, or **Netlify Functions** execute code in response to individual HTTP requests and terminate execution contexts immediately after.
 
 :::danger FaaS Runtimes Are Not Supported
-Deploying Songbird as a FaaS application (e.g., on Vercel Functions or AWS Lambda) is **not supported**. FaaS is an architectural anti-pattern for real-time chat platforms like Songbird.
+Deploying WIHM as a FaaS application (e.g., on Vercel Functions or AWS Lambda) is **not supported**. FaaS is an architectural anti-pattern for real-time chat platforms like WIHM.
 :::
 
 ### Serverless Containers — Fully Supported
@@ -295,4 +295,4 @@ Do not confuse **Function as a Service (FaaS)** with **Serverless Containers**:
 
 - **Serverless Containers** (such as **Google Cloud Run**, **AWS Fargate**, or **Azure Container Apps**) run full Docker containers without requiring you to manage underlying virtual machines.
 - Unlike FaaS, Serverless Containers provide persistent execution, full WebSocket/SSE support, long-running processes, and background workers.
-- Songbird is **fully compatible** with Serverless Container platforms.
+- WIHM is **fully compatible** with Serverless Container platforms.

@@ -1,4 +1,4 @@
-import { describe, expect, test, beforeEach, afterEach } from "vitest";
+﻿import { describe, expect, test, beforeEach, afterEach } from "vitest";
 import crypto from "node:crypto";
 import { createTestDb } from "./testDbHelper.js";
 
@@ -121,24 +121,24 @@ describe("Database CRUD Operations Integration", () => {
   test("updating app settings", () => {
     dbHelper.run("INSERT INTO app_settings (key, value) VALUES (?, ?)", [
       "site_title",
-      "Songbird Chat",
+      "WIHM Chat",
     ]);
 
     let setting = dbHelper.getRow(
       "SELECT value FROM app_settings WHERE key = ?",
       ["site_title"],
     );
-    expect(setting.value).toBe("Songbird Chat");
+    expect(setting.value).toBe("WIHM Chat");
 
     dbHelper.run("UPDATE app_settings SET value = ? WHERE key = ?", [
-      "Songbird Workspace",
+      "WIHM Workspace",
       "site_title",
     ]);
 
     setting = dbHelper.getRow("SELECT value FROM app_settings WHERE key = ?", [
       "site_title",
     ]);
-    expect(setting.value).toBe("Songbird Workspace");
+    expect(setting.value).toBe("WIHM Workspace");
   });
 
   test("editing and soft deleting / hiding messages", () => {

@@ -1,4 +1,4 @@
-# نصب دستی
+﻿# نصب دستی
 
 **پیش‌نیازها (روی Ubuntu 22.04+ آزمایش شده):**
 
@@ -45,9 +45,9 @@ volta install node@24.22.1 npm@11.6.4
 ## ۲. کلون‌کردن مخزن
 
 ```bash
-sudo mkdir -p /opt/songbird
-cd /opt/songbird
-git clone https://github.com/bllackbull/Songbird.git .
+sudo mkdir -p /opt/WIHM
+cd /opt/WIHM
+git clone https://github.com/DarkPoesidon/WIHM.git .
 ```
 
 :::info
@@ -64,27 +64,27 @@ nvm use
 ## ۳. نصب وابستگی‌ها
 
 ```bash
-cd /opt/songbird/server
+cd /opt/WIHM/server
 npm install
 
-cd /opt/songbird/client
+cd /opt/WIHM/client
 npm install
 npm run build
 ```
 
 ## ۴. ایجاد سرویس systemd
 
-فایل `/etc/systemd/system/songbird.service` را با محتوای زیر ایجاد کنید:
+فایل `/etc/systemd/system/WIHM.service` را با محتوای زیر ایجاد کنید:
 
 ```ini
 [Unit]
-Description=Songbird server
+Description=WIHM server
 After=network.target
 
 [Service]
 Type=simple
-WorkingDirectory=/opt/songbird/server
-ExecStart=/usr/bin/env node /opt/songbird/server/index.js
+WorkingDirectory=/opt/WIHM/server
+ExecStart=/usr/bin/env node /opt/WIHM/server/index.js
 Restart=on-failure
 RestartSec=5
 
@@ -121,39 +121,39 @@ ExecStart=/root/.volta/bin/node index.js
 1. این خطوط را به فایل سرویس systemd اضافه کنید:
 
 ```ini
-User=songbird
-Group=songbird
+User=WIHM
+Group=WIHM
 ```
 
 2. یک کاربر سیستمی اختصاصی ایجاد کنید:
 
 ```bash
-sudo useradd --system --no-create-home --shell /usr/sbin/nologin songbird
+sudo useradd --system --no-create-home --shell /usr/sbin/nologin WIHM
 ```
 
 3. مالکیت پوشه پروژه را تغییر دهید:
 
 ```bash
-sudo chown -R songbird:songbird /opt/songbird
-git config --global --add safe.directory /opt/songbird
+sudo chown -R WIHM:WIHM /opt/WIHM
+git config --global --add safe.directory /opt/WIHM
 ```
 
 4. به کاربر سرویس اجازه دهید واحد خودش را کنترل کرده و لاگ‌های سیستم را بخواند (لازم است برای دکمه‌های راه‌اندازی مجدد/توقف سرویس و تب Logs در پنل ادمین):
 
 ```bash
-sudo tee /etc/sudoers.d/songbird > /dev/null <<'EOF'
-# Songbird — allow the service user to control its own unit
+sudo tee /etc/sudoers.d/WIHM > /dev/null <<'EOF'
+# WIHM — allow the service user to control its own unit
 # and read privileged logs without a password.
-songbird ALL=(root) NOPASSWD: /usr/bin/systemctl restart songbird.service
-songbird ALL=(root) NOPASSWD: /usr/bin/systemctl stop songbird.service
-songbird ALL=(root) NOPASSWD: /usr/bin/journalctl -u songbird *
-songbird ALL=(root) NOPASSWD: /usr/bin/journalctl -u songbird-worker *
-songbird ALL=(root) NOPASSWD: /usr/bin/cat /var/log/nginx/error.log
-songbird ALL=(root) NOPASSWD: /usr/bin/cat /var/log/nginx/access.log
-songbird ALL=(root) NOPASSWD: /usr/bin/nginx -t
-songbird ALL=(root) NOPASSWD: /usr/bin/systemctl reload nginx
+WIHM ALL=(root) NOPASSWD: /usr/bin/systemctl restart WIHM.service
+WIHM ALL=(root) NOPASSWD: /usr/bin/systemctl stop WIHM.service
+WIHM ALL=(root) NOPASSWD: /usr/bin/journalctl -u WIHM *
+WIHM ALL=(root) NOPASSWD: /usr/bin/journalctl -u WIHM-worker *
+WIHM ALL=(root) NOPASSWD: /usr/bin/cat /var/log/nginx/error.log
+WIHM ALL=(root) NOPASSWD: /usr/bin/cat /var/log/nginx/access.log
+WIHM ALL=(root) NOPASSWD: /usr/bin/nginx -t
+WIHM ALL=(root) NOPASSWD: /usr/bin/systemctl reload nginx
 EOF
-sudo chmod 0440 /etc/sudoers.d/songbird
+sudo chmod 0440 /etc/sudoers.d/WIHM
 ```
 
 بدون این مرحله، دکمه‌های **راه‌اندازی مجدد سرویس** و **توقف سرویس** در پنل ادمین با خطای دسترسی مواجه می‌شوند و لاگ‌های سیستم (journal سرویس، nginx) در تب Logs نمایش داده نمی‌شوند.
@@ -162,5 +162,5 @@ sudo chmod 0440 /etc/sudoers.d/songbird
 
 ```bash
 sudo systemctl daemon-reload
-sudo systemctl enable --now songbird.service
+sudo systemctl enable --now WIHM.service
 ```

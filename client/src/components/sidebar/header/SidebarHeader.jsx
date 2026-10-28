@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+﻿import { useEffect, useRef, useState } from "react";
 import {
   AlertCircle,
   Bell,
@@ -72,7 +72,7 @@ export default function SidebarHeader({
   const searchIsRtl = hasSearchText && searchHasPersian;
   const [hideInsecureBanner, setHideInsecureBanner] = useState(() => {
     if (typeof window === "undefined") return false;
-    return window.localStorage.getItem("songbird-insecure-dismissed") === "1";
+    return window.localStorage.getItem("wihm-insecure-dismissed") === "1";
   });
   const isLocalhost =
     typeof isLocalhostProp === "boolean"
@@ -86,7 +86,7 @@ export default function SidebarHeader({
   useEffect(() => {
     if (!insecureConnection || typeof window === "undefined") return;
     setHideInsecureBanner(
-      window.localStorage.getItem("songbird-insecure-dismissed") === "1",
+      window.localStorage.getItem("wihm-insecure-dismissed") === "1",
     );
   }, [insecureConnection]);
 
@@ -436,7 +436,7 @@ export default function SidebarHeader({
                 onClick={() => {
                   if (typeof window !== "undefined") {
                     window.localStorage.setItem(
-                      "songbird-insecure-dismissed",
+                      "wihm-insecure-dismissed",
                       "1",
                     );
                   }

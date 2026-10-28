@@ -1,4 +1,4 @@
-# Manual Installation
+﻿# Manual Installation
 
 **Prerequisites (tested on Ubuntu 22.04+):**
 
@@ -45,9 +45,9 @@ volta install node@24.22.1 npm@11.6.4
 ## 2. Clone repository
 
 ```bash
-sudo mkdir -p /opt/songbird
-cd /opt/songbird
-git clone https://github.com/bllackbull/Songbird.git .
+sudo mkdir -p /opt/WIHM
+cd /opt/WIHM
+git clone https://github.com/DarkPoesidon/WIHM.git .
 ```
 
 :::info
@@ -64,27 +64,27 @@ nvm use
 ## 3. Install dependencies
 
 ```bash
-cd /opt/songbird/server
+cd /opt/WIHM/server
 npm install
 
-cd /opt/songbird/client
+cd /opt/WIHM/client
 npm install
 npm run build
 ```
 
 ## 4. Create systemd service
 
-Create `/etc/systemd/system/songbird.service` with the following:
+Create `/etc/systemd/system/WIHM.service` with the following:
 
 ```ini
 [Unit]
-Description=Songbird server
+Description=WIHM server
 After=network.target
 
 [Service]
 Type=simple
-WorkingDirectory=/opt/songbird/server
-ExecStart=/usr/bin/env node /opt/songbird/server/index.js
+WorkingDirectory=/opt/WIHM/server
+ExecStart=/usr/bin/env node /opt/WIHM/server/index.js
 Restart=on-failure
 RestartSec=5
 
@@ -121,39 +121,39 @@ Due to security concerns, it is recommended to create a dedicated system user an
 1. Add these lines to systemd service file:
 
 ```ini
-User=songbird
-Group=songbird
+User=WIHM
+Group=WIHM
 ```
 
 2. Create a dedicated system user:
 
 ```bash
-sudo useradd --system --no-create-home --shell /usr/sbin/nologin songbird
+sudo useradd --system --no-create-home --shell /usr/sbin/nologin WIHM
 ```
 
 3. Change ownership of the project directory:
 
 ```bash
-sudo chown -R songbird:songbird /opt/songbird
-git config --global --add safe.directory /opt/songbird
+sudo chown -R WIHM:WIHM /opt/WIHM
+git config --global --add safe.directory /opt/WIHM
 ```
 
 4. Grant the service user permission to control its own unit and read system logs (required for service restart/stop and the Logs tab in the admin panel):
 
 ```bash
-sudo tee /etc/sudoers.d/songbird > /dev/null <<'EOF'
-# Songbird — allow the service user to control its own unit
+sudo tee /etc/sudoers.d/WIHM > /dev/null <<'EOF'
+# WIHM — allow the service user to control its own unit
 # and read privileged logs without a password.
-songbird ALL=(root) NOPASSWD: /usr/bin/systemctl restart songbird.service
-songbird ALL=(root) NOPASSWD: /usr/bin/systemctl stop songbird.service
-songbird ALL=(root) NOPASSWD: /usr/bin/journalctl -u songbird *
-songbird ALL=(root) NOPASSWD: /usr/bin/journalctl -u songbird-worker *
-songbird ALL=(root) NOPASSWD: /usr/bin/cat /var/log/nginx/error.log
-songbird ALL=(root) NOPASSWD: /usr/bin/cat /var/log/nginx/access.log
-songbird ALL=(root) NOPASSWD: /usr/bin/nginx -t
-songbird ALL=(root) NOPASSWD: /usr/bin/systemctl reload nginx
+WIHM ALL=(root) NOPASSWD: /usr/bin/systemctl restart WIHM.service
+WIHM ALL=(root) NOPASSWD: /usr/bin/systemctl stop WIHM.service
+WIHM ALL=(root) NOPASSWD: /usr/bin/journalctl -u WIHM *
+WIHM ALL=(root) NOPASSWD: /usr/bin/journalctl -u WIHM-worker *
+WIHM ALL=(root) NOPASSWD: /usr/bin/cat /var/log/nginx/error.log
+WIHM ALL=(root) NOPASSWD: /usr/bin/cat /var/log/nginx/access.log
+WIHM ALL=(root) NOPASSWD: /usr/bin/nginx -t
+WIHM ALL=(root) NOPASSWD: /usr/bin/systemctl reload nginx
 EOF
-sudo chmod 0440 /etc/sudoers.d/songbird
+sudo chmod 0440 /etc/sudoers.d/WIHM
 ```
 
 Without this step the **Restart service** and **Stop service** buttons in the admin panel will fail with a permissions error, and system logs (service journal, nginx) will not be visible in the Logs tab.
@@ -162,5 +162,5 @@ Without this step the **Restart service** and **Stop service** buttons in the ad
 
 ```bash
 sudo systemctl daemon-reload
-sudo systemctl enable --now songbird.service
+sudo systemctl enable --now WIHM.service
 ```

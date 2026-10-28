@@ -1,4 +1,4 @@
-# Troubleshooting
+﻿# Troubleshooting
 
 This page collects common issues and how to diagnose them. Start by checking the relevant logs, then jump to the section that matches your symptom.
 
@@ -6,11 +6,11 @@ This page collects common issues and how to diagnose them. Start by checking the
 
 | Source | Command | Use it for |
 |---|---|---|
-| Service logs (systemd) | `sudo journalctl -u songbird -f` | App crashes, startup errors, runtime exceptions. |
+| Service logs (systemd) | `sudo journalctl -u WIHM -f` | App crashes, startup errors, runtime exceptions. |
 | Docker logs | `docker compose -f docker-compose.yaml logs -f` | Same as above, for Docker installs. |
 | Nginx error log | `sudo tail -f /var/log/nginx/error.log` | 502/504 errors, proxy and TLS problems. |
 | Nginx access log | `sudo tail -f /var/log/nginx/access.log` | Confirm requests reach the server and their status codes. |
-| Deploy script log | `cat /opt/songbird/logs/install.log` | Failures during install/update via `songbird-deploy`. |
+| Deploy script log | `cat /opt/WIHM/logs/install.log` | Failures during install/update via `WIHM-deploy`. |
 
 :::tip
 
@@ -38,7 +38,7 @@ The [deployment script](./Deployment-Script.md) has a built-in **View Logs** men
 
 ## Installation stuck downloading packages
 
-During installation Songbird needs to download system packages and dependencies: apt packages, Node.js (via NodeSource), npm packages, and, for Docker installs, Docker images and packages. On servers in highly restricted or filtered networks, these downloads can stall, time out, or fail outright.
+During installation WIHM needs to download system packages and dependencies: apt packages, Node.js (via NodeSource), npm packages, and, for Docker installs, Docker images and packages. On servers in highly restricted or filtered networks, these downloads can stall, time out, or fail outright.
 
 Typical signs:
 
@@ -115,8 +115,8 @@ A `502` from Nginx almost always means the Node server is not reachable on the e
 1. Confirm the service is running:
 
    ```bash
-   sudo systemctl status songbird
-   sudo journalctl -u songbird -n 100 --no-pager
+   sudo systemctl status WIHM
+   sudo journalctl -u WIHM -n 100 --no-pager
    ```
 
 2. Confirm the proxy target matches `SERVER_PORT`. Nginx's `proxy_pass` port must equal `SERVER_PORT` in `.env`.
@@ -137,7 +137,7 @@ sudo systemctl reload nginx
 
 ## Real-time updates not arriving
 
-Songbird uses a persistent WebSocket for live messages, presence, and typing indicators, with Server-Sent Events (SSE) as a fallback stream. A user is shown as online while any realtime connection is open and goes offline when the last one closes. If messages only appear after a refresh, the SSE stream is likely being buffered by Nginx.
+WIHM uses a persistent WebSocket for live messages, presence, and typing indicators, with Server-Sent Events (SSE) as a fallback stream. A user is shown as online while any realtime connection is open and goes offline when the last one closes. If messages only appear after a refresh, the SSE stream is likely being buffered by Nginx.
 
 - Ensure the `/api/events` location block is present and disables buffering (`proxy_buffering off;`, `add_header X-Accel-Buffering no;`). See [Configure Nginx](./Nginx-Configuration.md).
 - Confirm any upstream proxy or CDN is not buffering or timing out the connection.
@@ -180,15 +180,15 @@ After changing `.env`, apply the changes (see [Environment Variables](./Environm
 
 ## Video transcoding issues
 
-Songbird automatically optimizes and transcodes uploaded videos to web-ready H.264/AAC MP4 when `FILE_UPLOAD_TRANSCODE_VIDEOS=true`.
+WIHM automatically optimizes and transcodes uploaded videos to web-ready H.264/AAC MP4 when `FILE_UPLOAD_TRANSCODE_VIDEOS=true`.
 
 - **Check Media Worker Health**: If using the standalone Media Worker, verify its health status via `curl http://localhost:8080/health` (or using the configured `WORKER_PORT` / `WORKER_URL/health`). The response should return `{"status": "ok", ...}`. See [Media Worker](./Media-Worker.md) for full configuration details.
-- **Verify Webhook Secret Synchronization**: Ensure the `WEBHOOK_SECRET` in the Songbird server configuration matches the `WEBHOOK_SECRET` configured in the Media Worker. If secrets mismatch, dispatch or callback requests will fail with `401 Unauthorized`.
-- **Verify Webhook Callback Reachability**: The Media Worker must be able to reach Songbird's callback endpoint (`POST /api/uploads/webhook/processed`). If Songbird is behind a reverse proxy, set `WEBHOOK_URL` (or fallback `WEBHOOK_CALLBACK_URL`) or ensure internal DNS/network routing allows worker-to-server HTTP requests.
+- **Verify Webhook Secret Synchronization**: Ensure the `WEBHOOK_SECRET` in the WIHM server configuration matches the `WEBHOOK_SECRET` configured in the Media Worker. If secrets mismatch, dispatch or callback requests will fail with `401 Unauthorized`.
+- **Verify Webhook Callback Reachability**: The Media Worker must be able to reach WIHM's callback endpoint (`POST /api/uploads/webhook/processed`). If WIHM is behind a reverse proxy, set `WEBHOOK_URL` (or fallback `WEBHOOK_CALLBACK_URL`) or ensure internal DNS/network routing allows worker-to-server HTTP requests.
 - **Verify FFmpeg Installation**: If running in `local` processing mode or running the worker directly from source, ensure `ffmpeg` and `ffprobe` are installed on the system (`ffmpeg -version`).
 - **Temporary Disk Space**: Ensure the worker node has sufficient temporary disk space (`/tmp` or system temp directory) for staging, transcoding, and thumbnail generation.
 - **Check Service & Worker Logs**: Look for `[worker]` or `[app-debug]` log messages in server or worker logs.
-- **Enable Debug Logging**: Set `APP_DEBUG=true` in Songbird's `.env` to receive verbose terminal logs for upload dispatch, transcode status, and real-time event broadcasts.
+- **Enable Debug Logging**: Set `APP_DEBUG=true` in WIHM's `.env` to receive verbose terminal logs for upload dispatch, transcode status, and real-time event broadcasts.
 
 ## Docker build issues
 
@@ -209,14 +209,14 @@ Other checks:
 |---|---|
 | Browser warns about invalid cert | Confirm `ssl_certificate` / `ssl_certificate_key` paths in Nginx point to valid files. |
 | Certbot renewal fails | Run `sudo certbot renew --dry-run` and check DNS/port 80 reachability. |
-| IP-based cert expired | The IP certificate flow uses short-lived (6-day) certs auto-renewed by a timer; confirm the `songbird-lego-renew` timer is active. |
+| IP-based cert expired | The IP certificate flow uses short-lived (6-day) certs auto-renewed by a timer; confirm the `WIHM-lego-renew` timer is active. |
 | Self-signed warning (Docker default) | Expected with the default self-signed cert. Replace with real certs for production. |
 
 See [SSL Certificates](./SSL-Certificates.md) for the full setup options.
 
 ## PostgreSQL SSL & CA certificate errors
 
-When connecting Songbird to managed cloud PostgreSQL databases (such as **Aiven**, **AWS RDS**, **DigitalOcean**, **Supabase**, or **Neon**), the connection may fail on startup or during database migrations.
+When connecting WIHM to managed cloud PostgreSQL databases (such as **Aiven**, **AWS RDS**, **DigitalOcean**, **Supabase**, or **Neon**), the connection may fail on startup or during database migrations.
 
 ### `self-signed certificate in certificate chain` / `SELF_SIGNED_CERT_IN_CHAIN`
 
@@ -245,11 +245,11 @@ Provide the provider's CA certificate to Node.js via the `NODE_EXTRA_CA_CERTS` e
      ```
 
 3. **On Docker / VPS:**
-   - Save the CA certificate to disk (e.g., `/opt/songbird/certs/ca.pem` or mount it into the container).
+   - Save the CA certificate to disk (e.g., `/opt/WIHM/certs/ca.pem` or mount it into the container).
    - In `.env` or container environment, set:
 
      ```txt
-     NODE_EXTRA_CA_CERTS=/opt/songbird/certs/ca.pem
+     NODE_EXTRA_CA_CERTS=/opt/WIHM/certs/ca.pem
      ```
 
 ## Remote Channel not mirroring
@@ -267,7 +267,7 @@ See [Remote Channel Setup](./Remote-Channel-Setup.md) for the complete configura
 
 ## Admin panel issues
 
-The admin panel's service control features (restart/stop) and system log viewing require specific permissions depending on how Songbird is deployed.
+The admin panel's service control features (restart/stop) and system log viewing require specific permissions depending on how WIHM is deployed.
 
 :::tip
 
@@ -280,30 +280,30 @@ If you encounter any of the issues mentioned below, reinstalling the app via the
 **Systemd deployments:**
 
 - The service user needs `sudo` privileges for `systemctl` commands
-- Create a sudoers file for the songbird user:
+- Create a sudoers file for the WIHM user:
 
   ```bash
-  sudo visudo -f /etc/sudoers.d/songbird
+  sudo visudo -f /etc/sudoers.d/WIHM
   ```
 
-- Add these lines (replace `songbird` if using a different service user):
+- Add these lines (replace `WIHM` if using a different service user):
 
   ```txt
-  songbird ALL=(ALL) NOPASSWD: /bin/systemctl restart songbird.service
-  songbird ALL=(ALL) NOPASSWD: /bin/systemctl stop songbird.service
-  songbird ALL=(ALL) NOPASSWD: /bin/systemctl status songbird.service
+  WIHM ALL=(ALL) NOPASSWD: /bin/systemctl restart WIHM.service
+  WIHM ALL=(ALL) NOPASSWD: /bin/systemctl stop WIHM.service
+  WIHM ALL=(ALL) NOPASSWD: /bin/systemctl status WIHM.service
   ```
 
 - Save and ensure permissions are correct:
 
   ```bash
-  sudo chmod 0440 /etc/sudoers.d/songbird
+  sudo chmod 0440 /etc/sudoers.d/WIHM
   ```
 
 **PM2 deployments:**
 
 - The process must have access to the PM2 runtime
-- Ensure PM2 is running as the same user that runs Songbird
+- Ensure PM2 is running as the same user that runs WIHM
 - The user should have permission to execute `pm2 restart` and `pm2 stop`
 
 ### System logs not showing
@@ -314,19 +314,19 @@ If you encounter any of the issues mentioned below, reinstalling the app via the
 - Add the user to the `systemd-journal` group:
 
   ```bash
-  sudo usermod -a -G systemd-journal songbird
+  sudo usermod -a -G systemd-journal WIHM
   ```
 
 - Add the user to the `adm` group:
 
   ```bash
-  sudo usermod -a -G adm songbird
+  sudo usermod -a -G adm WIHM
   ```
 
 - Restart the service:
 
   ```bash
-  sudo systemctl restart songbird
+  sudo systemctl restart WIHM
   ```
 
 **Docker:**
@@ -336,4 +336,4 @@ If you encounter any of the issues mentioned below, reinstalling the app via the
 
 ## Still stuck?
 
-If none of the above resolves the issue, gather the relevant log output and open an issue at the [project repository](https://github.com/bllackbull/Songbird/issues).
+If none of the above resolves the issue, gather the relevant log output and open an issue at the [project repository](https://github.com/DarkPoesidon/WIHM/issues).

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+﻿import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -18,7 +18,7 @@ describe("Media Worker HTTP Server", () => {
 
     expect(res.status).toBe(200);
     expect(res.body.status).toBe("ok");
-    expect(res.body.service).toBe("songbird-media-worker");
+    expect(res.body.service).toBe("WIHM-media-worker");
     expect(res.body.queue).toBeDefined();
     expect(typeof res.body.queue.concurrency).toBe("number");
   });
@@ -54,7 +54,7 @@ describe("Media Worker HTTP Server", () => {
 
     const res = await request(server)
       .post("/transcode")
-      .set("x-songbird-webhook-secret", "valid-secret")
+      .set("x-WIHM-webhook-secret", "valid-secret")
       .send({
         fileId: "file-99",
         storageKey: "uploads/video.mp4",
@@ -83,7 +83,7 @@ describe("Media Worker HTTP Server", () => {
     });
 
     it("identifies public/remote domains as non-loopback", () => {
-      expect(isLoopbackUrl("https://songbird-web.onrender.com/api/uploads/webhook/processed")).toBe(false);
+      expect(isLoopbackUrl("https://WIHM-web.onrender.com/api/uploads/webhook/processed")).toBe(false);
       expect(isLoopbackUrl("https://api.example.com/webhook")).toBe(false);
       expect(isLoopbackUrl(null)).toBe(false);
       expect(isLoopbackUrl("not-a-valid-url")).toBe(false);

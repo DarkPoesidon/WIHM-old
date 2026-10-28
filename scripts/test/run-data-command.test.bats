@@ -1,4 +1,4 @@
-#!/usr/bin/env bats
+﻿#!/usr/bin/env bats
 # Tests for the privileged data-command launcher runtime-account policy.
 
 LAUNCHER="$(cd "$(dirname "$BATS_TEST_FILENAME")/.." && pwd)/run-data-command.sh"
@@ -327,7 +327,7 @@ make_data_target() {
   run is_privileged_data_command node scripts/restore-db.js -y
   [ "$status" -eq 0 ]
 
-  run is_privileged_data_command bash -lc "cd /opt/songbird && npm --prefix server run db:restore"
+  run is_privileged_data_command bash -lc "cd /opt/WIHM && npm --prefix server run db:restore"
   [ "$status" -eq 0 ]
 
   run is_privileged_data_command node scripts/backup-db.js

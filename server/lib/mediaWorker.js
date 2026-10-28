@@ -1,4 +1,4 @@
-import { readEnvBool } from "../settings/env.js";
+﻿import { readEnvBool } from "../settings/env.js";
 
 async function sendTranscodeRequest(workerUrl, payload, webhookSecret, fetchImpl) {
   if (!workerUrl) return false;
@@ -11,7 +11,7 @@ async function sendTranscodeRequest(workerUrl, payload, webhookSecret, fetchImpl
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      ...(webhookSecret ? { "x-songbird-webhook-secret": webhookSecret } : {}),
+      ...(webhookSecret ? { "x-wihm-webhook-secret": webhookSecret } : {}),
     },
     body: JSON.stringify(payload),
   });
@@ -43,8 +43,8 @@ function isLocalWorkerAddress(url) {
  * @param {string|number} [params.workerPort] - Port of local worker (default 8080)
  * @param {number} [params.storageProcessingTimeoutMs] - Total time (ms) to retry calling remote worker in auto mode (default: STORAGE_PROCESSING_TIMEOUT_MS or 120000)
  * @param {number} [params.retryDelayMs] - Delay between retry attempts in ms (default 250)
- * @param {string} [params.webhookSecret] - Secret token for x-songbird-webhook-secret header
- * @param {string} [params.callbackUrl] - Songbird callback webhook URL (e.g. https://songbird.example.com/api/uploads/webhook/processed)
+ * @param {string} [params.webhookSecret] - Secret token for x-wihm-webhook-secret header
+ * @param {string} [params.callbackUrl] - WIHM callback webhook URL (e.g. https://WIHM.example.com/api/uploads/webhook/processed)
  * @param {string|number} params.fileId - File record ID in chat_message_files
  * @param {string} params.storageKey - S3/R2 storage key of raw uploaded file
  * @param {string} [params.storedName] - Original stored name of the file
@@ -110,8 +110,8 @@ export async function dispatchMediaWorkerJob({
     callbackUrl ||
     process.env.WEBHOOK_URL ||
     process.env.WEBHOOK_CALLBACK_URL ||
-    process.env.SONGBIRD_WEBHOOK_URL ||
-    process.env.SONGBIRD_WEBHOOK_CALLBACK_URL ||
+    process.env.WIHM_WEBHOOK_URL ||
+    process.env.WIHM_WEBHOOK_CALLBACK_URL ||
     null;
 
   const getPayloadForTarget = (targetWorkerUrl) => {

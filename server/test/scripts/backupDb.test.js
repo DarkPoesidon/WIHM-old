@@ -1,4 +1,4 @@
-import { describe, expect, test, vi, beforeEach, afterEach } from "vitest";
+﻿import { describe, expect, test, vi, beforeEach, afterEach } from "vitest";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -34,7 +34,7 @@ describe("backup-db.js env loading", () => {
     // e.g. when the npm script is launched via the run-data-command.sh wrapper) is invisible
     // to readDbConfig(), so backup-db.js silently falls back to sqlite3 and writes a .db file.
     const tempRoot = fs.mkdtempSync(
-      path.join(os.tmpdir(), "songbird-backup-dotenv-"),
+      path.join(os.tmpdir(), "wihm-backup-dotenv-"),
     );
     const dataDir = path.join(tempRoot, "data");
     fs.mkdirSync(dataDir, { recursive: true });
@@ -52,7 +52,7 @@ describe("backup-db.js env loading", () => {
 
   test("picks up DB_CLIENT=postgres when specified in environment even when invoking shell has no DB_CLIENT set", () => {
     const tempRoot = fs.mkdtempSync(
-      path.join(os.tmpdir(), "songbird-backup-script-"),
+      path.join(os.tmpdir(), "wihm-backup-script-"),
     );
     const dataDir = path.join(tempRoot, "data");
     fs.mkdirSync(dataDir, { recursive: true });

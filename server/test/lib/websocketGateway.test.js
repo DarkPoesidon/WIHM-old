@@ -1,4 +1,4 @@
-import { describe, test, expect, vi } from "vitest";
+﻿import { describe, test, expect, vi } from "vitest";
 import { EventEmitter } from "node:events";
 import { createWebSocketGateway } from "../../lib/websocketGateway.js";
 import { createSseHub } from "../../lib/sse.js";
@@ -26,7 +26,7 @@ describe("WebSocket Gateway", () => {
     gateway.broadcastAll({ type: "test" });
 
     expect(publishSpy).toHaveBeenCalledWith(
-      "songbird:events",
+      "WIHM:events",
       expect.stringContaining('"broadcast":true'),
     );
 

@@ -1,4 +1,4 @@
-# Agent Guidance: Songbird Documentation (`docs/`)
+﻿# Agent Guidance: WIHM Documentation (`docs/`)
 
 VitePress documentation site supporting dual-language content (English & Persian/Farsi).
 
